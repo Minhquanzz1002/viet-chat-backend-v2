@@ -11,3 +11,8 @@ spring:
 server:
   servlet:
     context-path: /api
+
+# Swagger configurations
+springdoc:
+  api-docs:
+    path: /api-docs
