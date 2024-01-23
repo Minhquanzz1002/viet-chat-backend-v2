@@ -1,0 +1,13 @@
+# MongoDB configurations
+spring:
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      database: viet-chat
+      field-naming-strategy: org.springframework.data.mapping.model.SnakeCaseFieldNamingStrategy
+      auto-index-creation: true
+
+server:
+  servlet:
+    context-path: /api
