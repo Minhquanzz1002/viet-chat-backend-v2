@@ -25,7 +25,8 @@ public class SecurityConfig {
             "/actuator/**",
             "/swagger-ui/**",
             "/api-docs/**",
-            "/v1/auth/**"
+            "/v1/auth/**",
+            "/v1/verification/otp/sms/**"
     };
 
     @Bean
