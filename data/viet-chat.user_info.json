@@ -1,0 +1,121 @@
+[{
+  "_id": {
+    "$oid": "65ddba794f8ab150db6dfa81"
+  },
+  "first_name": "Nguyễn Minh",
+  "last_name": "Quân",
+  "bio": "Newbie Dev",
+  "thumbnail_avatar": "link avatar",
+  "cover_image": "link cover image",
+  "gender": true,
+  "birthday": {
+    "$date": "2002-11-19T17:00:00.000Z"
+  },
+  "groups": [
+    {
+      "$oid": "65df5d8fbd262f5cf9a9f697"
+    }
+  ],
+  "friends": [
+    {
+      "friend_id": {
+        "$oid": "65df83a0f52cda6a46bde971"
+      },
+      "display_name": "Nguyễn Minh Nam",
+      "status": "FRIEND_REQUEST"
+    }
+  ],
+  "created_at": {
+    "$date": "2024-02-27T10:33:29.567Z"
+  },
+  "updated_at": {
+    "$date": "2024-02-29T06:25:00.753Z"
+  },
+  "user_id": {
+    "$oid": "65dcd570e36d2418dacb1b62"
+  },
+  "_class": "vn.edu.iuh.models.UserInfo"
+},
+{
+  "_id": {
+    "$oid": "65ddba944f8ab150db6dfa82"
+  },
+  "first_name": "Nguyễn",
+  "last_name": "Nữ",
+  "bio": "DevOps",
+  "thumbnail_avatar": "link avatar",
+  "cover_image": "link cover image",
+  "gender": false,
+  "birthday": {
+    "$date": "2002-11-19T17:00:00.000Z"
+  },
+  "groups": [
+    {
+      "$oid": "65df5d8fbd262f5cf9a9f697"
+    }
+  ],
+  "friends": [
+    {
+      "friend_id": {
+        "$oid": "65df83a0f52cda6a46bde971"
+      },
+      "display_name": "Nguyễn Minh Nam",
+      "status": "FRIEND"
+    }
+  ],
+  "created_at": {
+    "$date": "2024-02-27T10:33:56.730Z"
+  },
+  "updated_at": {
+    "$date": "2024-02-29T06:48:41.371Z"
+  },
+  "user_id": {
+    "$oid": "65dcd570e36d2418dacb1b61"
+  },
+  "_class": "vn.edu.iuh.models.UserInfo"
+},
+{
+  "_id": {
+    "$oid": "65df83a0f52cda6a46bde971"
+  },
+  "first_name": "Nguyễn Minh",
+  "last_name": "Nam",
+  "bio": "Newbie Dev",
+  "thumbnail_avatar": "link avatar",
+  "cover_image": "link cover image",
+  "gender": true,
+  "birthday": {
+    "$date": "2002-11-19T17:00:00.000Z"
+  },
+  "groups": [
+    {
+      "$oid": "65df5d8fbd262f5cf9a9f697"
+    }
+  ],
+  "friends": [
+    {
+      "friend_id": {
+        "$oid": "65ddba944f8ab150db6dfa82"
+      },
+      "display_name": "Nguyễn Nữ",
+      "status": "FRIEND"
+    },
+    {
+      "friend_id": {
+        "$oid": "65ddba794f8ab150db6dfa81"
+      },
+      "display_name": "Nguyễn Minh Quân",
+      "status": "PENDING"
+    }
+  ],
+  "created_at": {
+    "$date": "2024-02-27T10:33:29.567Z"
+  },
+  "updated_at": {
+    "$date": "2024-02-29T06:48:41.373Z"
+  },
+  "user_id": {
+    "$oid": "65df8385f52cda6a46bde96f"
+  },
+  "_class": "vn.edu.iuh.models.UserInfo"
+}]
