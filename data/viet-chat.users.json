@@ -1,0 +1,48 @@
+[{
+  "_id": {
+    "$oid": "65dcd570e36d2418dacb1b61"
+  },
+  "phone": "0354927402",
+  "password": "$2a$10$BIOefJyYdD/A/DhBHQSQfuXJUOGChwbW9qSeXi5tl3T0gsZDEVTG.",
+  "role": "USER",
+  "created_at": {
+    "$date": "2024-02-26T18:16:16.785Z"
+  },
+  "updated_at": {
+    "$date": "2024-02-26T18:16:16.785Z"
+  },
+  "status": "ACTIVE",
+  "_class": "vn.edu.iuh.models.User"
+},
+{
+  "_id": {
+    "$oid": "65dcd570e36d2418dacb1b62"
+  },
+  "phone": "0354927403",
+  "password": "$2a$10$ikzsHzTFsPRfXMJGDt5GwumN3VcDjrIDFzL/xzmCi6ulNnuYNZrPy",
+  "role": "USER",
+  "created_at": {
+    "$date": "2024-02-26T18:16:16.874Z"
+  },
+  "updated_at": {
+    "$date": "2024-02-26T18:16:16.874Z"
+  },
+  "status": "ACTIVE",
+  "_class": "vn.edu.iuh.models.User"
+},
+{
+  "_id": {
+    "$oid": "65df8385f52cda6a46bde96f"
+  },
+  "phone": "0354927404",
+  "password": "$2a$10$BIOefJyYdD/A/DhBHQSQfuXJUOGChwbW9qSeXi5tl3T0gsZDEVTG.",
+  "role": "USER",
+  "created_at": {
+    "$date": "2024-02-26T18:16:16.785Z"
+  },
+  "updated_at": {
+    "$date": "2024-02-26T18:16:16.785Z"
+  },
+  "status": "ACTIVE",
+  "_class": "vn.edu.iuh.models.User"
+}]

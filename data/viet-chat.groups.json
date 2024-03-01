@@ -1,0 +1,34 @@
+[{
+  "_id": {
+    "$oid": "65df5d8fbd262f5cf9a9f697"
+  },
+  "name": "Nhom chat 3",
+  "thumbnail_avatar": "link",
+  "members": [
+    {
+      "member_id": {
+        "$oid": "65ddba944f8ab150db6dfa82"
+      },
+      "role": "GROUP_LEADER",
+      "join_method": "Trưởng nhóm"
+    },
+    {
+      "member_id": {
+        "$oid": "65ddba794f8ab150db6dfa81"
+      },
+      "role": "MEMBER",
+      "join_method": "Thêm bởi nhóm trưởng"
+    },
+    {
+      "member_id": {
+        "$oid": "65df83a0f52cda6a46bde971"
+      },
+      "role": "MEMBER",
+      "join_method": "Thêm bởi Nữ"
+    }
+  ],
+  "created_at": {
+    "$date": "2024-02-28T16:21:35.964Z"
+  },
+  "_class": "vn.edu.iuh.models.Group"
+}]
