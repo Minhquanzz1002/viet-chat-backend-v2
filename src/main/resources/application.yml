@@ -12,13 +12,31 @@ server:
   servlet:
     context-path: /api
 
+
 # Swagger configurations
 springdoc:
   api-docs:
     path: /api-docs
+  swagger-ui:
+    path:
 
 twilio:
   accountSID: AC8cb6385a9de41d503b7c432bcd095c69
   authToken: 9db70f2d921fa3110a98f25c63653b9b
   phoneNumberTrial: +16266465296
 
+# Log
+logging:
+  level:
+    org:
+      springframework:
+        data:
+          mongodb:
+            core:
+              MongoTemplate: DEBUG
+
+app:
+  auth:
+    tokenSecret: lNLp8m5m86mRQLgNU7UnhGqfBbNdNYAM45YOFwZmP1w=
+    refreshTokenExpirationMilliseconds: 604800000
+    accessTokenExpirationMilliseconds: 604800000
