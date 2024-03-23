@@ -10,8 +10,8 @@ import lombok.*;
 public class ChatMessage {
     private Status status;
     private String message;
-    private String senderName;
-    private String receiverName;
+    private String sender;
+    private String receiver;
     private String date;
     public enum Status {
         MESSAGE, JOIN, LEAVE

@@ -1,5 +1,7 @@
 # MongoDB configurations
 spring:
+  config:
+    import: optional:application-secret.yml
   data:
     mongodb:
       host: localhost
@@ -7,7 +9,10 @@ spring:
       database: viet-chat
       field-naming-strategy: org.springframework.data.mapping.model.SnakeCaseFieldNamingStrategy
       auto-index-creation: true
-
+  servlet:
+    multipart:
+      max-request-size: 50MB
+      max-file-size: 10MB
 server:
   servlet:
     context-path: /api

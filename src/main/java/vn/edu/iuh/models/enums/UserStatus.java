@@ -4,7 +4,7 @@ import lombok.Getter;
 
 @Getter
 public enum UserStatus {
-    PHONE_UNVERIFIED("Số điện thoại chưa xác thực"),
+    UNVERIFIED("Số điện thoại chưa xác thực"),
     ACTIVE("Đang hoạt động"),
     LOCKED("Tài khoản bị khóa");
 

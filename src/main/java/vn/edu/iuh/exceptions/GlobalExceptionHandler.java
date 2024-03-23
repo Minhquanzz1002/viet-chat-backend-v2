@@ -38,6 +38,18 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .build();
     }
 
+    @ExceptionHandler({FriendshipRelationshipException.class, FileUploadException.class, UserNotInChatException.class})
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponseDTO handleFriendshipRelationshipException(RuntimeException exception) {
+        return ErrorResponseDTO
+                .builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                .detail(exception.getMessage())
+                .build();
+    }
+
     @ExceptionHandler({DataExistsException.class})
     @ResponseStatus(HttpStatus.CONFLICT)
     public ErrorResponseDTO handleDataExistsException(RuntimeException exception) {
@@ -48,6 +60,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .error(HttpStatus.CONFLICT.getReasonPhrase())
                 .detail(exception.getMessage())
                 .build();
+    }
+
+    @ExceptionHandler({OTPMismatchException.class})
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public String handleOTPMismatchException(RuntimeException exception) {
+        return exception.getMessage();
     }
 
     @ExceptionHandler(RuntimeException.class)
