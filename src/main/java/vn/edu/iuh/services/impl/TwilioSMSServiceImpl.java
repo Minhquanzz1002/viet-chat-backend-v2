@@ -28,12 +28,13 @@ public class TwilioSMSServiceImpl implements TwilioSMSService {
     private final UserRepository userRepository;
     private final OTPRepository otpRepository;
     private final JwtUtil jwtUtil;
+
     @Override
     public String sendSMSToVerify(PhoneNumberDTO phoneNumberDTO) {
         String phone = phoneNumberDTO.getPhone();
-        Optional<User> account = userRepository.findByPhone(phone);
-        if (account.isPresent()) {
-            if (account.get().getStatus() == UserStatus.LOCKED) {
+        Optional<User> accountOptional = userRepository.findByPhone(phone);
+        if (accountOptional.isPresent() && accountOptional.get().getStatus() != UserStatus.UNVERIFIED) {
+            if (accountOptional.get().getStatus() == UserStatus.LOCKED) {
                 throw new DataExistsException("Số điện thoại ***" + phone.substring(phone.length() - 3) + " đã bị khóa.");
             }
             throw new DataExistsException("Số điện thoại ***" + phone.substring(phone.length() - 3) + " đã được đăng ký.");
@@ -45,10 +46,10 @@ public class TwilioSMSServiceImpl implements TwilioSMSService {
     }
 
 
-
     @Override
     public ValidateOTPResponseDTO verifyOTP(ValidationOtpRequestDTO validationOtpRequestDTO) {
 //        return twilioSMSRepository.validateOTP(validationOtpRequestDTO.getPhone(), validationOtpRequestDTO.getOtp());
+        ;
         boolean isValid = otpRepository.validateOTP(validationOtpRequestDTO.getPhone(), validationOtpRequestDTO.getOtp());
         if (isValid) {
             Optional<User> userOptional = userRepository.findByPhone(validationOtpRequestDTO.getPhone());
@@ -58,7 +59,7 @@ public class TwilioSMSServiceImpl implements TwilioSMSService {
                     .refreshToken(jwtUtil.generateRefreshToken(new UserPrincipal(user)))
                     .build();
         } else {
-            throw new OTPMismatchException("OTP không chính xác");
+            throw new OTPMismatchException("OTP không chính xác hoặc đã hết hạn");
         }
     }
 

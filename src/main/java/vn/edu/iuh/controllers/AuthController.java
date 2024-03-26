@@ -8,14 +8,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import vn.edu.iuh.dto.LoginRequestDTO;
-import vn.edu.iuh.dto.LoginResponseDTO;
+import vn.edu.iuh.dto.TokenResponseDTO;
 import vn.edu.iuh.dto.RegisterRequestDTO;
-import vn.edu.iuh.exceptions.UnauthorizedException;
-import vn.edu.iuh.models.User;
-import vn.edu.iuh.models.enums.UserStatus;
 import vn.edu.iuh.security.UserPrincipal;
 import vn.edu.iuh.services.AuthService;
-import vn.edu.iuh.services.UserService;
 
 @RestController
 @RequestMapping("/v1/auth")
@@ -32,16 +28,28 @@ public class AuthController {
             """
     )
     @PostMapping("/register")
-    public String register(@RequestBody RegisterRequestDTO registerRequestDTO, @AuthenticationPrincipal UserPrincipal userPrincipal) {
-        if (userPrincipal == null) {
-            throw new UnauthorizedException("Bắt buộc phải có JWT");
-        }
+    public String register(@RequestBody @Valid RegisterRequestDTO registerRequestDTO, @AuthenticationPrincipal UserPrincipal userPrincipal) {
         return authService.register(registerRequestDTO, userPrincipal);
     }
 
-    @Operation(summary = "Xử lý yêu cầu đăng nhập", description = "Đăng nhập và trả về JWT")
+    @Operation(
+            summary = "Xử lý yêu cầu đăng nhập",
+            description = """
+                    Đăng nhập và trả về access (30 phút) và refresh token (14 ngày)
+                    """
+    )
     @PostMapping("/login")
-    public LoginResponseDTO login(@RequestBody @Valid LoginRequestDTO loginRequestDTO) {
+    public TokenResponseDTO login(@RequestBody @Valid LoginRequestDTO loginRequestDTO) {
         return authService.login(loginRequestDTO);
+    }
+
+    @Operation(
+            summary = "Lấy access token mới", description = """
+            Lấy access token mới bằng refresh token
+            """
+    )
+    @PostMapping("/refresh-token")
+    public TokenResponseDTO getAccessToken(@AuthenticationPrincipal UserPrincipal userPrincipal, @RequestHeader("Authorization") String bearerToken) {
+        return authService.getAccessToken(userPrincipal, bearerToken.substring(7));
     }
 }

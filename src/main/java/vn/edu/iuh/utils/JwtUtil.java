@@ -26,6 +26,16 @@ public class JwtUtil {
         return buildToken(userDetails, appProperties.getAuth().getRefreshTokenExpirationMilliseconds());
     }
 
+    public String generateRefreshTokenFromOld(UserDetails userDetails, String oldRefreshToken) {
+        return Jwts
+                .builder()
+                .setExpiration(extractExpiration(oldRefreshToken))
+                .setSubject(userDetails.getUsername())
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .signWith(getSignInKey())
+                .compact();
+    }
+
     private String buildToken(UserDetails userDetails, long expiration) {
         return Jwts
                 .builder()

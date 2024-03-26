@@ -1,16 +1,22 @@
 package vn.edu.iuh.services.impl;
 
 import com.amazonaws.AmazonClientException;
+import com.amazonaws.HttpMethod;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.PutObjectResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import vn.edu.iuh.dto.enums.UploadType;
 
 import java.io.IOException;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Date;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -31,6 +37,24 @@ public class S3Service {
             log.error(e.getMessage());
             throw new AmazonClientException("Error occurred while uploading to s3");
         }
+    }
+
+    @Async
+    public String save(String filename, UploadType type, String id) {
+        String newFilename;
+        if (type == UploadType.MESSAGE) {
+            newFilename = type.getLink() + UUID.randomUUID() + "/" + filename;
+        } else if (type == UploadType.AVATAR) {
+            newFilename = type.getLink() + id + filename.substring(filename.lastIndexOf("."));
+        } else {
+            newFilename = type.getLink() + UUID.randomUUID() + filename.substring(filename.lastIndexOf("."));
+        }
+        return generateUrl(newFilename);
+    }
+
+    private String generateUrl(String filename) {
+        Instant expirationTime = Instant.now().plus(Duration.ofHours(24));
+        return s3Client.generatePresignedUrl(bucketName, filename, Date.from(expirationTime), HttpMethod.PUT).toString();
     }
 
     private ObjectMetadata getMetaData(MultipartFile file) {

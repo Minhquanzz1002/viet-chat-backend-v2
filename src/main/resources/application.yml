@@ -4,11 +4,10 @@ spring:
     import: optional:application-secret.yml
   data:
     mongodb:
-      host: localhost
-      port: 27017
       database: viet-chat
       field-naming-strategy: org.springframework.data.mapping.model.SnakeCaseFieldNamingStrategy
       auto-index-creation: true
+      uri: mongodb+srv://root:root@cluster0.idirp.mongodb.net/
   servlet:
     multipart:
       max-request-size: 50MB
@@ -43,5 +42,5 @@ logging:
 app:
   auth:
     tokenSecret: lNLp8m5m86mRQLgNU7UnhGqfBbNdNYAM45YOFwZmP1w=
-    refreshTokenExpirationMilliseconds: 604800000
-    accessTokenExpirationMilliseconds: 604800000
+    refreshTokenExpirationMilliseconds: 1209600000
+    accessTokenExpirationMilliseconds: 1800000

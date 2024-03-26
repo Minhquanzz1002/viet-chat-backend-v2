@@ -38,6 +38,10 @@ public class Chat {
         this.messages = messages;
     }
 
+    public Chat(boolean isGroup) {
+        this.isGroup = isGroup;
+    }
+
     public Chat(String id) {
         this.id = id;
     }
