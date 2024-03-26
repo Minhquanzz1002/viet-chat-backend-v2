@@ -1,5 +1,6 @@
 package vn.edu.iuh.models;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import org.springframework.data.mongodb.core.mapping.DocumentReference;
 import org.springframework.data.mongodb.core.mapping.Field;
@@ -16,4 +17,13 @@ public class Friend {
     private UserInfo user;
     private String displayName;
     private FriendStatus status;
+    @JsonProperty("isBestFriend")
+    @Field("is_best_friend")
+    private boolean isBestFriend = false;
+
+    public Friend(UserInfo user, String displayName, FriendStatus status) {
+        this.user = user;
+        this.displayName = displayName;
+        this.status = status;
+    }
 }

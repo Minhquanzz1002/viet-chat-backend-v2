@@ -35,7 +35,7 @@ public class SecurityConfig {
             "/actuator/**",
             "/swagger-ui/**",
             "/api-docs/**",
-            "/v1/auth/**",
+            "/v1/auth/login",
             "/v1/verification/otp/sms/**",
             "/v1/users/profile/{phone}",
             "/ws/**"

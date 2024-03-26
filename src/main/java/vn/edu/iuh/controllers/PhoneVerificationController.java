@@ -5,12 +5,12 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import vn.edu.iuh.dto.PhoneNumberDTO;
+import vn.edu.iuh.dto.ValidateOTPResponseDTO;
 import vn.edu.iuh.dto.ValidationOtpRequestDTO;
 import vn.edu.iuh.services.TwilioSMSService;
 
@@ -20,29 +20,46 @@ import vn.edu.iuh.services.TwilioSMSService;
 
 @RestController
 @RequestMapping("/v1/verification/otp/sms")
-@Tag(name = "Phone verification", description = "Xử lý các yêu cầu liên quan đến OTP")
+@Tag(name = "Phone verification", description = "Xử lý các yêu cầu liên quan đến OTP. Dùng xác nhận số điện thoại để đăng ký tài khoản")
 @RequiredArgsConstructor
 @Slf4j
 public class PhoneVerificationController {
     private final TwilioSMSService twilioSMSService;
 
     @PostMapping("/send")
-    @Operation(summary = "Gửi mã OTP tới số điện thoại", description = "Gửi mã OTP để xác nhận số điện thoại")
-    public ResponseEntity<String> sendOTP(@Valid @RequestBody PhoneNumberDTO phoneNumberDTO) {
-        if (twilioSMSService.sendSMSToVerify(phoneNumberDTO)) {
-            return ResponseEntity.ok("Gửi OTP thành công");
-        }else {
-            return ResponseEntity.badRequest().body("Gửi OTP không thành công.");
-        }
+    @Operation(
+            summary = "Gửi mã OTP tới số điện thoại. Dùng xác nhận số điện thoại để đăng ký tài khoản",
+            description = """
+                    Gửi mã OTP tới số điện thoại để đăng ký tài khoản. Thời hạn của OTP là 5 phút.
+                    
+                    Lưu ý: Số điện thoại phải là 10 và các đầu số phải thuộc các nhà mạng:
+                    - Viettel (032, 033, 034, 035, 036, 037, 038, 039)
+                    - Vinaphone (081, 082, 083, 084, 085, 088)
+                    - MobiFone (070, 076, 077, 078, 079)
+                    - Vietnamobile (052, 056, 058, 092)
+                    - Gmobile (059, 099)
+                    """
+    )
+    public String sendOTP(@Valid @RequestBody PhoneNumberDTO phoneNumberDTO) {
+        return twilioSMSService.sendSMSToVerify(phoneNumberDTO);
     }
 
     @PostMapping("/validate")
-    @Operation(summary = "Xác thực mã OTP", description = "")
-    public ResponseEntity<String> verifyOTP(@Valid @RequestBody ValidationOtpRequestDTO validationOtpRequestDTO) {
-        if (twilioSMSService.verifyOTP(validationOtpRequestDTO)) {
-            return ResponseEntity.ok("Valid OTP please proceed with your transaction!");
-        }else {
-            return ResponseEntity.badRequest().body("Invalid otp please retry!");
-        }
+    @Operation(
+            summary = "Xác thực mã OTP",
+            description = """
+                    Nếu xác thực đúng thì trả về JWT và tạo ra tài khoản trong database với status là UNVERIFIED
+                    
+                    Gọi tới v1/auth/register để cập nhật lại các thông tin cơ bản
+                    
+                    Lưu ý: Số điện thoại phải là 10 và các đầu số phải thuộc các nhà mạng:
+                    - Viettel (032, 033, 034, 035, 036, 037, 038, 039)
+                    - Vinaphone (081, 082, 083, 084, 085, 088)
+                    - MobiFone (070, 076, 077, 078, 079)
+                    - Vietnamobile (052, 056, 058, 092)
+                    - Gmobile (059, 099)
+                    """)
+    public ValidateOTPResponseDTO verifyOTP(@Valid @RequestBody ValidationOtpRequestDTO validationOtpRequestDTO) {
+        return twilioSMSService.verifyOTP(validationOtpRequestDTO);
     }
 }

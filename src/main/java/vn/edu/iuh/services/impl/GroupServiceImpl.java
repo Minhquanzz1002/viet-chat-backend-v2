@@ -9,11 +9,9 @@ import org.springframework.stereotype.Service;
 import vn.edu.iuh.dto.GroupRequestCreateDTO;
 import vn.edu.iuh.exceptions.DataNotFoundException;
 import vn.edu.iuh.exceptions.UnauthorizedException;
-import vn.edu.iuh.models.Group;
-import vn.edu.iuh.models.GroupMember;
-import vn.edu.iuh.models.User;
-import vn.edu.iuh.models.UserInfo;
+import vn.edu.iuh.models.*;
 import vn.edu.iuh.models.enums.GroupMemberRole;
+import vn.edu.iuh.repositories.ChatRepository;
 import vn.edu.iuh.repositories.GroupRepository;
 import vn.edu.iuh.repositories.UserInfoRepository;
 import vn.edu.iuh.security.UserPrincipal;
@@ -27,6 +25,7 @@ import java.util.List;
 public class GroupServiceImpl implements GroupService {
     private final GroupRepository groupRepository;
     private final UserInfoRepository userInfoRepository;
+    private final ChatRepository chatRepository;
     @Override
     public Group create(GroupRequestCreateDTO groupRequestCreateDTO, UserPrincipal userPrincipal) {
         Group group = Group
@@ -49,7 +48,7 @@ public class GroupServiceImpl implements GroupService {
             userInfoMember.getGroups().add(insertedGroup);
             userInfoRepository.save(userInfoMember);
         });
-
+        chatRepository.save(new Chat(true));
         return groupRepository.save(insertedGroup);
     }
 

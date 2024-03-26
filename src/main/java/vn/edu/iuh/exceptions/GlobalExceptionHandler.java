@@ -1,19 +1,38 @@
 package vn.edu.iuh.exceptions;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import vn.edu.iuh.dto.ErrorResponseDTO;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
+
+    @Override
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+        ErrorResponseDTO errorResponseDTO = ErrorResponseDTO
+                .builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                .detail(Objects.requireNonNull(ex.getBindingResult().getFieldError()).getDefaultMessage())
+                .build();
+        return ResponseEntity.badRequest().body(errorResponseDTO);
+    }
+
     @ExceptionHandler(value = {UnauthorizedException.class, UsernameNotFoundException.class})
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public ErrorResponseDTO handleBadCredentialsException(RuntimeException exception) {
@@ -38,6 +57,18 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .build();
     }
 
+    @ExceptionHandler({FriendshipRelationshipException.class, FileUploadException.class, UserNotInChatException.class})
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponseDTO handleFriendshipRelationshipException(RuntimeException exception) {
+        return ErrorResponseDTO
+                .builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                .detail(exception.getMessage())
+                .build();
+    }
+
     @ExceptionHandler({DataExistsException.class})
     @ResponseStatus(HttpStatus.CONFLICT)
     public ErrorResponseDTO handleDataExistsException(RuntimeException exception) {
@@ -48,6 +79,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .error(HttpStatus.CONFLICT.getReasonPhrase())
                 .detail(exception.getMessage())
                 .build();
+    }
+
+    @ExceptionHandler({OTPMismatchException.class})
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public String handleOTPMismatchException(RuntimeException exception) {
+        return exception.getMessage();
     }
 
     @ExceptionHandler(RuntimeException.class)

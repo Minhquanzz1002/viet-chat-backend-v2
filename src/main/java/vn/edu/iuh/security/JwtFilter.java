@@ -13,11 +13,14 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
+import vn.edu.iuh.config.SecurityConfig;
 import vn.edu.iuh.utils.JwtUtil;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 @Component
 @RequiredArgsConstructor
@@ -27,6 +30,7 @@ public class JwtFilter extends OncePerRequestFilter {
     private final UserDetailsService userDetailsService;
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        log.info(request.getRequestURI());
         log.info("Handling incoming request: {}, {}", request.getRequestURI(), request.getMethod());
         final String bearerToken = request.getHeader(HttpHeaders.AUTHORIZATION);
         if (!StringUtils.hasText(bearerToken) || !bearerToken.startsWith("Bearer ")) {
@@ -44,5 +48,11 @@ public class JwtFilter extends OncePerRequestFilter {
             SecurityContextHolder.getContext().setAuthentication(authToken);
         }
         filterChain.doFilter(request, response);
+    }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        log.info("Omitting request from filtering");
+        return Arrays.stream(SecurityConfig.AUTH_WHITELIST).anyMatch(e -> new AntPathMatcher().match(e, request.getServletPath()));
     }
 }

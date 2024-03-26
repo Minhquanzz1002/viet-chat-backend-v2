@@ -14,18 +14,23 @@ public interface UserInfoService {
     UserInfo createUserInfo(String phone, UserInfoDTO userInfoDTO);
 
     UserInfo findUserInfo(String phone);
+    UserInfo findUserInfoByUserId(String userId);
 
     List<GroupDTO> findAllGroupToUserInfoByUserId(String userId);
 
     UserInfo updateUserInfo(String phone, UserInfoDTO userInfoDTO);
 
     // friends
+    Friend addFriendByUserId(FriendRequestDTO friendRequestDTO, UserPrincipal userPrincipal);
 
-    List<Friend> addFriendToUserInfo(FriendRequestDTO friendRequestDTO, UserPrincipal userPrincipal);
+    Friend addFriendByPhone(PhoneNumberDTO phoneNumberDTO, UserPrincipal userPrincipal);
 
-    List<Friend> addFriendToUserInfoByPhone(PhoneNumberDTO phoneNumberDTO, UserPrincipal userPrincipal);
+    Friend blockFriend(FriendRequestDTO friendRequestDTO, UserPrincipal userPrincipal);
+    Friend unblockFriend(FriendRequestDTO friendRequestDTO, UserPrincipal userPrincipal);
+    Friend deleteFriend(String friendId, UserPrincipal userPrincipal);
+    Friend acceptFriendRequest(FriendRequestDTO friendRequestDTO, UserPrincipal userPrincipal);
+    Friend declineFriendRequest(FriendRequestDTO friendRequestDTO, UserPrincipal userPrincipal);
 
-    List<Friend> blockFriend(FriendRequestDTO friendRequestDTO, UserPrincipal userPrincipal);
-
-    List<Friend> acceptFriendRequest(FriendRequestDTO friendRequestDTO, UserPrincipal userPrincipal);
+    void updateAvatar(UserPrincipal userPrincipal, String linkAvatar);
+    void updateCoverImage(UserPrincipal userPrincipal, String linkCoverImage);
 }

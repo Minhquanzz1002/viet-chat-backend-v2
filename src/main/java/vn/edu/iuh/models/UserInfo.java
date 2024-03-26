@@ -54,6 +54,10 @@ public class UserInfo {
     @DocumentReference
     private User user;
 
+    @ToString.Exclude
+    @JsonIgnore
+    private List<UserChat> chats = new ArrayList<>();
+
     public UserInfo(String firstName, String lastName, String bio, String thumbnailAvatar, String coverImage, boolean gender, LocalDate birthday, User user) {
         this.firstName = firstName;
         this.lastName = lastName;
@@ -63,5 +67,17 @@ public class UserInfo {
         this.gender = gender;
         this.birthday = birthday;
         this.user = user;
+    }
+
+    public UserInfo(String firstName, String lastName, boolean gender, LocalDate birthday, User user) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.gender = gender;
+        this.birthday = birthday;
+        this.user = user;
+    }
+
+    public UserInfo(String id) {
+        this.id = id;
     }
 }
