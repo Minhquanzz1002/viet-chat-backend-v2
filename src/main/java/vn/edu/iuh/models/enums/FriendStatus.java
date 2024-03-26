@@ -10,6 +10,7 @@ public enum FriendStatus {
     FRIEND_REQUEST("Mời kết bạn"),
     PENDING("Chờ chấp nhận"),
     BLOCK("Chặn"),
-    BLOCKED("Bị chặn");
+    BLOCKED("Bị chặn"),
+    STRANGER("Người lạ");
     private final String description;
 }
