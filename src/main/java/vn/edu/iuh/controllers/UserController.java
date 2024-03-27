@@ -110,7 +110,8 @@ public class UserController {
             description = "Tìm kiếm người dùng bằng số điện thoại. Dùng cho phần tìm kiếm để kết bạn"
     )
     @GetMapping("/profile/{phone}")
-    public UserInfo getUserInfoByPhone(@PathVariable String phone) {
+    public UserInfo getUserInfoByPhone(@PathVariable String phone, @RequestHeader("User-Agent") String agent) {
+        log.info(agent);
         return userInfoService.findUserInfo(phone);
     }
 

@@ -1,5 +1,5 @@
 package vn.edu.iuh.models.enums;
 
 public enum RefreshTokenStatus {
-    ACTIVE, LOGOUT
+    ACTIVE, LOGOUT, DISABLE
 }

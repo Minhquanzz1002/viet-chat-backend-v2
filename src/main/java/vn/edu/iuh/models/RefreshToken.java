@@ -11,9 +11,6 @@ import org.springframework.data.mongodb.core.mapping.DocumentReference;
 import org.springframework.data.mongodb.core.mapping.Field;
 import vn.edu.iuh.models.enums.RefreshTokenStatus;
 
-import java.time.LocalDateTime;
-import java.util.UUID;
-
 @Document("refresh_tokens")
 @AllArgsConstructor
 @NoArgsConstructor
@@ -27,7 +24,6 @@ public class RefreshToken {
     @Field("user_id")
     @DocumentReference
     private User user;
-    private LocalDateTime expiryDate;
     private RefreshTokenStatus status;
 
 }

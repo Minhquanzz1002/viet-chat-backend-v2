@@ -39,7 +39,7 @@ public class JwtFilter extends OncePerRequestFilter {
         }
         final String token = bearerToken.substring(7);
         log.info("JWT: {}", token);
-        if (StringUtils.hasText(token) && !jwtUtil.isTokenExpired(token)) {
+        if (StringUtils.hasText(token) && !jwtUtil.isTokenExpired(token) && !jwtUtil.isRefreshToken(token)) {
             String username = jwtUtil.extractUsername(token);
             log.info("Phone number: {}", username);
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);

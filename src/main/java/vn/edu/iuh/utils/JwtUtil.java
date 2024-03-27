@@ -9,9 +9,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import vn.edu.iuh.config.AppProperties;
+import vn.edu.iuh.security.UserPrincipal;
 
 import java.security.Key;
 import java.util.Date;
+import java.util.Objects;
 import java.util.function.Function;
 
 @Component
@@ -20,15 +22,16 @@ import java.util.function.Function;
 public class JwtUtil {
     private final AppProperties appProperties;
     public String generateAccessToken(UserDetails userDetails) {
-        return buildToken(userDetails, appProperties.getAuth().getAccessTokenExpirationMilliseconds());
+        return buildToken(userDetails, appProperties.getAuth().getAccessTokenExpirationMilliseconds(), "access");
     }
     public String generateRefreshToken(UserDetails userDetails) {
-        return buildToken(userDetails, appProperties.getAuth().getRefreshTokenExpirationMilliseconds());
+        return buildToken(userDetails, appProperties.getAuth().getRefreshTokenExpirationMilliseconds(), "refresh");
     }
 
     public String generateRefreshTokenFromOld(UserDetails userDetails, String oldRefreshToken) {
         return Jwts
                 .builder()
+                .setId(((UserPrincipal) userDetails).getId())
                 .setExpiration(extractExpiration(oldRefreshToken))
                 .setSubject(userDetails.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
@@ -36,12 +39,13 @@ public class JwtUtil {
                 .compact();
     }
 
-    private String buildToken(UserDetails userDetails, long expiration) {
+    private String buildToken(UserDetails userDetails, long expiration, String type) {
         return Jwts
                 .builder()
                 .setExpiration(new Date(System.currentTimeMillis() + expiration))
                 .setSubject(userDetails.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
+                .claim("type", type)
                 .signWith(getSignInKey())
                 .compact();
     }
@@ -82,4 +86,12 @@ public class JwtUtil {
         return extractClaim(token, Claims::getExpiration);
     }
 
+    public boolean isRefreshToken(String token) {
+        return Objects.equals(extractType(token), "refresh");
+    }
+
+    private String extractType(String token) {
+        final Claims claims = extractAllClaims(token);
+        return (String) claims.get("type");
+    }
 }
