@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import vn.edu.iuh.dto.LoginRequestDTO;
+import vn.edu.iuh.dto.RefreshTokenDTO;
 import vn.edu.iuh.dto.TokenResponseDTO;
 import vn.edu.iuh.dto.RegisterRequestDTO;
 import vn.edu.iuh.security.UserPrincipal;
@@ -49,7 +50,27 @@ public class AuthController {
             """
     )
     @PostMapping("/refresh-token")
-    public TokenResponseDTO getAccessToken(@AuthenticationPrincipal UserPrincipal userPrincipal, @RequestHeader("Authorization") String bearerToken) {
-        return authService.getAccessToken(userPrincipal, bearerToken.substring(7));
+    public TokenResponseDTO getAccessToken(@RequestBody @Valid RefreshTokenDTO refreshTokenDTO) {
+        return authService.getAccessToken(refreshTokenDTO.getToken());
+    }
+
+    @Operation(
+            summary = "Đăng xuất trên tất cả thiết bị khác", description = """
+           Xóa toàn bị refresh token đang ACTIVE trừ token của thiết bị hiện tại
+            """
+    )
+    @PostMapping("/logout/all")
+    public String logoutAll(@RequestBody @Valid RefreshTokenDTO refreshTokenDTO) {
+        return authService.logoutAll(refreshTokenDTO.getToken());
+    }
+
+    @Operation(
+            summary = "Đăng xuất khỏi thiết bị hiện tại", description = """
+           Xóa refresh token của thiết bị hiện tại
+            """
+    )
+    @PostMapping("/logout")
+    public String logout(@RequestBody @Valid RefreshTokenDTO refreshTokenDTO) {
+        return authService.logout(refreshTokenDTO.getToken());
     }
 }
