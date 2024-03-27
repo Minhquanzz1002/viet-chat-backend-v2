@@ -35,7 +35,10 @@ public class SecurityConfig {
             "/actuator/**",
             "/swagger-ui/**",
             "/api-docs/**",
+            "/v1/auth/logout/all",
+            "/v1/auth/logout",
             "/v1/auth/login",
+            "/v1/auth/refresh-token",
             "/v1/verification/otp/sms/**",
             "/v1/users/profile/{phone}",
             "/ws/**"

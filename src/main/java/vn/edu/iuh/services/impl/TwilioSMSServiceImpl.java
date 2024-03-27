@@ -8,10 +8,13 @@ import vn.edu.iuh.dto.ValidateOTPResponseDTO;
 import vn.edu.iuh.dto.ValidationOtpRequestDTO;
 import vn.edu.iuh.exceptions.DataExistsException;
 import vn.edu.iuh.exceptions.OTPMismatchException;
+import vn.edu.iuh.models.RefreshToken;
 import vn.edu.iuh.models.User;
+import vn.edu.iuh.models.enums.RefreshTokenStatus;
 import vn.edu.iuh.models.enums.RoleType;
 import vn.edu.iuh.models.enums.UserStatus;
 import vn.edu.iuh.repositories.OTPRepository;
+import vn.edu.iuh.repositories.RefreshTokenRepository;
 import vn.edu.iuh.repositories.TwilioSMSRepository;
 import vn.edu.iuh.repositories.UserRepository;
 import vn.edu.iuh.security.UserPrincipal;
@@ -25,6 +28,7 @@ import java.util.Optional;
 @Slf4j
 public class TwilioSMSServiceImpl implements TwilioSMSService {
     private final TwilioSMSRepository twilioSMSRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
     private final UserRepository userRepository;
     private final OTPRepository otpRepository;
     private final JwtUtil jwtUtil;
@@ -54,9 +58,16 @@ public class TwilioSMSServiceImpl implements TwilioSMSService {
         if (isValid) {
             Optional<User> userOptional = userRepository.findByPhone(validationOtpRequestDTO.getPhone());
             User user = userOptional.orElseGet(() -> userRepository.save(new User(validationOtpRequestDTO.getPhone(), validationOtpRequestDTO.getPhone(), UserStatus.UNVERIFIED, RoleType.USER)));
+            RefreshToken refreshToken = RefreshToken
+                    .builder()
+                    .token(jwtUtil.generateRefreshToken(new UserPrincipal(user)))
+                    .status(RefreshTokenStatus.ACTIVE)
+                    .user(user)
+                    .build();
+            refreshTokenRepository.save(refreshToken);
             return ValidateOTPResponseDTO.builder()
                     .accessToken(jwtUtil.generateAccessToken(new UserPrincipal(user)))
-                    .refreshToken(jwtUtil.generateRefreshToken(new UserPrincipal(user)))
+                    .refreshToken(refreshToken.getToken())
                     .build();
         } else {
             throw new OTPMismatchException("OTP không chính xác hoặc đã hết hạn");
