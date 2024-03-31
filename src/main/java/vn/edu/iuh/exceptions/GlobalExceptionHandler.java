@@ -22,6 +22,19 @@ import java.util.Objects;
 @Slf4j
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
+
+    @ExceptionHandler(value = {ExpiredJwtException.class})
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ErrorResponseDTO handleBadCredentialsException(ExpiredJwtException exception) {
+        return ErrorResponseDTO
+                .builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.UNAUTHORIZED.value())
+                .error(HttpStatus.UNAUTHORIZED.getReasonPhrase())
+                .detail("Token của bạn đã hết hạn lúc " + exception.getClaims().getExpiration())
+                .build();
+    }
+
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
         ErrorResponseDTO errorResponseDTO = ErrorResponseDTO

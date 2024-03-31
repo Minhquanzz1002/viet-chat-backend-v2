@@ -10,6 +10,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import vn.edu.iuh.config.AppProperties;
 import vn.edu.iuh.security.UserPrincipal;
+import vn.edu.iuh.utils.enums.JwtType;
 
 import java.security.Key;
 import java.util.Date;
@@ -22,10 +23,14 @@ import java.util.function.Function;
 public class JwtUtil {
     private final AppProperties appProperties;
     public String generateAccessToken(UserDetails userDetails) {
-        return buildToken(userDetails, appProperties.getAuth().getAccessTokenExpirationMilliseconds(), "access");
+        return buildToken(userDetails, appProperties.getAuth().getAccessTokenExpirationMilliseconds(), JwtType.ACCESS_TOKEN);
     }
     public String generateRefreshToken(UserDetails userDetails) {
-        return buildToken(userDetails, appProperties.getAuth().getRefreshTokenExpirationMilliseconds(), "refresh");
+        return buildToken(userDetails, appProperties.getAuth().getRefreshTokenExpirationMilliseconds(), JwtType.REFRESH_TOKEN);
+    }
+
+    public String generateResetToken(UserDetails userDetails) {
+        return buildToken(userDetails, appProperties.getAuth().getResetTokenExpirationMilliseconds(), JwtType.RESET_TOKEN);
     }
 
     public String generateRefreshTokenFromOld(UserDetails userDetails, String oldRefreshToken) {
@@ -35,11 +40,12 @@ public class JwtUtil {
                 .setExpiration(extractExpiration(oldRefreshToken))
                 .setSubject(userDetails.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
+                .claim("type", JwtType.REFRESH_TOKEN)
                 .signWith(getSignInKey())
                 .compact();
     }
 
-    private String buildToken(UserDetails userDetails, long expiration, String type) {
+    private String buildToken(UserDetails userDetails, long expiration, JwtType type) {
         return Jwts
                 .builder()
                 .setExpiration(new Date(System.currentTimeMillis() + expiration))
@@ -50,13 +56,12 @@ public class JwtUtil {
                 .compact();
     }
 
-    private Key getSignInKey() {
-        byte[] bytes = Decoders.BASE64.decode(appProperties.getAuth().getTokenSecret());
-        return Keys.hmacShaKeyFor(bytes);
-    }
-
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
+    }
+    public JwtType extractTokenType(String token) {
+        final Claims claims = extractAllClaims(token);
+        return JwtType.valueOf((String) claims.get("type"));
     }
 
     public <T> T extractClaim(String token, Function<Claims, T> claimsFunction) {
@@ -86,12 +91,8 @@ public class JwtUtil {
         return extractClaim(token, Claims::getExpiration);
     }
 
-    public boolean isRefreshToken(String token) {
-        return Objects.equals(extractType(token), "refresh");
-    }
-
-    private String extractType(String token) {
-        final Claims claims = extractAllClaims(token);
-        return (String) claims.get("type");
+    private Key getSignInKey() {
+        byte[] bytes = Decoders.BASE64.decode(appProperties.getAuth().getTokenSecret());
+        return Keys.hmacShaKeyFor(bytes);
     }
 }

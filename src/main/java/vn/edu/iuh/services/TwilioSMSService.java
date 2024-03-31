@@ -1,10 +1,10 @@
 package vn.edu.iuh.services;
 
 import vn.edu.iuh.dto.PhoneNumberDTO;
-import vn.edu.iuh.dto.ValidateOTPResponseDTO;
-import vn.edu.iuh.dto.ValidationOtpRequestDTO;
+import vn.edu.iuh.dto.OTPResponseDTO;
+import vn.edu.iuh.dto.OTPRequestDTO;
 
 public interface TwilioSMSService {
     String sendSMSToVerify(PhoneNumberDTO phoneNumberDTO);
-    ValidateOTPResponseDTO verifyOTP(ValidationOtpRequestDTO validationOtpRequestDTO);
+    OTPResponseDTO verifyOTP(OTPRequestDTO otpRequestDTO);
 }

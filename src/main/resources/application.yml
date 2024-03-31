@@ -44,3 +44,4 @@ app:
     tokenSecret: lNLp8m5m86mRQLgNU7UnhGqfBbNdNYAM45YOFwZmP1w=
     refreshTokenExpirationMilliseconds: 1209600000
     accessTokenExpirationMilliseconds: 1800000
+    resetTokenExpirationMilliseconds: 300000
