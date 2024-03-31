@@ -17,5 +17,6 @@ public class AppProperties {
         private String tokenSecret;
         private long refreshTokenExpirationMilliseconds;
         private long accessTokenExpirationMilliseconds;
+        private long resetTokenExpirationMilliseconds;
     }
 }

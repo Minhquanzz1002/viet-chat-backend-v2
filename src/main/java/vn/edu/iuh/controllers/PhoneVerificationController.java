@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import vn.edu.iuh.dto.PhoneNumberDTO;
-import vn.edu.iuh.dto.ValidateOTPResponseDTO;
-import vn.edu.iuh.dto.ValidationOtpRequestDTO;
+import vn.edu.iuh.dto.OTPResponseDTO;
+import vn.edu.iuh.dto.OTPRequestDTO;
 import vn.edu.iuh.services.TwilioSMSService;
 
 /**
@@ -59,7 +59,7 @@ public class PhoneVerificationController {
                     - Vietnamobile (052, 056, 058, 092)
                     - Gmobile (059, 099)
                     """)
-    public ValidateOTPResponseDTO verifyOTP(@Valid @RequestBody ValidationOtpRequestDTO validationOtpRequestDTO) {
-        return twilioSMSService.verifyOTP(validationOtpRequestDTO);
+    public OTPResponseDTO verifyOTP(@Valid @RequestBody OTPRequestDTO otpRequestDTO) {
+        return twilioSMSService.verifyOTP(otpRequestDTO);
     }
 }

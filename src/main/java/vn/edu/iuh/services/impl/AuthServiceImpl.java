@@ -1,30 +1,35 @@
 package vn.edu.iuh.services.impl;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import vn.edu.iuh.dto.LoginRequestDTO;
-import vn.edu.iuh.dto.TokenResponseDTO;
 import vn.edu.iuh.dto.RegisterRequestDTO;
+import vn.edu.iuh.dto.ResetTokenDTO;
+import vn.edu.iuh.dto.TokenResponseDTO;
 import vn.edu.iuh.exceptions.DataExistsException;
 import vn.edu.iuh.exceptions.DataNotFoundException;
+import vn.edu.iuh.exceptions.OTPMismatchException;
 import vn.edu.iuh.exceptions.UnauthorizedException;
 import vn.edu.iuh.models.RefreshToken;
 import vn.edu.iuh.models.User;
 import vn.edu.iuh.models.UserInfo;
 import vn.edu.iuh.models.enums.RefreshTokenStatus;
 import vn.edu.iuh.models.enums.UserStatus;
+import vn.edu.iuh.repositories.OTPRepository;
 import vn.edu.iuh.repositories.RefreshTokenRepository;
 import vn.edu.iuh.repositories.UserInfoRepository;
 import vn.edu.iuh.repositories.UserRepository;
 import vn.edu.iuh.security.UserPrincipal;
 import vn.edu.iuh.services.AuthService;
 import vn.edu.iuh.utils.JwtUtil;
+import vn.edu.iuh.utils.enums.JwtType;
 
 import java.util.List;
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
@@ -32,6 +37,7 @@ public class AuthServiceImpl implements AuthService {
     private final UserInfoRepository userInfoRepository;
     private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordEncoder passwordEncoder;
+    private final OTPRepository otpRepository;
     private final JwtUtil jwtUtil;
 
     @Override
@@ -85,7 +91,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public TokenResponseDTO getAccessToken(String oldRefreshToken) {
-        if (!jwtUtil.isTokenExpired(oldRefreshToken) && jwtUtil.isRefreshToken(oldRefreshToken)) {
+        if (!jwtUtil.isTokenExpired(oldRefreshToken) && jwtUtil.extractTokenType(oldRefreshToken).equals(JwtType.REFRESH_TOKEN)) {
             RefreshToken refreshToken = refreshTokenRepository.findByToken(oldRefreshToken).orElseThrow(() -> new BadCredentialsException("Token không tìm thấy hoặc đã hết hạn. Hãy đăng nhập lại để lấy token mới"));
             if (refreshToken.getStatus() != RefreshTokenStatus.ACTIVE) {
                 throw new BadCredentialsException("Token đã hết hạn. Hãy đăng nhập lại để lấy token mới");
@@ -107,14 +113,13 @@ public class AuthServiceImpl implements AuthService {
                     .refreshToken(refreshToken.getToken())
                     .accessToken(jwtUtil.generateAccessToken(userPrincipal))
                     .build();
-        } else {
-            throw new BadCredentialsException("Token không hợp lệ hoặc đã hết hạn. Hãy đăng nhập lại để lấy token mới");
         }
+        throw new BadCredentialsException("Token không hợp lệ hoặc đã hết hạn. Hãy đăng nhập lại để lấy token mới");
     }
 
     @Override
     public String logout(String token) {
-        if (!jwtUtil.isTokenExpired(token) && jwtUtil.isRefreshToken(token)) {
+        if (!jwtUtil.isTokenExpired(token) && jwtUtil.extractTokenType(token).equals(JwtType.REFRESH_TOKEN)) {
             RefreshToken refreshToken = refreshTokenRepository.findByToken(token).orElseThrow(() -> new BadCredentialsException("Token không tìm thấy hoặc đã hết hạn. Hãy đăng nhập lại để lấy token mới"));
             if (refreshToken.getStatus() != RefreshTokenStatus.ACTIVE) {
                 throw new BadCredentialsException("Token đã hết hạn. Hãy đăng nhập lại để lấy token mới");
@@ -130,14 +135,13 @@ public class AuthServiceImpl implements AuthService {
             refreshToken.setStatus(RefreshTokenStatus.LOGOUT);
             refreshTokenRepository.save(refreshToken);
             return "Đăng xuất thành công";
-        } else {
-            throw new BadCredentialsException("Token không hợp lệ hoặc đã hết hạn. Hãy đăng nhập lại để lấy token mới");
         }
+        throw new BadCredentialsException("Token không hợp lệ hoặc đã hết hạn. Hãy đăng nhập lại để lấy token mới");
     }
 
     @Override
     public String logoutAll(String token) {
-        if (!jwtUtil.isTokenExpired(token) && jwtUtil.isRefreshToken(token)) {
+        if (!jwtUtil.isTokenExpired(token) && jwtUtil.extractTokenType(token).equals(JwtType.REFRESH_TOKEN)) {
             RefreshToken refreshToken = refreshTokenRepository.findByToken(token).orElseThrow(() -> new BadCredentialsException("Token không tìm thấy hoặc đã hết hạn. Hãy đăng nhập lại để lấy token mới"));
             if (refreshToken.getStatus() != RefreshTokenStatus.ACTIVE) {
                 throw new BadCredentialsException("Token đã hết hạn. Hãy đăng nhập lại để lấy token mới");
@@ -158,8 +162,44 @@ public class AuthServiceImpl implements AuthService {
             });
 
             return "Đăng xuất trên các thiết bị khác thành công";
-        } else {
-            throw new BadCredentialsException("Token không hợp lệ hoặc đã hết hạn. Hãy đăng nhập lại để lấy token mới");
         }
+        throw new BadCredentialsException("Token không hợp lệ hoặc đã hết hạn. Hãy đăng nhập lại để lấy token mới");
+    }
+
+    @Override
+    public String forgotPassword(String phone) {
+        String phoneSuffix = phone.substring(phone.length() - 3);
+        User user = userRepository.findByPhone(phone).orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy tài khoản có số điện thoại là ***" + phoneSuffix));
+        if (user.getStatus() == UserStatus.LOCKED) {
+            throw new DataExistsException("Tài khoản ***" + phoneSuffix + " đã bị khóa.");
+        }
+        if (user.getStatus() != UserStatus.ACTIVE) {
+            throw new DataExistsException("Tài khoản ***" + phoneSuffix + " không sẵn sàng.");
+        }
+        String otp = otpRepository.generateOTP(phone);
+        log.info("Mã OTP để reset password của số điện thoại {} bạn là {}", phone, otp);
+        return "Gửi OTP thành công. Hãy xác thực để tiếp tục";
+    }
+
+    @Override
+    public ResetTokenDTO validateResetPassword(String phone, String otp) {
+        boolean isValid = otpRepository.validateOTP(phone, otp);
+        if (isValid) {
+            User user = userRepository.findByPhone(phone).orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy user nào có số điện thoại là ***" + phone.substring(phone.length() - 3)));
+            return new ResetTokenDTO(jwtUtil.generateResetToken(new UserPrincipal(user)));
+        }
+        throw new OTPMismatchException("OTP không chính xác hoặc đã hết hạn");
+    }
+
+    @Override
+    public String resetPassword(String token, String password) {
+        if (!jwtUtil.isTokenExpired(token) && jwtUtil.extractTokenType(token).equals(JwtType.RESET_TOKEN)) {
+            String phone = jwtUtil.extractUsername(token);
+            User user = userRepository.findByPhone(phone).orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy user nào có số điện thoại là ***" + phone.substring(phone.length() - 3)));
+            user.setPassword(passwordEncoder.encode(password));
+            userRepository.save(user);
+            return "Cập nhật mật khẩu thành công.";
+        }
+        throw new OTPMismatchException("OTP không chính xác hoặc đã hết hạn");
     }
 }
