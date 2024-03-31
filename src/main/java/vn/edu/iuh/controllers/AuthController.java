@@ -7,10 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import vn.edu.iuh.dto.LoginRequestDTO;
-import vn.edu.iuh.dto.RefreshTokenDTO;
-import vn.edu.iuh.dto.TokenResponseDTO;
-import vn.edu.iuh.dto.RegisterRequestDTO;
+import vn.edu.iuh.dto.*;
 import vn.edu.iuh.security.UserPrincipal;
 import vn.edu.iuh.services.AuthService;
 
@@ -25,8 +22,8 @@ public class AuthController {
     @Operation(
             summary = "Đăng ký tài khoản",
             description = """
-            Cập nhật mật khẩu và các thông tin cơ bản sau khi số điện thoại đã được xác thực
-            """
+                    Cập nhật mật khẩu và các thông tin cơ bản sau khi số điện thoại đã được xác thực
+                    """
     )
     @PostMapping("/register")
     public String register(@RequestBody @Valid RegisterRequestDTO registerRequestDTO, @AuthenticationPrincipal UserPrincipal userPrincipal) {
@@ -56,8 +53,8 @@ public class AuthController {
 
     @Operation(
             summary = "Đăng xuất trên tất cả thiết bị khác", description = """
-           Xóa toàn bị refresh token đang ACTIVE trừ token của thiết bị hiện tại
-            """
+            Xóa toàn bị refresh token đang ACTIVE trừ token của thiết bị hiện tại
+             """
     )
     @PostMapping("/logout/all")
     public String logoutAll(@RequestBody @Valid RefreshTokenDTO refreshTokenDTO) {
@@ -66,11 +63,43 @@ public class AuthController {
 
     @Operation(
             summary = "Đăng xuất khỏi thiết bị hiện tại", description = """
-           Xóa refresh token của thiết bị hiện tại
-            """
+            Xóa refresh token của thiết bị hiện tại
+             """
     )
     @PostMapping("/logout")
     public String logout(@RequestBody @Valid RefreshTokenDTO refreshTokenDTO) {
         return authService.logout(refreshTokenDTO.getToken());
+    }
+
+    @Operation(
+            summary = "Gửi yêu cầu quên mật khẩu", description = """
+            Gửi yêu cầu quên mật khẩu và nhận OTP
+             """
+    )
+    @PostMapping("/password/forgot")
+    public String forgotPassword(@RequestBody @Valid PhoneNumberDTO phoneNumberDTO) {
+        return authService.forgotPassword(phoneNumberDTO.getPhone());
+    }
+
+    @Operation(
+            summary = "Xác thực OTP cho quá trình lấy lại mật khẩu",
+            description = """
+                    Xác thực OTP để lấy lại mật khẩu. Nếu OTP hợp lệ hệ thống trả về 1 Reset Token có thời hạn 5 phút. Dùng Reset token để cập nhật lại mật khẩu tại /v1/auth/password/reset
+                    """
+    )
+    @PostMapping("/password/reset/validate")
+    public ResetTokenDTO validateResetPasswordOTP(@RequestBody @Valid OTPRequestDTO otpRequestDTO) {
+        return authService.validateResetPassword(otpRequestDTO.getPhone(), otpRequestDTO.getOtp());
+    }
+
+    @Operation(
+            summary = "Cập nhật mật khẩu sau khi xác thực OTP",
+            description = """
+            Cập nhật mật khẩu mới sau khi xác thực OTP
+             """
+    )
+    @PostMapping("/password/reset")
+    public String resetPassword(@RequestBody @Valid ResetPasswordRequestDTO resetPasswordRequestDTO) {
+        return authService.resetPassword(resetPasswordRequestDTO.getToken(), resetPasswordRequestDTO.getPassword());
     }
 }

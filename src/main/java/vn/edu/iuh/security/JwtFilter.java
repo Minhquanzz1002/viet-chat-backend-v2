@@ -18,6 +18,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 import vn.edu.iuh.config.SecurityConfig;
 import vn.edu.iuh.utils.JwtUtil;
+import vn.edu.iuh.utils.enums.JwtType;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -39,7 +40,7 @@ public class JwtFilter extends OncePerRequestFilter {
         }
         final String token = bearerToken.substring(7);
         log.info("JWT: {}", token);
-        if (StringUtils.hasText(token) && !jwtUtil.isTokenExpired(token) && !jwtUtil.isRefreshToken(token)) {
+        if (StringUtils.hasText(token) && !jwtUtil.isTokenExpired(token) && jwtUtil.extractTokenType(token).equals(JwtType.ACCESS_TOKEN)) {
             String username = jwtUtil.extractUsername(token);
             log.info("Phone number: {}", username);
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
