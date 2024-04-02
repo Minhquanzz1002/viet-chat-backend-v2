@@ -1,5 +1,6 @@
 package vn.edu.iuh.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import org.springframework.data.mongodb.core.mapping.DocumentReference;
@@ -12,11 +13,15 @@ import vn.edu.iuh.models.enums.FriendStatus;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Friend {
-    @DocumentReference
+    @DocumentReference(lazy = true)
     @Field("friend_id")
     private UserInfo user;
     private String displayName;
     private FriendStatus status;
+    @JsonIgnore
+    @Field("chat_id")
+    @DocumentReference(lazy = true)
+    private Chat chat;
     @JsonProperty("isBestFriend")
     @Field("is_best_friend")
     private boolean isBestFriend = false;

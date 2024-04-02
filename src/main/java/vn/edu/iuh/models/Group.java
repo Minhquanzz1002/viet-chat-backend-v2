@@ -27,7 +27,7 @@ public class Group {
     private String thumbnailAvatar;
     @Builder.Default
     private List<GroupMember> members = new ArrayList<>();
-    @DocumentReference
+    @DocumentReference(lazy = true)
     @Field("chat_id")
     private Chat chat;
     @CreatedDate

@@ -2,28 +2,35 @@ package vn.edu.iuh.services.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.bson.types.ObjectId;
 import org.modelmapper.ModelMapper;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import vn.edu.iuh.dto.FriendRequestDTO;
 import vn.edu.iuh.dto.GroupDTO;
 import vn.edu.iuh.dto.PhoneNumberDTO;
 import vn.edu.iuh.dto.UserInfoDTO;
 import vn.edu.iuh.exceptions.DataExistsException;
 import vn.edu.iuh.exceptions.DataNotFoundException;
 import vn.edu.iuh.exceptions.FriendshipRelationshipException;
-import vn.edu.iuh.models.Friend;
-import vn.edu.iuh.models.Group;
-import vn.edu.iuh.models.User;
-import vn.edu.iuh.models.UserInfo;
+import vn.edu.iuh.exceptions.InvalidFriendshipRequestException;
+import vn.edu.iuh.models.*;
 import vn.edu.iuh.models.enums.FriendStatus;
+import vn.edu.iuh.models.enums.MessageStatus;
+import vn.edu.iuh.models.enums.MessageType;
+import vn.edu.iuh.models.enums.NotificationType;
+import vn.edu.iuh.repositories.ChatRepository;
 import vn.edu.iuh.repositories.UserInfoRepository;
 import vn.edu.iuh.repositories.UserRepository;
 import vn.edu.iuh.security.UserPrincipal;
 import vn.edu.iuh.services.UserInfoService;
 
+import javax.swing.text.html.Option;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -31,18 +38,9 @@ import java.util.List;
 public class UserInfoServiceImpl implements UserInfoService {
     private final UserInfoRepository userInfoRepository;
     private final UserRepository userRepository;
+    private final ChatRepository chatRepository;
     private final ModelMapper modelMapper;
-
-    @Override
-    public UserInfo createUserInfo(String phone, UserInfoDTO userInfoDTO) {
-        User user = userRepository.findByPhone(phone).orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng nào có số điện thoại là " + phone));
-        if (userInfoRepository.existsByUser(user)) {
-            throw new DataExistsException("Thông tin người dùng đã tồn tại. Không thể tạo mới.");
-        }
-        UserInfo userInfo = modelMapper.map(userInfoDTO, UserInfo.class);
-        userInfo.setUser(user);
-        return userInfoRepository.insert(userInfo);
-    }
+    private final SimpMessagingTemplate simpMessagingTemplate;
 
     @Override
     public UserInfo findUserInfo(String phone) {
@@ -75,153 +73,140 @@ public class UserInfoServiceImpl implements UserInfoService {
         return userInfoRepository.save(existingUserInfo);
     }
 
+
+
     @Override
-    public Friend addFriendByUserId(FriendRequestDTO friendRequestDTO, UserPrincipal userPrincipal) {
-        UserInfo currentUserInfo = userInfoRepository.findByUser(new User(userPrincipal.getId())).orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng"));
-        UserInfo friendUserInfo = userInfoRepository.findById(friendRequestDTO.getUserId()).orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng để kết bạn"));
+    public Friend addFriendByUserId(String friendId, UserPrincipal userPrincipal) {
+        UserInfo currentUserInfo = userInfoRepository.findByUser(new User(userPrincipal.getId()))
+                .orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng"));
+
+        if (friendId.equals(currentUserInfo.getId())) {
+            throw new InvalidFriendshipRequestException("Bạn không thể kết bạn với chính mình");
+        }
+
+        UserInfo friendUserInfo = userInfoRepository.findById(friendId)
+                .orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng để kết bạn"));
 
         return addFriend(currentUserInfo, friendUserInfo);
     }
 
     @Override
     public Friend addFriendByPhone(PhoneNumberDTO phoneNumberDTO, UserPrincipal userPrincipal) {
-        UserInfo currentUserInfo = userInfoRepository.findByUser(new User(userPrincipal.getId())).orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng"));
-        User friendUser = userRepository.findByPhone(phoneNumberDTO.getPhone()).orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng để kết bạn"));
+        UserInfo currentUserInfo = userInfoRepository.findByUser(new User(userPrincipal.getId()))
+                .orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng"));
+        User friendUser = userRepository.findByPhone(phoneNumberDTO.getPhone())
+                .orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng để kết bạn"));
         UserInfo friendUserInfo = userInfoRepository.findByUser(friendUser).orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng để kết bạn"));
         return addFriend(currentUserInfo, friendUserInfo);
     }
 
     private Friend addFriend(UserInfo senderUserInfo, UserInfo receiverUserInfo) {
-        boolean existed = false;
-        for (Friend friend : senderUserInfo.getFriends()) {
-            if (friend.getUser().getId().equals(receiverUserInfo.getId())) {
-                if (friend.getStatus().equals(FriendStatus.STRANGER)) {
-                    existed = true;
-                    friend.setStatus(FriendStatus.FRIEND_REQUEST);
-                    break;
-                }
-                if (friend.getStatus().equals(FriendStatus.BLOCK)) {
-                    throw new FriendshipRelationshipException("Bạn đã chặn người này");
-                }
-                if (friend.getStatus().equals(FriendStatus.BLOCKED)) {
-                    throw new FriendshipRelationshipException("Bạn đã bị chặn đối phương");
-                }
-                if (friend.getStatus().equals(FriendStatus.FRIEND)) {
-                    throw new FriendshipRelationshipException("Hai người đã là bạn bè");
-                }
-                if (friend.getStatus().equals(FriendStatus.FRIEND_REQUEST)) {
-                    throw new FriendshipRelationshipException("Bạn đã gửi lời mời kết bạn cho đối phương trước đó");
-                }
-                if (friend.getStatus().equals(FriendStatus.PENDING)) {
-                    throw new FriendshipRelationshipException("Bạn có lời mời kết bạn từ đối phương");
-                }
-            }
-        }
-
-        if (existed) {
-            for (Friend friend : receiverUserInfo.getFriends()) {
-                if (friend.getUser().getId().equals(senderUserInfo.getId())) {
+        return senderUserInfo.getFriends().stream()
+                .filter(friend -> friend.getUser().getId().equals(receiverUserInfo.getId()))
+                .findFirst()
+                .map(friend -> {
                     if (friend.getStatus().equals(FriendStatus.STRANGER)) {
-                        friend.setStatus(FriendStatus.PENDING);
+                        friend.setStatus(FriendStatus.FRIEND_REQUEST);
+
+                        receiverUserInfo.getFriends().stream()
+                                .filter(f -> f.getUser().getId().equals(senderUserInfo.getId()))
+                                .findFirst()
+                                .ifPresent(f -> f.setStatus(FriendStatus.PENDING));
+                        userInfoRepository.saveAll(Arrays.asList(senderUserInfo, receiverUserInfo));
+                        Notification notification = new Notification(senderUserInfo.getLastName() + " vừa gửi lời mời kết bạn", NotificationType.FRIEND_REQUEST, senderUserInfo.getId(), LocalDateTime.now());
+                        simpMessagingTemplate.convertAndSendToUser(receiverUserInfo.getId(), "/private", notification);
+                        return friend;
+                    } else if (friend.getStatus().equals(FriendStatus.BLOCK)) {
+                        throw new FriendshipRelationshipException("Bạn đã chặn người này. Hãy bỏ chặn trước khi kết bạn");
+                    } else if (friend.getStatus().equals(FriendStatus.BLOCKED)) {
+                        throw new FriendshipRelationshipException("Bạn đã bị chặn đối phương");
+                    } else if (friend.getStatus().equals(FriendStatus.FRIEND)) {
+                        throw new FriendshipRelationshipException("Hai người đã là bạn bè");
+                    } else if (friend.getStatus().equals(FriendStatus.FRIEND_REQUEST)) {
+                        throw new FriendshipRelationshipException("Bạn đã gửi lời mời kết bạn cho đối phương trước đó");
+                    } else {
+                        throw new FriendshipRelationshipException("Bạn có lời mời kết bạn từ đối phương");
                     }
-                }
-            }
-        } else {
-            senderUserInfo.getFriends().add(new Friend(receiverUserInfo, receiverUserInfo.getFirstName() + " " + receiverUserInfo.getLastName(), FriendStatus.FRIEND_REQUEST));
-            receiverUserInfo.getFriends().add(new Friend(senderUserInfo, senderUserInfo.getFirstName() + " " + senderUserInfo.getLastName(), FriendStatus.PENDING));
-        }
-        userInfoRepository.save(receiverUserInfo);
-        UserInfo updatedSenderUserInfo = userInfoRepository.save(senderUserInfo);
-
-        for (Friend friend : updatedSenderUserInfo.getFriends()) {
-            if (friend.getUser().getId().equals(receiverUserInfo.getId())) {
-                return friend;
-            }
-        }
-        throw new DataNotFoundException("Không tìm thấy thông tin bạn bè sau khi kết bạn");
+                })
+                .orElseGet(() -> {
+                    Friend senderFriend = new Friend(receiverUserInfo, receiverUserInfo.getFirstName() + " " + receiverUserInfo.getLastName(), FriendStatus.FRIEND_REQUEST);
+                    Friend receiverFriend = new Friend(senderUserInfo, senderUserInfo.getFirstName() + " " + senderUserInfo.getLastName(), FriendStatus.PENDING);
+                    senderUserInfo.getFriends().add(senderFriend);
+                    receiverUserInfo.getFriends().add(receiverFriend);
+                    userInfoRepository.saveAll(Arrays.asList(senderUserInfo, receiverUserInfo));
+                    Notification notification = new Notification(senderUserInfo.getLastName() + " vừa gửi lời mời kết bạn", NotificationType.FRIEND_REQUEST, senderUserInfo.getId(), LocalDateTime.now());
+                    simpMessagingTemplate.convertAndSendToUser(receiverUserInfo.getId(), "/private", notification);
+                    return senderFriend;
+                });
     }
 
     @Override
-    public Friend blockFriend(FriendRequestDTO friendRequestDTO, UserPrincipal userPrincipal) {
-        UserInfo currentUserInfo = userInfoRepository.findByUser(new User(userPrincipal.getId())).orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng"));
-        UserInfo friendUserInfo = userInfoRepository.findById(friendRequestDTO.getUserId()).orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng để kết bạn"));
+    public Friend blockFriend(String friendId, UserPrincipal userPrincipal) {
+        UserInfo currentUserInfo = userInfoRepository.findByUser(new User(userPrincipal.getId()))
+                .orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng"));
 
-        userInfoRepository.findByIdAndFriendIdAndStatus(currentUserInfo.getId(), friendUserInfo.getId(), FriendStatus.BLOCK).ifPresent(userInfo -> {throw new DataExistsException("Người dùng đã bị chặn trước đó");});
-
-        boolean currentUserFriendNotFound = true;
-        for (Friend friend : currentUserInfo.getFriends()) {
-            if (friend.getUser().getId().equals(friendUserInfo.getId())) {
-                friend.setStatus(FriendStatus.BLOCK);
-                currentUserFriendNotFound = false;
-                break;
-            }
+        if (friendId.equals(currentUserInfo.getId())) {
+            throw new InvalidFriendshipRequestException("Bạn không thể chặn chính mình");
         }
 
-        if (currentUserFriendNotFound) {
-            currentUserInfo.getFriends().add(new Friend(friendUserInfo, friendUserInfo.getFirstName() + " " + friendUserInfo.getLastName(), FriendStatus.BLOCK));
-        }
+        UserInfo friendUserInfo = userInfoRepository.findById(friendId)
+                .orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng để chặn"));
 
-        boolean friendOfUserNotFound = true;
-        for (Friend friend : friendUserInfo.getFriends()) {
-            if (friend.getUser().getId().equals(currentUserInfo.getId())) {
-                friend.setStatus(FriendStatus.BLOCKED);
-                friendOfUserNotFound = false;
-                break;
-            }
-        }
+        return currentUserInfo.getFriends().stream()
+                .filter(friend -> friend.getUser().getId().equals(friendUserInfo.getId()))
+                .findFirst()
+                .map(friend -> {
+                    if (friend.getStatus().equals(FriendStatus.BLOCK)) {
+                        throw new FriendshipRelationshipException("Bạn đã chặn người này.");
+                    } else if (friend.getStatus().equals(FriendStatus.BLOCKED)) {
+                        throw new FriendshipRelationshipException("Bạn đã bị chặn đối phương");
+                    } else {
+                        friend.setStatus(FriendStatus.BLOCK);
 
-        if (friendOfUserNotFound) {
-            friendUserInfo.getFriends().add(new Friend(currentUserInfo, currentUserInfo.getFirstName() + " " + currentUserInfo.getLastName(), FriendStatus.BLOCKED));
-        }
-
-        userInfoRepository.save(friendUserInfo);
-        UserInfo updatedCurrentUserInfo = userInfoRepository.save(currentUserInfo);
-
-        for (Friend friend : updatedCurrentUserInfo.getFriends()) {
-            if (friend.getUser().getId().equals(friendUserInfo.getId())) {
-                return friend;
-            }
-        }
-        throw new DataNotFoundException("Không tìm thấy thông tin bạn bè sau khi chặn");
+                        friendUserInfo.getFriends().stream()
+                                .filter(f -> f.getUser().getId().equals(currentUserInfo.getId()))
+                                .findFirst()
+                                .ifPresent(f -> f.setStatus(FriendStatus.BLOCKED));
+                        userInfoRepository.saveAll(Arrays.asList(currentUserInfo, friendUserInfo));
+                        return friend;
+                    }
+                })
+                .orElseGet(() -> {
+                    Friend senderFriend = new Friend(friendUserInfo, friendUserInfo.getFirstName() + " " + friendUserInfo.getLastName(), FriendStatus.BLOCK);
+                    Friend receiverFriend = new Friend(currentUserInfo, currentUserInfo.getFirstName() + " " + currentUserInfo.getLastName(), FriendStatus.BLOCKED);
+                    currentUserInfo.getFriends().add(senderFriend);
+                    friendUserInfo.getFriends().add(receiverFriend);
+                    userInfoRepository.saveAll(Arrays.asList(currentUserInfo, friendUserInfo));
+                    return senderFriend;
+                });
     }
 
     @Override
-    public Friend unblockFriend(FriendRequestDTO friendRequestDTO, UserPrincipal userPrincipal) {
+    public Friend unblockFriend(String friendId, UserPrincipal userPrincipal) {
         UserInfo currentUserInfo = userInfoRepository.findByUser(new User(userPrincipal.getId())).orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng"));
-        UserInfo friendUserInfo = userInfoRepository.findById(friendRequestDTO.getUserId()).orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng để kết bạn"));
+        UserInfo friendUserInfo = userInfoRepository.findById(friendId).orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng để kết bạn"));
 
-        for (Friend friend : currentUserInfo.getFriends()) {
-            if (friend.getUser().getId().equals(friendUserInfo.getId())) {
-                if (friend.getStatus().equals(FriendStatus.BLOCK)) {
+        return currentUserInfo.getFriends().stream()
+                .filter(friend -> friend.getUser().getId().equals(friendUserInfo.getId()) && friend.getStatus().equals(FriendStatus.BLOCK))
+                .findFirst()
+                .map(friend -> {
                     friend.setStatus(FriendStatus.STRANGER);
-                    break;
-                } else {
-                    throw new FriendshipRelationshipException("Không bị chặn.");
-                }
-            }
-        }
-        for (Friend friend : friendUserInfo.getFriends()) {
-            if (friend.getUser().getId().equals(currentUserInfo.getId())) {
-                friend.setStatus(FriendStatus.STRANGER);
-                break;
-            }
-        }
-
-        userInfoRepository.save(friendUserInfo);
-        UserInfo updatedCurrentUserInfo = userInfoRepository.save(currentUserInfo);
-
-        for (Friend friend : updatedCurrentUserInfo.getFriends()) {
-            if (friend.getUser().getId().equals(friendUserInfo.getId())) {
-                return friend;
-            }
-        }
-        throw new DataNotFoundException("Không tìm thấy thông tin bạn bè.");
+                    friendUserInfo.getFriends().stream()
+                            .filter(f -> f.getUser().getId().equals(currentUserInfo.getId()))
+                            .findFirst()
+                            .ifPresent(f -> f.setStatus(FriendStatus.STRANGER));
+                    userInfoRepository.saveAll(Arrays.asList(currentUserInfo, friendUserInfo));
+                    return friend;
+                })
+                .orElseThrow(() -> new DataNotFoundException("Bạn không chặn đối phương nên không thể bỏ chặn"));
     }
 
     @Override
     public Friend deleteFriend(String friendId, UserPrincipal userPrincipal) {
-        UserInfo currentUserInfo = userInfoRepository.findByUser(new User(userPrincipal.getId())).orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng"));
-        UserInfo friendUserInfo = userInfoRepository.findById(friendId).orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng để kết bạn"));
+        UserInfo currentUserInfo = userInfoRepository.findByUser(new User(userPrincipal.getId()))
+                .orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng"));
+        UserInfo friendUserInfo = userInfoRepository.findById(friendId)
+                .orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng để hủy kết bạn"));
 
         for (Friend friend : currentUserInfo.getFriends()) {
             if (friend.getUser().getId().equals(friendUserInfo.getId())) {
@@ -252,42 +237,84 @@ public class UserInfoServiceImpl implements UserInfoService {
     }
 
     @Override
-    public Friend acceptFriendRequest(FriendRequestDTO friendRequestDTO, UserPrincipal userPrincipal) {
-        UserInfo currentUserInfo = userInfoRepository.findByUser(new User(userPrincipal.getId())).orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng"));
-        UserInfo friendUserInfo = userInfoRepository.findById(friendRequestDTO.getUserId()).orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng để kết bạn"));
+    public Friend acceptFriendRequest(String friendId, UserPrincipal userPrincipal) {
+        UserInfo currentUserInfo = userInfoRepository.findByUser(new User(userPrincipal.getId()))
+                .orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng"));
+        UserInfo friendUserInfo = userInfoRepository.findById(friendId)
+                .orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng để kết bạn"));
 
-        for (Friend friend : currentUserInfo.getFriends()) {
-            if (friend.getUser().getId().equals(friendUserInfo.getId())) {
-                if (friend.getStatus().equals(FriendStatus.PENDING)) {
-                    friend.setStatus(FriendStatus.FRIEND);
-                    break;
-                } else {
-                    throw new FriendshipRelationshipException("Không có lời mời kết bạn nào được tìm thấy.");
-                }
-            }
-        }
-        for (Friend friend : friendUserInfo.getFriends()) {
-            if (friend.getUser().getId().equals(currentUserInfo.getId())) {
-                friend.setStatus(FriendStatus.FRIEND);
-                break;
-            }
-        }
+
+        Friend pendingFriendRequest = currentUserInfo.getFriends().stream()
+                .filter(friend -> friend.getUser().getId().equals(friendUserInfo.getId()) && friend.getStatus().equals(FriendStatus.PENDING))
+                .findFirst()
+                .orElseThrow(() -> new FriendshipRelationshipException("Không có lời mời kết bạn nào được tìm thấy."));
+
+        Friend acceptedFriend = friendUserInfo.getFriends().stream()
+                .filter(friend -> friend.getUser().getId().equals(currentUserInfo.getId()) && friend.getStatus().equals(FriendStatus.FRIEND_REQUEST))
+                .findFirst()
+                .orElseThrow(() -> new FriendshipRelationshipException("Không có lời mời kết bạn nào được tìm thấy."));
+
+        Message message = Message
+                .builder()
+                .messageId(new ObjectId())
+                .content("Hai bạn đã trở thành bạn bè")
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .type(MessageType.EVENT)
+                .status(MessageStatus.SENT)
+                .build();
+        Chat chat = chatRepository.save(
+                Chat.builder()
+                        .messages(List.of(message))
+                        .members(List.of(currentUserInfo, friendUserInfo))
+                        .build()
+        );
+
+        pendingFriendRequest.setStatus(FriendStatus.FRIEND);
+        pendingFriendRequest.setChat(chat);
+
+        acceptedFriend.setStatus(FriendStatus.FRIEND);
+        acceptedFriend.setChat(chat);
+
+        currentUserInfo.getChats().add(
+                UserChat
+                        .builder()
+                        .chat(chat)
+                        .joinTime(LocalDateTime.now())
+                        .lastMessage(
+                                LastMessage.builder()
+                                        .content("[Thiệp] Gửi lời chào đến " + friendUserInfo.getLastName())
+                                        .createdAt(LocalDateTime.now())
+                                        .build()
+                        )
+                        .build()
+        );
+
+        friendUserInfo.getChats().add(
+                UserChat
+                        .builder()
+                        .chat(chat)
+                        .joinTime(LocalDateTime.now())
+                        .lastMessage(
+                                LastMessage.builder()
+                                        .content("[Thiệp] Gửi lời chào đến " + currentUserInfo.getLastName())
+                                        .createdAt(LocalDateTime.now())
+                                        .build()
+                        )
+                        .build()
+        );
 
         userInfoRepository.save(friendUserInfo);
-        UserInfo updatedCurrentUserInfo = userInfoRepository.save(currentUserInfo);
-
-        for (Friend friend : updatedCurrentUserInfo.getFriends()) {
-            if (friend.getUser().getId().equals(friendUserInfo.getId())) {
-                return friend;
-            }
-        }
-        throw new DataNotFoundException("Không tìm thấy thông tin bạn bè.");
+        userInfoRepository.save(currentUserInfo);
+        Notification notification = new Notification(currentUserInfo.getLastName() + " vừa chấp nhận lời mời kết bạn", NotificationType.NEW_MESSAGE, null, LocalDateTime.now());
+        simpMessagingTemplate.convertAndSendToUser(friendUserInfo.getId(), "/private", notification);
+        return pendingFriendRequest;
     }
 
     @Override
-    public Friend declineFriendRequest(FriendRequestDTO friendRequestDTO, UserPrincipal userPrincipal) {
+    public Friend declineFriendRequest(String friendId, UserPrincipal userPrincipal) {
         UserInfo currentUserInfo = userInfoRepository.findByUser(new User(userPrincipal.getId())).orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng"));
-        UserInfo friendUserInfo = userInfoRepository.findById(friendRequestDTO.getUserId()).orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng để kết bạn"));
+        UserInfo friendUserInfo = userInfoRepository.findById(friendId).orElseThrow(() -> new DataNotFoundException("Không tìm thấy đối phương, không thể hủy yêu cầu kết bạn"));
 
         for (Friend friend : currentUserInfo.getFriends()) {
             if (friend.getUser().getId().equals(friendUserInfo.getId())) {
@@ -295,7 +322,7 @@ public class UserInfoServiceImpl implements UserInfoService {
                     friend.setStatus(FriendStatus.STRANGER);
                     break;
                 } else {
-                    throw new FriendshipRelationshipException("Không có lời mời kết bạn nào được tìm thấy.");
+                    throw new FriendshipRelationshipException("Không tìm thấy lời mời kết bạn.");
                 }
             }
         }
@@ -318,16 +345,8 @@ public class UserInfoServiceImpl implements UserInfoService {
     }
 
     @Override
-    public void updateAvatar(UserPrincipal userPrincipal, String linkAvatar) {
+    public List<UserChat> getAllChats(UserPrincipal userPrincipal) {
         UserInfo userInfo = userInfoRepository.findByUser(new User(userPrincipal.getId())).orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng"));
-        userInfo.setThumbnailAvatar(linkAvatar);
-        userInfoRepository.save(userInfo);
-    }
-
-    @Override
-    public void updateCoverImage(UserPrincipal userPrincipal, String linkCoverImage) {
-        UserInfo userInfo = userInfoRepository.findByUser(new User(userPrincipal.getId())).orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng"));
-        userInfo.setCoverImage(linkCoverImage);
-        userInfoRepository.save(userInfo);
+        return userInfo.getChats();
     }
 }

@@ -13,11 +13,12 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Document(collection = "chats")
+@Builder
 @Getter
 @Setter
 @ToString
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @EqualsAndHashCode(of = "id")
 public class Chat {
     @Id
@@ -32,17 +33,4 @@ public class Chat {
     private LocalDateTime createdAt;
     @LastModifiedDate
     private LocalDateTime updatedAt;
-
-    public Chat(boolean isGroup, List<Message> messages) {
-        this.isGroup = isGroup;
-        this.messages = messages;
-    }
-
-    public Chat(boolean isGroup) {
-        this.isGroup = isGroup;
-    }
-
-    public Chat(String id) {
-        this.id = id;
-    }
 }
