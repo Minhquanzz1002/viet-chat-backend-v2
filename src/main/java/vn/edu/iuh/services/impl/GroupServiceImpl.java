@@ -48,7 +48,7 @@ public class GroupServiceImpl implements GroupService {
             userInfoMember.getGroups().add(insertedGroup);
             userInfoRepository.save(userInfoMember);
         });
-        chatRepository.save(new Chat(true));
+        chatRepository.save(new Chat());
         return groupRepository.save(insertedGroup);
     }
 

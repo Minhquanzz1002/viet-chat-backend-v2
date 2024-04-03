@@ -13,7 +13,7 @@ import vn.edu.iuh.models.enums.GroupMemberRole;
 @ToString
 public class GroupMember {
     @Field("member_id")
-    @DocumentReference
+    @DocumentReference(lazy = true)
     private UserInfo user;
     private GroupMemberRole role;
     private String joinMethod;

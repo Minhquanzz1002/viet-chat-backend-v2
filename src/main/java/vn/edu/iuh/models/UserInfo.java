@@ -1,11 +1,8 @@
 package vn.edu.iuh.models;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonIncludeProperties;
 import lombok.*;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -13,7 +10,6 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.DocumentReference;
 import org.springframework.data.mongodb.core.mapping.Field;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -38,7 +34,7 @@ public class UserInfo {
     private String coverImage;
     private boolean gender;
     private LocalDate birthday;
-    @DocumentReference
+    @DocumentReference(lazy = true)
     @JsonIgnore
     @ToString.Exclude
     private List<Group> groups = new ArrayList<>();
@@ -51,7 +47,7 @@ public class UserInfo {
     private LocalDateTime updatedAt;
     @Field("user_id")
     @Indexed(unique = true)
-    @DocumentReference
+    @DocumentReference(lazy = true)
     private User user;
 
     @ToString.Exclude

@@ -41,7 +41,7 @@ public class SecurityConfig {
             "/v1/auth/password/**",
             "/v1/auth/refresh-token",
             "/v1/verification/otp/sms/**",
-            "/v1/users/profile/{phone}",
+            "/v1/users/profile/{phone:^\\d+$}",
             "/ws/**"
     };
 
@@ -67,7 +67,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowCredentials(true);
-        configuration.setAllowedOrigins(List.of("http://localhost:3000"));
+        configuration.setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:4173", "http://localhost:8081"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE"));
         configuration.setAllowedHeaders(Collections.singletonList("*"));
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

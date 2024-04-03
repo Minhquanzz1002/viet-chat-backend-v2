@@ -3,26 +3,22 @@ package vn.edu.iuh.controllers;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
-import org.springframework.web.multipart.MultipartFile;
 import vn.edu.iuh.dto.*;
-import vn.edu.iuh.exceptions.FileUploadException;
 import vn.edu.iuh.models.Friend;
+import vn.edu.iuh.models.UserChat;
 import vn.edu.iuh.models.UserInfo;
 import vn.edu.iuh.models.enums.FriendStatus;
 import vn.edu.iuh.security.UserPrincipal;
 import vn.edu.iuh.services.UserInfoService;
-import vn.edu.iuh.services.impl.S3Service;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 @RestController
@@ -31,90 +27,14 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class UserController {
-    public static final long MAX_FILE_SIZE = 5 * 1024 * 1024;
     private final UserInfoService userInfoService;
-    private final S3Service s3Service;
-
-    @Operation(
-            summary = "Cập nhật avatar",
-            description = """
-                    Cập nhật avatar của người dùng\n
-                    <strong>Lỗi nếu:</strong>\n
-                    * File rỗng
-                    * File không phải ảnh
-                    * File kích thước lớn hơn 5MB
-                    """,
-            security = {@SecurityRequirement(name = "bearerAuth")}
-    )
-    @PostMapping("/profile/upload-avatar")
-    public UploadFileResponseDTO uploadAvatar(@RequestPart("avatar") MultipartFile avatarFile, @AuthenticationPrincipal UserPrincipal userPrincipal) {
-        log.info(avatarFile.toString());
-        if (avatarFile.isEmpty()) {
-            throw new FileUploadException("File không được rỗng rỗng");
-        }
-        if (!isImageFile(avatarFile)) {
-            throw new FileUploadException("Chỉ chấp nhận file ảnh (image/*)");
-        }
-        if (!isValidFileSize(avatarFile)) {
-            throw new FileUploadException("Kích thước file không lớn hơn 5MB");
-        }
-        String originalFilename = avatarFile.getOriginalFilename();
-        String filename = userPrincipal.getId() + Objects.requireNonNull(originalFilename).substring(originalFilename.lastIndexOf("."));
-        String linkAvatar = s3Service.uploadFile(avatarFile, filename, "avatar");
-        userInfoService.updateAvatar(userPrincipal, linkAvatar);
-        return UploadFileResponseDTO.builder()
-                .success(true)
-                .linkAvatar(linkAvatar)
-                .build();
-    }
-
-    @Operation(
-            summary = "Cập nhật ảnh bìa",
-            description = """
-                    Cập nhật ảnh bìa của người dùng\n
-                    <strong>Lỗi nếu:</strong>\n
-                    * File rỗng
-                    * File không phải ảnh
-                    * File kích thước lớn hơn 5MB
-                    """,
-            security = {@SecurityRequirement(name = "bearerAuth")}
-    )
-    @PostMapping("/profile/upload-cover-image")
-    public UploadFileResponseDTO uploadCoverImage(@RequestPart("image") MultipartFile coverImageFile, @AuthenticationPrincipal UserPrincipal userPrincipal) {
-        if (coverImageFile.isEmpty()) {
-            throw new FileUploadException("File không được rỗng rỗng");
-        }
-        if (!isImageFile(coverImageFile)) {
-            throw new FileUploadException("Chỉ chấp nhận file ảnh (image/*)");
-        }
-        if (!isValidFileSize(coverImageFile)) {
-            throw new FileUploadException("Kích thước file không lớn hơn 5MB");
-        }
-        String originalFilename = coverImageFile.getOriginalFilename();
-        String filename = userPrincipal.getId() + Objects.requireNonNull(originalFilename).substring(originalFilename.lastIndexOf("."));
-        String linkCoverImage = s3Service.uploadFile(coverImageFile, filename, "cover-image");
-        userInfoService.updateCoverImage(userPrincipal, linkCoverImage);
-        return UploadFileResponseDTO.builder()
-                .success(true)
-                .linkAvatar(linkCoverImage)
-                .build();
-    }
-
-    private boolean isImageFile(MultipartFile file) {
-        return file.getContentType() != null && file.getContentType().startsWith("image");
-    }
-
-    private boolean isValidFileSize(MultipartFile file) {
-        return file.getSize() <= MAX_FILE_SIZE;
-    }
 
     @Operation(
             summary = "Tìm kiếm người dùng bằng số điện thoại",
             description = "Tìm kiếm người dùng bằng số điện thoại. Dùng cho phần tìm kiếm để kết bạn"
     )
-    @GetMapping("/profile/{phone}")
-    public UserInfo getUserInfoByPhone(@PathVariable String phone, @RequestHeader("User-Agent") String agent) {
-        log.info(agent);
+    @GetMapping("/profile/{phone:^\\d+$}")
+    public UserInfo getUserInfoByPhone(@PathVariable String phone) {
         return userInfoService.findUserInfo(phone);
     }
 
@@ -131,75 +51,78 @@ public class UserController {
     @Operation(
             summary = "Chấp nhận lời mời kết bạn",
             description = """
-                    Chấp nhận lời mời kết bạn từ người khác\n
+                    Chấp nhận lời mời kết bạn từ người khác<br>
                     <strong>Lỗi nếu: </strong> không tìm thấy lời mời kết bạn (status != PENDING)
                     """,
             security = {@SecurityRequirement(name = "bearerAuth")}
     )
-    @PostMapping("/profile/friends/accept")
-    public Friend acceptFriendRequest(@AuthenticationPrincipal UserPrincipal userPrincipal, @RequestBody FriendRequestDTO friendRequestDTO) {
-        return userInfoService.acceptFriendRequest(friendRequestDTO, userPrincipal);
+    @PutMapping("/profile/friends/{friend-id}/accept")
+    public Friend acceptFriendRequest(@AuthenticationPrincipal UserPrincipal userPrincipal,  @PathVariable("friend-id") String friendId) {
+        return userInfoService.acceptFriendRequest(friendId, userPrincipal);
     }
 
     @Operation(
-            summary = "Không chấp nhận lời mời kết bạn",
+            summary = "Từ chối lời mời kết bạn",
             description = """
-                    Không chấp nhận lời mời kết bạn từ người khác\n
+                    Không chấp nhận lời mời kết bạn từ người khác<br>
                     <strong>Lỗi nếu: </strong> không tìm thấy lời mời kết bạn (status != PENDING)
                     """,
             security = {@SecurityRequirement(name = "bearerAuth")}
     )
-    @PostMapping("/profile/friends/decline")
-    public Friend declineFriendRequest(@AuthenticationPrincipal UserPrincipal userPrincipal, @RequestBody FriendRequestDTO friendRequestDTO) {
-        return userInfoService.declineFriendRequest(friendRequestDTO, userPrincipal);
+    @PutMapping("/profile/friends/{friend-id}/decline")
+    public Friend declineFriendRequest(@AuthenticationPrincipal UserPrincipal userPrincipal,  @PathVariable("friend-id") String friendId) {
+        return userInfoService.declineFriendRequest(friendId, userPrincipal);
     }
 
     @Operation(
             summary = "Chặn bạn bè",
             description = """
-                    Chặn một người dùng khác thông qua ID. Người bị chặn sẽ không thể tìm thấy, gửi tin nhắn, xem profile\n
-                    <strong>Chú ý: </strong> nếu tài khoản đã bị khóa trước đó sẽ trả về lỗi
+                    Chặn một người dùng khác thông qua ID. Người bị chặn sẽ không thể tìm thấy, gửi tin nhắn, xem profile<br>
+                    <strong>Lỗi nếu: </strong>
+                    * Bạn đã chặn đối phương trước đó (status == BLOCK)
+                    * Bạn đã bị đối phương chặn (status == BLOCKED)
                     """,
             security = {@SecurityRequirement(name = "bearerAuth")}
     )
-    @PostMapping("/profile/friends/block")
-    public Friend blockFriend(@AuthenticationPrincipal UserPrincipal userPrincipal, @RequestBody FriendRequestDTO friendRequestDTO) {
-        return userInfoService.blockFriend(friendRequestDTO, userPrincipal);
+    @PutMapping("/profile/friends/{friend-id}/block")
+    public Friend blockFriend(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable("friend-id") String friendId) {
+        return userInfoService.blockFriend(friendId, userPrincipal);
     }
 
     @Operation(
             summary = "Bỏ chặn bạn bè",
             description = """
-                    Bỏ chặn một người dùng khác thông qua ID\n
+                    Bỏ chặn một người dùng khác thông qua ID<br>
                     <strong>Chú ý: </strong> nếu tài khoản không bị khóa trước đó sẽ trả về lỗi
                     """,
             security = {@SecurityRequirement(name = "bearerAuth")}
     )
-    @PostMapping("/profile/friends/unblock")
-    public Friend unblockFriend(@AuthenticationPrincipal UserPrincipal userPrincipal, @RequestBody FriendRequestDTO friendRequestDTO) {
-        return userInfoService.unblockFriend(friendRequestDTO, userPrincipal);
+    @PutMapping("/profile/friends/{friend-id}/unblock")
+    public Friend unblockFriend(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable("friend-id") String friendId) {
+        return userInfoService.unblockFriend(friendId, userPrincipal);
     }
 
     @Operation(
             summary = "Gửi lời mời kết bạn theo số điện thoại",
             description = """
-                    Gửi lời mời kết bạn bằng ID của đối phương\n
-                    <strong>Lỗi nếu:</strong>\n
+                    Gửi lời mời kết bạn bằng số điện thoại của đối phương<br>
+                    <strong>Lỗi nếu:</strong><br>
                     * Bạn đã chặn đối phương (status == BLOCK)
-                    * Bạn đã bị chặn đối phương (status == BLOCKED)
+                    * Bạn đã bị đối phương chặn(status == BLOCKED)
                     * Bạn đã gửi lời mời kết bạn cho đối phương trước đó (status == FRIEND_REQUEST)
                     * Bạn có lời mời kết bạn từ đối phương (status == PENDING)
                     """,
             security = {@SecurityRequirement(name = "bearerAuth")}
     )
     @PostMapping("/profile/friends/by-phone")
-    public Friend addFriendByPhone(@AuthenticationPrincipal UserPrincipal userPrincipal, @RequestBody PhoneNumberDTO phoneNumberDTO) {
+    public Friend addFriendByPhone(@AuthenticationPrincipal UserPrincipal userPrincipal, @RequestBody @Valid PhoneNumberDTO phoneNumberDTO) {
         return userInfoService.addFriendByPhone(phoneNumberDTO, userPrincipal);
     }
 
     @Operation(
             summary = "Cập nhật tên gợi nhớ",
             description = "Cập nhật tên gợi nhớ",
+            hidden = true,
             security = {@SecurityRequirement(name = "bearerAuth")}
     )
     @PutMapping("/profile/friends/{friend-id}")
@@ -208,10 +131,10 @@ public class UserController {
     }
 
     @Operation(
-            summary = "Gửi lời mời kết bạn theo ID",
+            summary = "Gửi lời mời kết bạn theo User Info ID",
             description = """
-                    Gửi lời mời kết bạn bằng ID của đối phương\n
-                    <strong>Lỗi nếu:</strong>\n
+                    Gửi lời mời kết bạn bằng ID của đối phương<br>
+                    <strong>Lỗi nếu:</strong><br>
                     * Bạn đã chặn đối phương (status == BLOCK)
                     * Bạn đã bị chặn đối phương (status == BLOCKED)
                     * Bạn đã gửi lời mời kết bạn cho đối phương trước đó (status == FRIEND_REQUEST)
@@ -219,9 +142,9 @@ public class UserController {
                     """,
             security = {@SecurityRequirement(name = "bearerAuth")}
     )
-    @PostMapping("/profile/friends")
-    public Friend addFriend(@AuthenticationPrincipal UserPrincipal userPrincipal, @RequestBody FriendRequestDTO friendRequestDTO) {
-        return userInfoService.addFriendByUserId(friendRequestDTO, userPrincipal);
+    @PostMapping("/profile/friends/{friend-id}")
+    public Friend addFriend(@AuthenticationPrincipal UserPrincipal userPrincipal,  @PathVariable("friend-id") String friendId) {
+        return userInfoService.addFriendByUserId(friendId, userPrincipal);
     }
 
     @Operation(
@@ -230,7 +153,7 @@ public class UserController {
                     Lấy danh sách bạn bè, chặn, chờ kết bạn của người dùng
                     + request: danh sách lời mời kết bạn
                     + friend: danh sách bạn bè
-                    + block: danh sách bị chặn 
+                    + block: danh sách bị chặn
                     """,
             security = {@SecurityRequirement(name = "bearerAuth")}
     )
@@ -251,7 +174,7 @@ public class UserController {
     @Operation(
             summary = "Xóa kết bạn",
             description = """
-                    Xóa kết bạn. Không xóa dữ liệu mối liên hệ giữa 2 người mà đổi trạng thái sang người lạ (status == STRANGER). Để duy trì tên gợi nhớ của người dùng (display_name)\n
+                    Xóa kết bạn. Không xóa dữ liệu mối liên hệ giữa 2 người mà đổi trạng thái sang người lạ (status == STRANGER). Để duy trì tên gợi nhớ của người dùng (display_name)<br>
                     <strong>Lưu ý:</strong> nếu 2 người dùng chưa kết bạn thì trả về lỗi
                     """,
             security = {@SecurityRequirement(name = "bearerAuth")}
@@ -262,13 +185,15 @@ public class UserController {
     }
 
     @Operation(
-            summary = "Tạo thông tin người dùng",
-            description = "Tạo thông tin người dùng",
+            summary = "Lấy danh sách phòng chat",
+            description = """
+                    Lấy danh sách phòng chat. Cả chat đơn và chat nhóm
+                    """,
             security = {@SecurityRequirement(name = "bearerAuth")}
     )
-    @PostMapping("/profile")
-    public UserInfo createUserInfo(@AuthenticationPrincipal UserDetails userDetails, @RequestBody UserInfoDTO userInfoDTO) {
-        return userInfoService.createUserInfo(userDetails.getUsername(), userInfoDTO);
+    @GetMapping("/profile/chats")
+    public List<ChatRoomDTO> updateUserInfo(@AuthenticationPrincipal UserPrincipal userPrincipal) {
+        return userInfoService.getAllChats(userPrincipal);
     }
 
     @Operation(
@@ -284,12 +209,13 @@ public class UserController {
     @Operation(
             summary = "Cập nhật thông tin người dùng",
             description = """
-                    Cập nhật thông tin người dùng: họ đệm, tên, bio, ảnh avatar, ảnh nền trang cá nhân, giới tính, ngày sinh.<b> Các thông tin không thay đổi có thể không cần truyền <b>
+                    Cập nhật thông tin người dùng: họ đệm, tên, bio, ảnh avatar, ảnh nền trang cá nhân, giới tính, ngày sinh.<b> Các thông tin không thay đổi có thể không cần truyền</b><br>
+                    <b>Chú ý:</b> Đối với avatar và ảnh bìa hãy gọi lên /v1/files POST để lấy url upload lên S3 và tự upload phía client. Sau đó bỏ đường link file vào đây để cập nhật avatar
                     """,
             security = {@SecurityRequirement(name = "bearerAuth")}
     )
     @PutMapping("/profile")
-    public UserInfo updateUserInfo(@AuthenticationPrincipal UserDetails userDetails, @RequestBody UserInfoDTO userInfoDTO) {
+    public UserInfo updateUserInfo(@AuthenticationPrincipal UserDetails userDetails, @RequestBody @Valid UserInfoDTO userInfoDTO) {
         return userInfoService.updateUserInfo(userDetails.getUsername(), userInfoDTO);
     }
 }
