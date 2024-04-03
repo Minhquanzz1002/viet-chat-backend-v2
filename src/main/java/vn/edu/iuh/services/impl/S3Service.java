@@ -49,12 +49,20 @@ public class S3Service {
         } else {
             newFilename = type.getLink() + UUID.randomUUID() + filename.substring(filename.lastIndexOf("."));
         }
-        return generateUrl(newFilename);
+        return generateUrl(newFilename, HttpMethod.PUT);
     }
 
-    private String generateUrl(String filename) {
+    @Async
+    public String findByName(String filename) {
+        if (!s3Client.doesObjectExist(bucketName, filename)) {
+            return "File does not exist";
+        }
+        return generateUrl(filename, HttpMethod.GET);
+    }
+
+    private String generateUrl(String filename, HttpMethod httpMethod) {
         Instant expirationTime = Instant.now().plus(Duration.ofHours(24));
-        return s3Client.generatePresignedUrl(bucketName, filename, Date.from(expirationTime), HttpMethod.PUT).toString();
+        return s3Client.generatePresignedUrl(bucketName, filename, Date.from(expirationTime), httpMethod).toString();
     }
 
     private ObjectMetadata getMetaData(MultipartFile file) {

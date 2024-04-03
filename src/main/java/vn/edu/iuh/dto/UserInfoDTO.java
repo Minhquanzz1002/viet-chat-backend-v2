@@ -1,5 +1,8 @@
 package vn.edu.iuh.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Past;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -16,6 +19,7 @@ public class UserInfoDTO {
     private String bio;
     private String thumbnailAvatar;
     private String coverImage;
-    private boolean gender;
+    private Boolean gender;
+    @Past(message = "Ngày sinh phải trước ngày hiện tại")
     private LocalDate birthday;
 }

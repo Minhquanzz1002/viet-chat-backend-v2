@@ -1,6 +1,7 @@
 package vn.edu.iuh.models;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.mongodb.core.mapping.DocumentReference;
@@ -10,6 +11,7 @@ import java.time.LocalDateTime;
 
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @Data
 public class UserChat {
     @DocumentReference
@@ -17,5 +19,4 @@ public class UserChat {
     private Chat chat;
     private LocalDateTime lastDeleteChatTime;
     private LocalDateTime joinTime;
-    private LastMessage lastMessage;
 }
