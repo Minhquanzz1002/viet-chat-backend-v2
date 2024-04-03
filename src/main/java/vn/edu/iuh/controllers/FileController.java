@@ -22,7 +22,7 @@ public class FileController {
     @Operation(
             summary = "Lấy link upload file lên S3",
             description = """
-            Lấy link upload file lên S3
+            Lấy link upload file lên S3. Sau khi gọi sẽ trả về 1 url. Dùng url vừa nhận để upload file lên S3 Bucket bằng phương thức PUT
             """
     )
     public String saveFile(@RequestBody @Valid UploadFileRequestDTO uploadFileRequestDTO, @AuthenticationPrincipal UserPrincipal userPrincipal) {

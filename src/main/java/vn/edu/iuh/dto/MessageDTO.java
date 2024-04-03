@@ -2,7 +2,6 @@ package vn.edu.iuh.dto;
 
 import lombok.*;
 import vn.edu.iuh.models.Attachment;
-import vn.edu.iuh.models.enums.MessageStatus;
 
 import java.util.List;
 

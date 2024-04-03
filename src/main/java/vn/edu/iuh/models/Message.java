@@ -3,6 +3,7 @@ package vn.edu.iuh.models;
 import com.fasterxml.jackson.annotation.JsonIncludeProperties;
 import lombok.*;
 import org.bson.types.ObjectId;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DocumentReference;
 import org.springframework.data.mongodb.core.mapping.Field;
 import vn.edu.iuh.models.enums.MessageStatus;

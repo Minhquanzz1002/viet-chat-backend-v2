@@ -23,12 +23,13 @@ import java.util.List;
 public class Chat {
     @Id
     private String id;
-    @Field("is_group")
-    @JsonProperty("isGroup")
-    private boolean isGroup;
+    @Field("group_id")
+    @DocumentReference
+    private Group group;
     private List<Message> messages;
     @DocumentReference
     private List<UserInfo> members;
+    private LastMessage lastMessage;
     @CreatedDate
     private LocalDateTime createdAt;
     @LastModifiedDate

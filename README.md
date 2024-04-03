@@ -39,17 +39,33 @@ const connect = () => {
 }
 
 const onConnected = () => {
+    // Dùng để nhận các thông báo có người kết bạn, có người đồng ý kết bạn
     stompClient.subscribe('/user/' + user.username + '/private', onMessageReceived);
+    // Dùng để nhận tin nhắn mới từ phòng chat
+    stompClient.subscribe('/chatroom/{id của phòng chat}', onPrivateMessageReceived);
 }
 
 const onMessageReceived = (payload) => {
+    consolog.log(payload.body)
     // TODO làm quần què gì đó làm
 }
 
 // Gửi tin nhắn
 const sendMessage = () => {
-    const data = {};
-    stompClient.send("/app/message/65e84882726cb907cc6b6040", {}, JSON.stringify(data));
+    const data = {
+        content: "Hello mấy ní",
+        sender: "id của thằng gửi",
+        replyMessageId: "id của tin nhắn muốn rep",
+        attachments: [
+            {
+                type: "IMAGE",
+                url: "/abc/abc.png",
+                filename: "abc.png"
+            }
+            
+        ],
+    };
+    stompClient.send("/app/chat/{id của phòng chat}", {}, JSON.stringify(data));
 }
 ```
 

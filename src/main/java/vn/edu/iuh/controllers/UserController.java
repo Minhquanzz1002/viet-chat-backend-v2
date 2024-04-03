@@ -17,6 +17,7 @@ import vn.edu.iuh.models.enums.FriendStatus;
 import vn.edu.iuh.security.UserPrincipal;
 import vn.edu.iuh.services.UserInfoService;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -191,7 +192,7 @@ public class UserController {
             security = {@SecurityRequirement(name = "bearerAuth")}
     )
     @GetMapping("/profile/chats")
-    public List<UserChat> updateUserInfo(@AuthenticationPrincipal UserPrincipal userPrincipal) {
+    public List<ChatRoomDTO> updateUserInfo(@AuthenticationPrincipal UserPrincipal userPrincipal) {
         return userInfoService.getAllChats(userPrincipal);
     }
 

@@ -7,6 +7,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import vn.edu.iuh.dto.ChatRoomDTO;
 import vn.edu.iuh.dto.GroupDTO;
 import vn.edu.iuh.dto.PhoneNumberDTO;
 import vn.edu.iuh.dto.UserInfoDTO;
@@ -168,7 +169,14 @@ public class UserInfoServiceImpl implements UserInfoService {
                                 .findFirst()
                                 .ifPresent(f -> f.setStatus(FriendStatus.BLOCKED));
                         userInfoRepository.saveAll(Arrays.asList(currentUserInfo, friendUserInfo));
-                        return friend;
+                        log.info(friend.toString());
+                        Friend fr = Friend.builder()
+                                .isBestFriend(friend.isBestFriend())
+                                .displayName(friend.getDisplayName())
+                                .status(friend.getStatus())
+                                .user(friend.getUser())
+                                .build();
+                        return fr;
                     }
                 })
                 .orElseGet(() -> {
@@ -267,6 +275,12 @@ public class UserInfoServiceImpl implements UserInfoService {
                 Chat.builder()
                         .messages(List.of(message))
                         .members(List.of(currentUserInfo, friendUserInfo))
+                        .lastMessage(
+                                LastMessage.builder()
+                                        .content("Hai bạn đã trở thành bạn bè")
+                                        .createdAt(LocalDateTime.now())
+                                        .build()
+                        )
                         .build()
         );
 
@@ -281,12 +295,6 @@ public class UserInfoServiceImpl implements UserInfoService {
                         .builder()
                         .chat(chat)
                         .joinTime(LocalDateTime.now())
-                        .lastMessage(
-                                LastMessage.builder()
-                                        .content("[Thiệp] Gửi lời chào đến " + friendUserInfo.getLastName())
-                                        .createdAt(LocalDateTime.now())
-                                        .build()
-                        )
                         .build()
         );
 
@@ -295,12 +303,6 @@ public class UserInfoServiceImpl implements UserInfoService {
                         .builder()
                         .chat(chat)
                         .joinTime(LocalDateTime.now())
-                        .lastMessage(
-                                LastMessage.builder()
-                                        .content("[Thiệp] Gửi lời chào đến " + currentUserInfo.getLastName())
-                                        .createdAt(LocalDateTime.now())
-                                        .build()
-                        )
                         .build()
         );
 
@@ -345,8 +347,36 @@ public class UserInfoServiceImpl implements UserInfoService {
     }
 
     @Override
-    public List<UserChat> getAllChats(UserPrincipal userPrincipal) {
+    public List<ChatRoomDTO> getAllChats(UserPrincipal userPrincipal) {
         UserInfo userInfo = userInfoRepository.findByUser(new User(userPrincipal.getId())).orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng"));
-        return userInfo.getChats();
+        List<UserChat> userChatList =  userInfo.getChats();
+        List<ChatRoomDTO> chatRoomDTOList = new ArrayList<>();
+        userChatList.forEach(
+                chat -> {
+                    String name = null;
+                    String avatar = null;
+                    if (chat.getChat().getGroup() != null) {
+                        name = chat.getChat().getGroup().getName();
+                        avatar = chat.getChat().getGroup().getThumbnailAvatar();
+                    }else {
+                        for (int i = 0; i < chat.getChat().getMembers().size(); i++) {
+                            if (!chat.getChat().getMembers().get(i).getId().equals(userInfo.getId())) {
+                                name = chat.getChat().getMembers().get(i).getFirstName() + " " + chat.getChat().getMembers().get(i).getLastName();
+                                avatar = chat.getChat().getMembers().get(i).getThumbnailAvatar();
+                                break;
+                            }
+                        }
+                    }
+                    ChatRoomDTO chatRoomDTO = ChatRoomDTO.builder()
+                            .id(chat.getChat().getId())
+                            .name(name)
+                            .avatar(avatar)
+                            .lastMessage(chat.getChat().getLastMessage())
+                            .isGroup(chat.getChat().getGroup() != null)
+                            .build();
+                    chatRoomDTOList.add(chatRoomDTO);
+                }
+        );
+        return chatRoomDTOList;
     }
 }

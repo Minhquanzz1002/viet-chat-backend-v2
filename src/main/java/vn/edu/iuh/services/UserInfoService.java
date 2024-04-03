@@ -1,5 +1,6 @@
 package vn.edu.iuh.services;
 
+import vn.edu.iuh.dto.ChatRoomDTO;
 import vn.edu.iuh.dto.GroupDTO;
 import vn.edu.iuh.dto.PhoneNumberDTO;
 import vn.edu.iuh.dto.UserInfoDTO;
@@ -30,5 +31,5 @@ public interface UserInfoService {
     Friend acceptFriendRequest(String friendId, UserPrincipal userPrincipal);
     Friend declineFriendRequest(String friendId, UserPrincipal userPrincipal);
 
-    List<UserChat> getAllChats(UserPrincipal userPrincipal);
+    List<ChatRoomDTO> getAllChats(UserPrincipal userPrincipal);
 }

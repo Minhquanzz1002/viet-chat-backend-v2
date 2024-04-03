@@ -19,5 +19,4 @@ public class UserChat {
     private Chat chat;
     private LocalDateTime lastDeleteChatTime;
     private LocalDateTime joinTime;
-    private LastMessage lastMessage;
 }

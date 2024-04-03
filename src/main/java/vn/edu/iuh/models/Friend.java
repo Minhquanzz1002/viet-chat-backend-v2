@@ -12,6 +12,7 @@ import vn.edu.iuh.models.enums.FriendStatus;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Friend {
     @DocumentReference(lazy = true)
     @Field("friend_id")
