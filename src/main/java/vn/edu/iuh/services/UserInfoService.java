@@ -5,7 +5,6 @@ import vn.edu.iuh.dto.GroupDTO;
 import vn.edu.iuh.dto.PhoneNumberDTO;
 import vn.edu.iuh.dto.UserInfoDTO;
 import vn.edu.iuh.models.Friend;
-import vn.edu.iuh.models.UserChat;
 import vn.edu.iuh.models.UserInfo;
 import vn.edu.iuh.security.UserPrincipal;
 
@@ -21,15 +20,15 @@ public interface UserInfoService {
     UserInfo updateUserInfo(String phone, UserInfoDTO userInfoDTO);
 
     // friends
-    Friend addFriendByUserId(String friendId, UserPrincipal userPrincipal);
+    String addFriendByUserId(String friendId, UserPrincipal userPrincipal);
 
-    Friend addFriendByPhone(PhoneNumberDTO phoneNumberDTO, UserPrincipal userPrincipal);
+    String addFriendByPhone(PhoneNumberDTO phoneNumberDTO, UserPrincipal userPrincipal);
 
-    Friend blockFriend(String friendId, UserPrincipal userPrincipal);
-    Friend unblockFriend(String friendId, UserPrincipal userPrincipal);
-    Friend deleteFriend(String friendId, UserPrincipal userPrincipal);
-    Friend acceptFriendRequest(String friendId, UserPrincipal userPrincipal);
-    Friend declineFriendRequest(String friendId, UserPrincipal userPrincipal);
+    String blockFriend(String friendId, UserPrincipal userPrincipal);
+    String unblockFriend(String friendId, UserPrincipal userPrincipal);
+    String deleteFriend(String friendId, UserPrincipal userPrincipal);
+    String acceptFriendRequest(String friendId, UserPrincipal userPrincipal);
+    String declineFriendRequest(String friendId, UserPrincipal userPrincipal);
 
     List<ChatRoomDTO> getAllChats(UserPrincipal userPrincipal);
 }

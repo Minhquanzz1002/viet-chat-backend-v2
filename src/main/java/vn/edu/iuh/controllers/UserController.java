@@ -57,7 +57,7 @@ public class UserController {
             security = {@SecurityRequirement(name = "bearerAuth")}
     )
     @PutMapping("/profile/friends/{friend-id}/accept")
-    public Friend acceptFriendRequest(@AuthenticationPrincipal UserPrincipal userPrincipal,  @PathVariable("friend-id") String friendId) {
+    public String acceptFriendRequest(@AuthenticationPrincipal UserPrincipal userPrincipal,  @PathVariable("friend-id") String friendId) {
         return userInfoService.acceptFriendRequest(friendId, userPrincipal);
     }
 
@@ -70,7 +70,7 @@ public class UserController {
             security = {@SecurityRequirement(name = "bearerAuth")}
     )
     @PutMapping("/profile/friends/{friend-id}/decline")
-    public Friend declineFriendRequest(@AuthenticationPrincipal UserPrincipal userPrincipal,  @PathVariable("friend-id") String friendId) {
+    public String declineFriendRequest(@AuthenticationPrincipal UserPrincipal userPrincipal,  @PathVariable("friend-id") String friendId) {
         return userInfoService.declineFriendRequest(friendId, userPrincipal);
     }
 
@@ -85,7 +85,7 @@ public class UserController {
             security = {@SecurityRequirement(name = "bearerAuth")}
     )
     @PutMapping("/profile/friends/{friend-id}/block")
-    public Friend blockFriend(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable("friend-id") String friendId) {
+    public String blockFriend(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable("friend-id") String friendId) {
         return userInfoService.blockFriend(friendId, userPrincipal);
     }
 
@@ -98,7 +98,7 @@ public class UserController {
             security = {@SecurityRequirement(name = "bearerAuth")}
     )
     @PutMapping("/profile/friends/{friend-id}/unblock")
-    public Friend unblockFriend(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable("friend-id") String friendId) {
+    public String unblockFriend(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable("friend-id") String friendId) {
         return userInfoService.unblockFriend(friendId, userPrincipal);
     }
 
@@ -115,19 +115,8 @@ public class UserController {
             security = {@SecurityRequirement(name = "bearerAuth")}
     )
     @PostMapping("/profile/friends/by-phone")
-    public Friend addFriendByPhone(@AuthenticationPrincipal UserPrincipal userPrincipal, @RequestBody @Valid PhoneNumberDTO phoneNumberDTO) {
+    public String addFriendByPhone(@AuthenticationPrincipal UserPrincipal userPrincipal, @RequestBody @Valid PhoneNumberDTO phoneNumberDTO) {
         return userInfoService.addFriendByPhone(phoneNumberDTO, userPrincipal);
-    }
-
-    @Operation(
-            summary = "Cập nhật tên gợi nhớ",
-            description = "Cập nhật tên gợi nhớ",
-            hidden = true,
-            security = {@SecurityRequirement(name = "bearerAuth")}
-    )
-    @PutMapping("/profile/friends/{friend-id}")
-    public Friend updateDisplayNameOfFriendById(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable("friend-id") String friendId) {
-        return null;
     }
 
     @Operation(
@@ -142,8 +131,8 @@ public class UserController {
                     """,
             security = {@SecurityRequirement(name = "bearerAuth")}
     )
-    @PostMapping("/profile/friends/{friend-id}")
-    public Friend addFriend(@AuthenticationPrincipal UserPrincipal userPrincipal,  @PathVariable("friend-id") String friendId) {
+    @PutMapping("/profile/friends/{friend-id}")
+    public String addFriend(@AuthenticationPrincipal UserPrincipal userPrincipal,  @PathVariable("friend-id") String friendId) {
         return userInfoService.addFriendByUserId(friendId, userPrincipal);
     }
 
@@ -180,7 +169,7 @@ public class UserController {
             security = {@SecurityRequirement(name = "bearerAuth")}
     )
     @DeleteMapping("/profile/friends/{friend-id}")
-    public Friend deleteFriend(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable(name = "friend-id") String friendId) {
+    public String deleteFriend(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable(name = "friend-id") String friendId) {
         return userInfoService.deleteFriend(friendId, userPrincipal);
     }
 
