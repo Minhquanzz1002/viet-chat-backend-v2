@@ -34,7 +34,7 @@ public class UserInfo {
     private String coverImage;
     private boolean gender;
     private LocalDate birthday;
-    @DocumentReference(lazy = true)
+    @DocumentReference(lazy = true, collection = "groups")
     @JsonIgnore
     @ToString.Exclude
     private List<Group> groups = new ArrayList<>();
@@ -47,7 +47,7 @@ public class UserInfo {
     private LocalDateTime updatedAt;
     @Field("user_id")
     @Indexed(unique = true)
-    @DocumentReference(lazy = true)
+    @DocumentReference(lazy = true, collection = "users")
     private User user;
 
     @ToString.Exclude
