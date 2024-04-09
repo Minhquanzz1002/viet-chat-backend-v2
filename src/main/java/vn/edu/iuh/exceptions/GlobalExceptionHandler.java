@@ -6,6 +6,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -71,7 +72,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .build();
     }
 
-    @ExceptionHandler({FriendshipRelationshipException.class, FileUploadException.class, UserNotInChatException.class, InvalidFriendshipRequestException.class})
+    @ExceptionHandler({FriendshipRelationshipException.class, FileUploadException.class, UserNotInChatException.class, InvalidFriendshipRequestException.class, MessageRecallTimeExpiredException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponseDTO handleFriendshipRelationshipException(RuntimeException exception) {
         return ErrorResponseDTO
@@ -101,9 +102,23 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return exception.getMessage();
     }
 
+    @ExceptionHandler(AccessDeniedException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ErrorResponseDTO handleAccessDeniedException(RuntimeException exception) {
+        log.warn("Handle access denied exception...");
+        return ErrorResponseDTO
+                .builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.FORBIDDEN.value())
+                .error(HttpStatus.FORBIDDEN.getReasonPhrase())
+                .detail(exception.getMessage())
+                .build();
+    }
+
     @ExceptionHandler(RuntimeException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponseDTO handleException(RuntimeException exception) {
+        log.warn("Handle runtime exception...");
         return ErrorResponseDTO
                 .builder()
                 .timestamp(LocalDateTime.now())

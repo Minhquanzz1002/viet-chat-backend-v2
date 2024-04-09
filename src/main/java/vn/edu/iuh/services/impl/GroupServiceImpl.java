@@ -66,7 +66,7 @@ public class GroupServiceImpl implements GroupService {
     public void deleteById(String id, UserPrincipal userPrincipal) {
         UserInfo userInfo = userInfoRepository.findByUser(new User(userPrincipal.getId())).orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng"));
         Group group = groupRepository.findById(id).orElseThrow(() -> new DataNotFoundException("Không tìm thấy nhóm có ID là " + id));
-        boolean isValid = group.getMembers().stream().anyMatch(groupMember -> groupMember.getUser().equals(userInfo) && groupMember.getRole().equals(GroupMemberRole.GROUP_LEADER));
+        boolean isValid = group.getMembers().stream().anyMatch(groupMember -> groupMember.getMember().equals(userInfo) && groupMember.getRole().equals(GroupMemberRole.GROUP_LEADER));
         if (isValid) {
             groupRepository.delete(group);
         }else {
@@ -79,12 +79,12 @@ public class GroupServiceImpl implements GroupService {
         // validate whether the user is in the group
         UserInfo userInfo = userInfoRepository.findByUser(new User(((UserPrincipal) userDetails).getId())).orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng"));
         Group group = groupRepository.findById(groupId).orElseThrow(() -> new DataNotFoundException("Nhóm không tồn tại"));
-        boolean isValid = group.getMembers().stream().anyMatch(groupMember -> groupMember.getUser().equals(userInfo));
+        boolean isValid = group.getMembers().stream().anyMatch(groupMember -> groupMember.getMember().equals(userInfo));
 
         if (isValid) {
             List<UserInfo> userInfos = userInfoRepository.findAllById(users);
             userInfos.forEach(userInfo1 -> {
-                if (group.getMembers().stream().noneMatch(groupMember -> groupMember.getUser().equals(userInfo1))) {
+                if (group.getMembers().stream().noneMatch(groupMember -> groupMember.getMember().equals(userInfo1))) {
                     GroupMember groupMember = new GroupMember(userInfo1, GroupMemberRole.MEMBER, "Thêm bởi " + userInfo.getLastName());
                     group.getMembers().add(groupMember);
                     userInfo1.getGroups().add(group);
@@ -102,7 +102,7 @@ public class GroupServiceImpl implements GroupService {
     public Group deleteMemberById(String groupId, String memberId) {
         Group group = groupRepository.findById(groupId).orElseThrow(() -> new DataNotFoundException("Không tìm thấy nhóm có ID là " + groupId));
         List<GroupMember> members = group.getMembers();
-        boolean removed = members.removeIf(member -> member.getUser().getId().equals(memberId));
+        boolean removed = members.removeIf(member -> member.getMember().getId().equals(memberId));
         if (!removed) {
             throw new DataNotFoundException("Không tìm thấy thành viên.");
         }

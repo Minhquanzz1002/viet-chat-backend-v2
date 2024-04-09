@@ -7,7 +7,9 @@ spring:
       database: viet-chat
       field-naming-strategy: org.springframework.data.mapping.model.SnakeCaseFieldNamingStrategy
       auto-index-creation: true
-      uri: mongodb+srv://root:root@cluster0.idirp.mongodb.net/
+      host: localhost
+      port: 27017
+#      uri: mongodb+srv://root:root@cluster0.idirp.mongodb.net/
   servlet:
     multipart:
       max-request-size: 50MB
@@ -23,11 +25,6 @@ springdoc:
     path: /api-docs
   swagger-ui:
     path:
-
-twilio:
-  accountSID: AC8cb6385a9de41d503b7c432bcd095c69
-  authToken: 9db70f2d921fa3110a98f25c63653b9b
-  phoneNumberTrial: +16266465296
 
 # Log
 logging:

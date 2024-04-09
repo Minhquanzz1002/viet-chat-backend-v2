@@ -7,7 +7,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum MessageStatus {
     SENT("Gửi"),
-    RECALLED("Thu hồi");
+    UNSEND("Thu hồi");
 
     private final String status;
 }
