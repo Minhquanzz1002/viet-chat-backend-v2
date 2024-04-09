@@ -1,6 +1,5 @@
 package vn.edu.iuh.models;
 
-import com.fasterxml.jackson.annotation.JsonIncludeProperties;
 import lombok.*;
 import org.springframework.data.mongodb.core.mapping.DocumentReference;
 import org.springframework.data.mongodb.core.mapping.Field;
@@ -11,10 +10,12 @@ import vn.edu.iuh.models.enums.GroupMemberRole;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
+@Builder
+@EqualsAndHashCode(of = "member")
 public class GroupMember {
     @Field("member_id")
     @DocumentReference(lazy = true)
-    private UserInfo user;
+    private UserInfo member;
     private GroupMemberRole role;
     private String joinMethod;
 }

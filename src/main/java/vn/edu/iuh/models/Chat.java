@@ -1,5 +1,6 @@
 package vn.edu.iuh.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -26,6 +27,7 @@ public class Chat {
     @Field("group_id")
     @DocumentReference
     private Group group;
+    @JsonIgnore
     private List<Message> messages;
     @DocumentReference
     private List<UserInfo> members;
