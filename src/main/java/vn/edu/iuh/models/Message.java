@@ -1,5 +1,6 @@
 package vn.edu.iuh.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIncludeProperties;
 import lombok.*;
 import org.bson.types.ObjectId;
@@ -17,6 +18,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(of = "messageId")
 @ToString
 @Builder
 public class Message {
@@ -33,7 +35,8 @@ public class Message {
     private MessageStatus status = MessageStatus.SENT;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt = LocalDateTime.now();
-    @DocumentReference
+    @JsonIgnore
+    @DocumentReference(lazy = true)
     private List<UserInfo> deleteBy = new ArrayList<>();
 
     public String getMessageId() {
