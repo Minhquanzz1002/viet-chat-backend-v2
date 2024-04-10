@@ -15,6 +15,7 @@ import vn.edu.iuh.dto.UserInfoDTO;
 import vn.edu.iuh.exceptions.DataNotFoundException;
 import vn.edu.iuh.exceptions.FriendshipRelationshipException;
 import vn.edu.iuh.exceptions.InvalidFriendshipRequestException;
+import vn.edu.iuh.exceptions.InvalidRequestException;
 import vn.edu.iuh.models.*;
 import vn.edu.iuh.models.enums.FriendStatus;
 import vn.edu.iuh.models.enums.MessageStatus;
@@ -27,9 +28,7 @@ import vn.edu.iuh.security.UserPrincipal;
 import vn.edu.iuh.services.UserInfoService;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -40,6 +39,24 @@ public class UserInfoServiceImpl implements UserInfoService {
     private final ChatRepository chatRepository;
     private final ModelMapper modelMapper;
     private final SimpMessagingTemplate simpMessagingTemplate;
+
+
+    @Override
+    public UserInfo findUserInfoByPhone(String phone, String senderId) {
+        UserInfo sender = userInfoRepository.findByUser(new User(senderId)).orElseThrow(() -> new DataNotFoundException("Thông tin người dùng không tồn tại"));
+
+        User user = userRepository.findByPhone(phone).orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng nào có số điện thoại là " + phone));
+        UserInfo userInfo = userInfoRepository.findByUser(user).orElseThrow(() -> new DataNotFoundException("Thông tin người dùng không tồn tại"));
+
+        if (sender.equals(userInfo)) {
+            throw new InvalidRequestException("Bạn đang tự tìm kiếm chính mình");
+        }
+
+        sender.getRecentSearches().remove(userInfo);
+        sender.getRecentSearches().add(userInfo);
+        userInfoRepository.save(sender);
+        return userInfo;
+    }
 
     @Override
     public UserInfo findUserInfo(String phone) {
@@ -363,6 +380,7 @@ public class UserInfoServiceImpl implements UserInfoService {
                     chatRoomDTOList.add(chatRoomDTO);
                 }
         );
+        chatRoomDTOList.sort(Comparator.comparing(chatRoomDTO -> chatRoomDTO.getLastMessage().getCreatedAt(), Comparator.reverseOrder()));
         return chatRoomDTOList;
     }
 }

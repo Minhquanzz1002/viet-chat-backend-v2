@@ -54,6 +54,10 @@ public class UserInfo {
     @JsonIgnore
     private List<UserChat> chats = new ArrayList<>();
 
+    @JsonIgnore
+    @DocumentReference(lazy = true)
+    private List<UserInfo> recentSearches = new ArrayList<>();
+
     public UserInfo(String firstName, String lastName, String bio, String thumbnailAvatar, String coverImage, boolean gender, LocalDate birthday, User user) {
         this.firstName = firstName;
         this.lastName = lastName;

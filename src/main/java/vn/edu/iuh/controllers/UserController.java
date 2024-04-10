@@ -31,11 +31,29 @@ public class UserController {
 
     @Operation(
             summary = "Tìm kiếm người dùng bằng số điện thoại",
-            description = "Tìm kiếm người dùng bằng số điện thoại. Dùng cho phần tìm kiếm để kết bạn"
+            description = """
+                    Tìm kiếm người dùng bằng số điện thoại. Dùng cho phần tìm kiếm để kết bạn
+                        
+                    <strong>Bad Request:</strong>
+                    - Người được tìm kiếm là người yêu cầu
+                                        
+                    <strong>Not Found: </strong>
+                    - Không tìm thấy
+                    """
     )
     @GetMapping("/profile/{phone:^\\d+$}")
-    public UserInfo getUserInfoByPhone(@PathVariable String phone) {
-        return userInfoService.findUserInfo(phone);
+    public UserInfo getUserInfoByPhone(@PathVariable String phone, @AuthenticationPrincipal UserPrincipal userPrincipal) {
+        return userInfoService.findUserInfoByPhone(phone, userPrincipal.getId());
+    }
+
+    @Operation(
+            summary = "Danh sách người dùng đã tìm kiếm gần đây",
+            description = "Danh sách người dùng đã tìm kiếm gần đây. Nếu không truyền size mặc định sẽ là 4"
+    )
+    @GetMapping("/profile/search/recent")
+    public List<UserInfo> getUserInfoRecentSearches(@AuthenticationPrincipal UserPrincipal userPrincipal, @RequestParam(defaultValue = "4") int size) {
+        List<UserInfo> userInfos = userInfoService.findUserInfoByUserId(userPrincipal.getId()).getRecentSearches();
+        return userInfos.subList(0, Math.min(size, userInfos.size()));
     }
 
     @Operation(
@@ -57,7 +75,7 @@ public class UserController {
             security = {@SecurityRequirement(name = "bearerAuth")}
     )
     @PutMapping("/profile/friends/{friend-id}/accept")
-    public String acceptFriendRequest(@AuthenticationPrincipal UserPrincipal userPrincipal,  @PathVariable("friend-id") String friendId) {
+    public String acceptFriendRequest(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable("friend-id") String friendId) {
         return userInfoService.acceptFriendRequest(friendId, userPrincipal);
     }
 
@@ -70,7 +88,7 @@ public class UserController {
             security = {@SecurityRequirement(name = "bearerAuth")}
     )
     @PutMapping("/profile/friends/{friend-id}/decline")
-    public String declineFriendRequest(@AuthenticationPrincipal UserPrincipal userPrincipal,  @PathVariable("friend-id") String friendId) {
+    public String declineFriendRequest(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable("friend-id") String friendId) {
         return userInfoService.declineFriendRequest(friendId, userPrincipal);
     }
 
@@ -132,7 +150,7 @@ public class UserController {
             security = {@SecurityRequirement(name = "bearerAuth")}
     )
     @PutMapping("/profile/friends/{friend-id}")
-    public String addFriend(@AuthenticationPrincipal UserPrincipal userPrincipal,  @PathVariable("friend-id") String friendId) {
+    public String addFriend(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable("friend-id") String friendId) {
         return userInfoService.addFriendByUserId(friendId, userPrincipal);
     }
 

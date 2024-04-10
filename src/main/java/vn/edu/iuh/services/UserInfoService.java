@@ -11,7 +11,7 @@ import vn.edu.iuh.security.UserPrincipal;
 import java.util.List;
 
 public interface UserInfoService {
-
+    UserInfo findUserInfoByPhone(String phone, String senderId);
     UserInfo findUserInfo(String phone);
     UserInfo findUserInfoByUserId(String userId);
 

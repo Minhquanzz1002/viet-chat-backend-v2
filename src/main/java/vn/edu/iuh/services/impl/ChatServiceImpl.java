@@ -78,6 +78,9 @@ public class ChatServiceImpl implements ChatService {
                 .updatedAt(LocalDateTime.now())
                 .build();
         Chat chat = chatRepository.findById(chatId).orElseThrow(() -> new DataNotFoundException("Không tìm thấy phòng chat có ID " + chatId));
+        if (chat.getMessages() == null) {
+            chat.setMessages(new ArrayList<>());
+        }
         chat.getMessages().add(message);
         LastMessage lastMessage = LastMessage.builder()
                 .createdAt(message.getCreatedAt())
