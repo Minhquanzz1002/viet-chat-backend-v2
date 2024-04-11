@@ -33,19 +33,24 @@ public class ChatServiceImpl implements ChatService {
     private final UserInfoRepository userInfoRepository;
     private final SimpMessagingTemplate simpMessagingTemplate;
 
-    @Override
-    public List<Message> getAllMessages(String chatId, UserPrincipal userPrincipal) {
-        UserInfo userInfo = userInfoRepository.findByUser(new User(userPrincipal.getId())).orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng"));
-        Chat chat = findById(chatId);
-
-        if (chat.getGroup() == null && !chat.getMembers().contains(userInfo) || chat.getGroup() != null && !chat.getGroup().getMembers().contains(GroupMember.builder().member(userInfo).build())) {
+    private void checkChatMembership(Chat chat, UserInfo sender) {
+        if ((chat.getGroup() == null && !chat.getMembers().contains(sender)) ||
+                (chat.getGroup() != null && !chat.getGroup().getMembers().contains(GroupMember.builder().member(sender).build()))) {
             throw new AccessDeniedException("Bạn không phải là thành viên của phòng chat này");
         }
+    }
+
+    @Override
+    public List<Message> getAllMessages(String chatId, UserPrincipal userPrincipal) {
+        UserInfo sender = userInfoRepository.findByUser(new User(userPrincipal.getId())).orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng"));
+        Chat chat = findById(chatId);
+
+        checkChatMembership(chat, sender);
 
         List<Message> messages = new ArrayList<>();
         chat.getMessages().forEach(
                 message -> {
-                    if (!message.getDeleteBy().contains(userInfo)) {
+                    if (!message.getDeleteBy().contains(sender)) {
                         if (message.getStatus().equals(MessageStatus.UNSEND)) {
                             message.setContent("Tin nhắn đã bị thu hồi");
                             message.setAttachments(null);
@@ -100,11 +105,10 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     public Message saveMessage(MessageRequestDTO messageRequestDTO, String chatId, UserPrincipal userPrincipal) {
-        UserInfo userInfo = userInfoRepository.findByUser(new User(userPrincipal.getId())).orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng"));
+        UserInfo sender = userInfoRepository.findByUser(new User(userPrincipal.getId())).orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng"));
         Chat chat = chatRepository.findById(chatId).orElseThrow(() -> new DataNotFoundException("Không tìm thấy phòng chat có ID " + chatId));
-        if (chat.getGroup() == null && !chat.getMembers().contains(userInfo) || chat.getGroup() != null && !chat.getGroup().getMembers().contains(GroupMember.builder().member(userInfo).build())) {
-            throw new AccessDeniedException("Bạn không phải là thành viên của phòng chat này");
-        }
+
+        checkChatMembership(chat, sender);
 
         Message message = Message.builder()
                 .messageId(new ObjectId())
@@ -113,7 +117,7 @@ public class ChatServiceImpl implements ChatService {
                 .attachments(messageRequestDTO.getAttachments())
                 .status(MessageStatus.SENT)
                 .type(MessageType.MESSAGE)
-                .sender(userInfo)
+                .sender(sender)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .build();
@@ -121,7 +125,7 @@ public class ChatServiceImpl implements ChatService {
         LastMessage lastMessage = LastMessage.builder()
                 .messageId(message.getMessageId())
                 .createdAt(message.getCreatedAt())
-                .sender(userInfo)
+                .sender(sender)
                 .content(message.getContent() == null ? "[FILE]" : message.getContent())
                 .build();
         chat.setLastMessage(lastMessage);
@@ -132,18 +136,17 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     public Message unsendMessage(String messageId, String chatId, UserPrincipal userPrincipal) {
-        UserInfo userInfo = userInfoRepository.findByUser(new User(userPrincipal.getId())).orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng"));
+        UserInfo sender = userInfoRepository.findByUser(new User(userPrincipal.getId())).orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng"));
         Chat chat = chatRepository.findById(chatId).orElseThrow(() -> new DataNotFoundException("Không tìm thấy phòng chat có ID " + chatId));
-        if (chat.getGroup() == null && !chat.getMembers().contains(userInfo) || chat.getGroup() != null && !chat.getGroup().getMembers().contains(GroupMember.builder().member(userInfo).build())) {
-            throw new AccessDeniedException("Bạn không phải là thành viên của phòng chat này");
-        }
+
+        checkChatMembership(chat, sender);
 
         int messageIndex = chat.getMessages().indexOf(Message.builder().messageId(new ObjectId(messageId)).build());
         if (messageIndex < 0) {
             throw new DataNotFoundException("Không tìm thấy tin nhắn");
         }
         Message message = chat.getMessages().get(messageIndex);
-        if (!message.getSender().equals(userInfo)) {
+        if (!message.getSender().equals(sender)) {
             throw new AccessDeniedException("Chỉ người gửi mới được thu hồi");
         }
         if (ChronoUnit.HOURS.between(message.getCreatedAt(), LocalDateTime.now()) > 24) {
@@ -160,36 +163,32 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     public String deleteMessage(String messageId, String chatId, UserPrincipal userPrincipal) {
-        UserInfo userInfo = userInfoRepository.findByUser(new User(userPrincipal.getId())).orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng"));
+        UserInfo sender = userInfoRepository.findByUser(new User(userPrincipal.getId())).orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng"));
         Chat chat = chatRepository.findById(chatId).orElseThrow(() -> new DataNotFoundException("Không tìm thấy phòng chat có ID " + chatId));
-        if (chat.getGroup() == null && !chat.getMembers().contains(userInfo) || chat.getGroup() != null && !chat.getGroup().getMembers().contains(GroupMember.builder().member(userInfo).build())) {
-            throw new AccessDeniedException("Bạn không phải là thành viên của phòng chat này");
-        }
+        checkChatMembership(chat, sender);
 
         int messageIndex = chat.getMessages().indexOf(Message.builder().messageId(new ObjectId(messageId)).build());
         if (messageIndex < 0) {
             throw new DataNotFoundException("Không tìm thấy tin nhắn");
         }
         Message message = chat.getMessages().get(messageIndex);
-        message.getDeleteBy().add(userInfo);
+        message.getDeleteBy().add(sender);
         chatRepository.save(chat);
         return "Xóa tin nhắn thành công";
     }
 
     @Override
     public void deleteMessage(MessageEventDTO messageEventDTO, String chatId) {
-        UserInfo userInfo = userInfoRepository.findById(messageEventDTO.getSenderId()).orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng"));
+        UserInfo sender = userInfoRepository.findById(messageEventDTO.getSenderId()).orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng"));
         Chat chat = chatRepository.findById(chatId).orElseThrow(() -> new DataNotFoundException("Không tìm thấy phòng chat có ID " + chatId));
-        if (chat.getGroup() == null && !chat.getMembers().contains(userInfo) || chat.getGroup() != null && !chat.getGroup().getMembers().contains(GroupMember.builder().member(userInfo).build())) {
-            throw new AccessDeniedException("Bạn không phải là thành viên của phòng chat này");
-        }
+        checkChatMembership(chat, sender);
 
         int messageIndex = chat.getMessages().indexOf(Message.builder().messageId(new ObjectId(messageEventDTO.getMessageId())).build());
         if (messageIndex < 0) {
             throw new DataNotFoundException("Không tìm thấy tin nhắn");
         }
         Message message = chat.getMessages().get(messageIndex);
-        message.getDeleteBy().add(userInfo);
+        message.getDeleteBy().add(sender);
         chatRepository.save(chat);
     }
 
@@ -197,9 +196,7 @@ public class ChatServiceImpl implements ChatService {
     public Message unsendMessage(MessageEventDTO messageEventDTO, String chatId) {
         UserInfo userInfo = userInfoRepository.findById(messageEventDTO.getSenderId()).orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng"));
         Chat chat = chatRepository.findById(chatId).orElseThrow(() -> new DataNotFoundException("Không tìm thấy phòng chat có ID " + chatId));
-        if (chat.getGroup() == null && !chat.getMembers().contains(userInfo) || chat.getGroup() != null && !chat.getGroup().getMembers().contains(GroupMember.builder().member(userInfo).build())) {
-            throw new AccessDeniedException("Bạn không phải là thành viên của phòng chat này");
-        }
+        checkChatMembership(chat, userInfo);
 
         int messageIndex = chat.getMessages().indexOf(Message.builder().messageId(new ObjectId(messageEventDTO.getMessageId())).build());
         if (messageIndex < 0) {
@@ -222,15 +219,24 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
-    public String seenMessage(String chatId, UserPrincipal userPrincipal) {
+    public String seenMessage(String chatId,  UserPrincipal userPrincipal) {
         UserInfo userInfo = userInfoRepository.findByUser(new User(userPrincipal.getId())).orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng"));
         Chat chat = chatRepository.findById(chatId).orElseThrow(() -> new DataNotFoundException("Không tìm thấy phòng chat có ID " + chatId));
-        if (chat.getGroup() == null && !chat.getMembers().contains(userInfo) || chat.getGroup() != null && !chat.getGroup().getMembers().contains(GroupMember.builder().member(userInfo).build())) {
-            throw new AccessDeniedException("Bạn không phải là thành viên của phòng chat này");
-        }
-//        log.info("Last: {}", chat.getMessages().);
-//        chat.setLastMessage(chat.getMessages().getLast());
-        return null;
+        checkChatMembership(chat, userInfo);
+        int index = userInfo.getChats().indexOf(UserChat.builder().chat(chat).build());
+        userInfo.getChats().get(index).setLastSeenMessageId(chat.getMessages().get(chat.getMessages().size() - 1).getMessageId());
+        userInfoRepository.save(userInfo);
+        return "Thành công";
+    }
+
+    @Override
+    public void seenMessage(String chatId, String userInfoId) {
+        UserInfo userInfo = userInfoRepository.findById(userInfoId).orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng"));
+        Chat chat = chatRepository.findById(chatId).orElseThrow(() -> new DataNotFoundException("Không tìm thấy phòng chat có ID " + chatId));
+        checkChatMembership(chat, userInfo);
+        int index = userInfo.getChats().indexOf(UserChat.builder().chat(chat).build());
+        userInfo.getChats().get(index).setLastSeenMessageId(chat.getMessages().get(chat.getMessages().size() - 1).getMessageId());
+        userInfoRepository.save(userInfo);
     }
 
 }
