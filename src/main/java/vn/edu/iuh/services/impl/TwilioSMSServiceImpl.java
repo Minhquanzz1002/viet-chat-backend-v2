@@ -1,8 +1,12 @@
 package vn.edu.iuh.services.impl;
 
+import com.twilio.rest.api.v2010.account.Message;
+import com.twilio.type.PhoneNumber;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import vn.edu.iuh.config.TwilioProperties;
 import vn.edu.iuh.dto.PhoneNumberDTO;
 import vn.edu.iuh.dto.OTPResponseDTO;
 import vn.edu.iuh.dto.OTPRequestDTO;
@@ -21,7 +25,8 @@ import vn.edu.iuh.security.UserPrincipal;
 import vn.edu.iuh.services.TwilioSMSService;
 import vn.edu.iuh.utils.JwtUtil;
 
-import java.util.Optional;
+import java.text.DecimalFormat;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -71,6 +76,71 @@ public class TwilioSMSServiceImpl implements TwilioSMSService {
                     .build();
         }
         throw new OTPMismatchException("OTP không chính xác hoặc đã hết hạn");
+    }
+
+
+    @Autowired
+    private TwilioProperties twilioConfig;
+    Map<String, String> otpMap = new HashMap<>();
+    @Override
+    public String sendSMSToVerifyV2(PhoneNumberDTO phoneNumberDTO) {
+        String otpResponseDto = null;
+        try {
+            PhoneNumber to = new PhoneNumber(chinhSoPhone(phoneNumberDTO));
+            PhoneNumber from = new PhoneNumber(twilioConfig.getPhoneNumberTrial()); // from
+            String otp = generateOTP();
+            String otpMessage = "Chào bạn, chúng tôi là VietChat. Mã OTP của bạn là  " + otp + ", xin cảm ơn.";
+            Message message = Message
+                    .creator(to, from,
+                            otpMessage)
+                    .create();
+            otpMap.put(phoneNumberDTO.getPhone(), otp);
+            otpResponseDto = otpMessage;
+        } catch (Exception e) {
+            e.printStackTrace();
+            otpResponseDto =  e.getMessage();
+        }
+        return otpResponseDto;
+
+    }
+
+    @Override
+    public OTPResponseDTO verifyOTPV2(OTPRequestDTO otpRequestDTO) {
+
+        Set<String> keys = otpMap.keySet();
+        String phone = null;
+        for(String key : keys)
+            phone = key;
+        if (otpRequestDTO.getPhone().equals(phone)) {
+            otpMap.remove(phone,otpRequestDTO.getOtp());
+            Optional<User> userOptional = userRepository.findByPhone(otpRequestDTO.getPhone());
+            User user = userOptional.orElseGet(() -> userRepository.save(new User(otpRequestDTO.getPhone(), otpRequestDTO.getPhone(), UserStatus.UNVERIFIED, RoleType.USER)));
+            RefreshToken refreshToken = RefreshToken
+                    .builder()
+                    .token(jwtUtil.generateRefreshToken(new UserPrincipal(user)))
+                    .status(RefreshTokenStatus.ACTIVE)
+                    .user(user)
+                    .build();
+            refreshTokenRepository.save(refreshToken);
+            return OTPResponseDTO.builder()
+                    .accessToken(jwtUtil.generateAccessToken(new UserPrincipal(user)))
+                    .refreshToken(refreshToken.getToken())
+                    .build();
+        }
+        throw new OTPMismatchException("OTP không chính xác hoặc đã hết hạn");
+
+    }
+    private String generateOTP() {
+        return new DecimalFormat("000000")
+                .format(new Random().nextInt(999999));
+    }
+    public String chinhSoPhone(PhoneNumberDTO phoneNumberDTO) {
+        String phone = phoneNumberDTO.getPhone();
+        if (phone.startsWith("0")) {
+            phone = "+84" + phone.substring(1);
+            System.out.println(phone);
+        }
+        return phone;
     }
 
 

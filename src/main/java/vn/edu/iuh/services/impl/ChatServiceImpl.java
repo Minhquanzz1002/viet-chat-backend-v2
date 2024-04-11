@@ -239,4 +239,17 @@ public class ChatServiceImpl implements ChatService {
         userInfoRepository.save(userInfo);
     }
 
+    @Override
+    public List<Message> findByChat(String id,String mes) {
+        Chat chat = chatRepository.findById(id).orElseThrow(() -> new DataNotFoundException("Không tìm thấy phòng chat có ID " + id));
+        List<Message> list =  chat.getMessages();
+        List<Message> listFine =new ArrayList<>();
+        for (Message message : list) {
+            if (message.getContent().contains(mes)) {
+                listFine.add(message);
+            }
+        }
+        return listFine;
+    }
+
 }

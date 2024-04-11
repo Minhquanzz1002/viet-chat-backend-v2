@@ -29,6 +29,8 @@ import vn.edu.iuh.utils.JwtUtil;
 import vn.edu.iuh.utils.enums.JwtType;
 
 import java.util.List;
+import java.util.Optional;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -201,5 +203,18 @@ public class AuthServiceImpl implements AuthService {
             return "Cập nhật mật khẩu thành công.";
         }
         throw new OTPMismatchException("OTP không chính xác hoặc đã hết hạn");
+    }
+
+    @Override
+    public String changePassword(String passwordole,String newpass, String phone) {
+        String phoneSuffix = phone.substring(phone.length() - 3);
+        User user = userRepository.findByPhone(phone).orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy tài khoản có số điện thoại là ***" + phoneSuffix));
+        System.out.println(user);
+        if(passwordEncoder.matches(passwordole, user.getPassword())){
+            user.setPassword(passwordEncoder.encode(newpass));
+            userRepository.save(user);
+            return "Cập nhật mật khẩu thành công.";
+        }
+        return "mật khẩu nhập sai";
     }
 }

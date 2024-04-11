@@ -20,5 +20,6 @@ public interface ChatService {
     Message unsendMessage(MessageEventDTO messageEventDTO, String chatId);
     String seenMessage(String chatId, UserPrincipal userPrincipal);
     void seenMessage(String chatId, String userInfoId);
+    List<Message> findByChat(String id,String mes);
 
 }
