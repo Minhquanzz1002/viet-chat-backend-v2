@@ -157,9 +157,10 @@ public class ChatController {
     public Chat getChat(@PathVariable("chat-id") String id) {
         return chatService.findById(id);
     }
-    @PostMapping("/search")
-    public List<Message> SearchMess(@RequestBody @Valid SearchMessageRequestDTO searchRequest) {
-        return chatService.findByChat(searchRequest.getId(),searchRequest.getContent());
+    @GetMapping("/{chatId}/search/{mess}")
+    public List<Message> timKiemTinNhan(@PathVariable("chatId") String id, @PathVariable("mess") String noiDung) {
+        return chatService.findByChat(id, noiDung);
     }
+
 
 }
