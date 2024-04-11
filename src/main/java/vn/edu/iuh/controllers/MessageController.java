@@ -18,6 +18,12 @@ import vn.edu.iuh.services.ChatService;
 public class MessageController {
     private final SimpMessagingTemplate simpMessagingTemplate;
     private final ChatService chatService;
+
+    @MessageMapping("/chat/{chat-id}/seen")
+    public void sendMessage(@Payload String senderId, @DestinationVariable("chat-id") String chatId) {
+        chatService.seenMessage(chatId, senderId);
+    }
+
     @MessageMapping("/chat/{chat-id}")
     public Message sendMessage(@Payload MessageDTO messageDTO, @DestinationVariable("chat-id") String chatId) {
         Message message = chatService.saveMessage(messageDTO, chatId);
