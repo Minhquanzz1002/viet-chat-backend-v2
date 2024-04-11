@@ -18,4 +18,5 @@ public interface ChatService {
     String deleteMessage(String messageId, String chatId, UserPrincipal userPrincipal);
     void deleteMessage(MessageEventDTO messageEventDTO, String chatId);
     Message unsendMessage(MessageEventDTO messageEventDTO, String chatId);
+    String seenMessage(String chatId, UserPrincipal userPrincipal);
 }

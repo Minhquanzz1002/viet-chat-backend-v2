@@ -16,4 +16,5 @@ public class ChatRoomDTO {
     private String avatar;
     @JsonProperty("isGroup")
     private boolean isGroup;
+    private String lastSeenMessageId;
 }

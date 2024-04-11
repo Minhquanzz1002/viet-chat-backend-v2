@@ -282,6 +282,7 @@ public class UserInfoServiceImpl implements UserInfoService {
                         .members(List.of(currentUserInfo, friendUserInfo))
                         .lastMessage(
                                 LastMessage.builder()
+                                        .messageId(message.getMessageId())
                                         .content("Hai bạn đã trở thành bạn bè")
                                         .createdAt(LocalDateTime.now())
                                         .build()
@@ -376,6 +377,7 @@ public class UserInfoServiceImpl implements UserInfoService {
                             .avatar(avatar)
                             .lastMessage(chat.getChat().getLastMessage())
                             .isGroup(chat.getChat().getGroup() != null)
+                            .lastSeenMessageId(chat.getLastSeenMessageId())
                             .build();
                     chatRoomDTOList.add(chatRoomDTO);
                 }

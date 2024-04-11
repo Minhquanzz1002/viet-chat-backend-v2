@@ -83,12 +83,18 @@ public class ChatServiceImpl implements ChatService {
         }
         chat.getMessages().add(message);
         LastMessage lastMessage = LastMessage.builder()
+                .messageId(message.getMessageId())
                 .createdAt(message.getCreatedAt())
                 .sender(sender)
                 .content(message.getContent() == null ? "[FILE]" : message.getContent())
                 .build();
         chat.setLastMessage(lastMessage);
         chatRepository.save(chat);
+        int index = sender.getChats().indexOf(UserChat.builder().chat(chat).build());
+        log.info("day la vi tri {}", index);
+        UserChat userChat = sender.getChats().get(index);
+        userChat.setLastSeenMessageId(message.getMessageId());
+        userInfoRepository.save(sender);
         return message;
     }
 
@@ -113,6 +119,7 @@ public class ChatServiceImpl implements ChatService {
                 .build();
         chat.getMessages().add(message);
         LastMessage lastMessage = LastMessage.builder()
+                .messageId(message.getMessageId())
                 .createdAt(message.getCreatedAt())
                 .sender(userInfo)
                 .content(message.getContent() == null ? "[FILE]" : message.getContent())
@@ -212,6 +219,18 @@ public class ChatServiceImpl implements ChatService {
         message.setAttachments(null);
         simpMessagingTemplate.convertAndSend("/chatroom/" + chatId, message);
         return message;
+    }
+
+    @Override
+    public String seenMessage(String chatId, UserPrincipal userPrincipal) {
+        UserInfo userInfo = userInfoRepository.findByUser(new User(userPrincipal.getId())).orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng"));
+        Chat chat = chatRepository.findById(chatId).orElseThrow(() -> new DataNotFoundException("Không tìm thấy phòng chat có ID " + chatId));
+        if (chat.getGroup() == null && !chat.getMembers().contains(userInfo) || chat.getGroup() != null && !chat.getGroup().getMembers().contains(GroupMember.builder().member(userInfo).build())) {
+            throw new AccessDeniedException("Bạn không phải là thành viên của phòng chat này");
+        }
+//        log.info("Last: {}", chat.getMessages().);
+//        chat.setLastMessage(chat.getMessages().getLast());
+        return null;
     }
 
 }

@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 @Data
 @Builder
 public class LastMessage {
+    private String messageId;
     private String content;
     @Field("sender_id")
     @DocumentReference
