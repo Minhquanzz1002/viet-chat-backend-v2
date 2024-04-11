@@ -3,11 +3,13 @@ package vn.edu.iuh.controllers;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import vn.edu.iuh.dto.MessageRequestDTO;
+import vn.edu.iuh.dto.SearchMessageRequestDTO;
 import vn.edu.iuh.models.Chat;
 import vn.edu.iuh.models.Message;
 import vn.edu.iuh.security.UserPrincipal;
@@ -155,4 +157,9 @@ public class ChatController {
     public Chat getChat(@PathVariable("chat-id") String id) {
         return chatService.findById(id);
     }
+    @PostMapping("/search")
+    public List<Message> SearchMess(@RequestBody @Valid SearchMessageRequestDTO searchRequest) {
+        return chatService.findByChat(searchRequest.getId(),searchRequest.getContent());
+    }
+
 }
