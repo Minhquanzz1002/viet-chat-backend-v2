@@ -1,6 +1,10 @@
 package vn.edu.iuh.repositories;
 
 import org.bson.types.ObjectId;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.data.mongodb.repository.Update;
@@ -14,10 +18,17 @@ import java.util.Optional;
 
 @Repository
 public interface UserInfoRepository extends MongoRepository<UserInfo, String> {
+    @Cacheable(value = "profiles", key = "#user.id")
     Optional<UserInfo> findByUser(User user);
-    @Query("{'_id': ?0,'friends.friend_id': {$oid: ?1}}")
-    Optional<UserInfo> findByIdAndFriendId(String id, String friendId);
-    @Query("{'_id': ?0,'friends.friend_id': {$oid: ?1}, 'friends.status':  ?2}")
-    Optional<UserInfo> findByIdAndFriendIdAndStatus(String id, String friendId, FriendStatus status);
-    boolean existsByUser(User user);
+    @Caching(
+            put = {
+                    @CachePut(value = "profiles", key = "#entity.user.id"),
+                    @CachePut(value = "profiles", key = "#entity.id")
+            }
+    )
+    @Override
+    <S extends UserInfo> S save(S entity);
+    @Cacheable(value = "profiles", key = "#id")
+    @Override
+    Optional<UserInfo> findById(String id);
 }

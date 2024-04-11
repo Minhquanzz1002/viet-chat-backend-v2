@@ -71,6 +71,27 @@ public class ChatController {
     }
 
     @Operation(
+            summary = "Xem tin nhắn",
+            description = """
+                     Cập nhật trạng thái đã xem cho tin nhắn.
+                     
+                     Cập nhật `lastSeenMessageId: "id"` thành message id cuối cùng
+                                       
+                    <strong>⚠️ Vui lòng không xử lý các lỗi dưới đây phía client. Các lỗi này chỉ đóng vai trò bảo vệ API khỏi các lỗi cố tình.⚠️</strong>
+                                       
+                     <strong>Forbidden: </strong>
+                     - Bạn không phải là thành viên của phòng chat này
+                     
+                     <strong>Not Found: </strong>
+                     - Không tìm thấy ID phòng chat
+                     """
+    )
+    @PutMapping("/{chat-id}")
+    public String seenMessage(@PathVariable("chat-id") String chatId, @AuthenticationPrincipal UserPrincipal userPrincipal) {
+        return chatService.seenMessage(chatId, userPrincipal);
+    }
+
+    @Operation(
             summary = "Xóa tin nhắn",
             description = """
                     Xóa tin nhắn. Đây là hành động xóa tin nhắn ở từng ứng dụng của người dùng. Đối phương vẫn sẽ nhìn thấy tin nhắn đó bình thường.

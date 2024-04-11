@@ -72,7 +72,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .build();
     }
 
-    @ExceptionHandler({FriendshipRelationshipException.class, FileUploadException.class, UserNotInChatException.class, InvalidFriendshipRequestException.class, MessageRecallTimeExpiredException.class})
+    @ExceptionHandler({FriendshipRelationshipException.class, FileUploadException.class, UserNotInChatException.class, InvalidFriendshipRequestException.class, MessageRecallTimeExpiredException.class, InvalidRequestException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponseDTO handleFriendshipRelationshipException(RuntimeException exception) {
         return ErrorResponseDTO
