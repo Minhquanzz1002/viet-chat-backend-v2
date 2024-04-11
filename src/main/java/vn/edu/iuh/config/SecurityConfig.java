@@ -41,6 +41,7 @@ public class SecurityConfig {
             "/v1/auth/password/**",
             "/v1/auth/refresh-token",
             "/v1/verification/otp/sms/**",
+            "/v2/verification/otp/sms/**",
             "/ws/**"
     };
 

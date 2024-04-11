@@ -102,4 +102,8 @@ public class AuthController {
     public String resetPassword(@RequestBody @Valid ResetPasswordRequestDTO resetPasswordRequestDTO) {
         return authService.resetPassword(resetPasswordRequestDTO.getToken(), resetPasswordRequestDTO.getPassword());
     }
+    @PostMapping("/password/change")
+    public String changePassword(@RequestBody @Valid ChangePasswordRequestDTO changePasswordRequestDTO) {
+        return authService.changePassword(changePasswordRequestDTO.getPasswordold(), changePasswordRequestDTO.getPasswordnew(),changePasswordRequestDTO.getPhone());
+    }
 }

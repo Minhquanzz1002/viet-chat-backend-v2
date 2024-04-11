@@ -16,4 +16,5 @@ public interface AuthService {
     String forgotPassword(String phone);
     ResetTokenDTO validateResetPassword(String phone, String otp);
     String resetPassword(String token, String password);
+    String changePassword( String passwordole,String newpass, String phone);
 }
