@@ -24,6 +24,7 @@ import java.util.List;
 public class Message {
     private ObjectId messageId;
     private ObjectId replyMessageId;
+    @Builder.Default
     private MessageType type = MessageType.MESSAGE;
     @DocumentReference
     @Field("sender_id")
@@ -32,11 +33,14 @@ public class Message {
     private String content;
     private List<Attachment> attachments;
     private List<Reaction> reactions;
+    @Builder.Default
     private MessageStatus status = MessageStatus.SENT;
     private LocalDateTime createdAt;
+    @Builder.Default
     private LocalDateTime updatedAt = LocalDateTime.now();
     @JsonIgnore
     @DocumentReference(lazy = true)
+    @Builder.Default
     private List<UserInfo> deleteBy = new ArrayList<>();
 
     public String getMessageId() {
