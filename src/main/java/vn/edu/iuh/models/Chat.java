@@ -11,6 +11,7 @@ import org.springframework.data.mongodb.core.mapping.DocumentReference;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Document(collection = "chats")
@@ -28,9 +29,11 @@ public class Chat {
     @DocumentReference
     private Group group;
     @JsonIgnore
-    private List<Message> messages;
-    @DocumentReference
-    private List<UserInfo> members;
+    @Builder.Default
+    private List<Message> messages = new ArrayList<>();
+    @DocumentReference(lazy = true)
+    @Builder.Default
+    private List<UserInfo> members = new ArrayList<>();
     private LastMessage lastMessage;
     @CreatedDate
     private LocalDateTime createdAt;
