@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIncludeProperties;
 import lombok.*;
 import org.bson.types.ObjectId;
-import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DocumentReference;
 import org.springframework.data.mongodb.core.mapping.Field;
 import vn.edu.iuh.models.enums.MessageStatus;
@@ -26,13 +25,14 @@ public class Message {
     private ObjectId replyMessageId;
     @Builder.Default
     private MessageType type = MessageType.MESSAGE;
-    @DocumentReference
+    @DocumentReference(lazy = true)
     @Field("sender_id")
     @JsonIncludeProperties({"id", "firstName", "lastName", "thumbnailAvatar", "gender"})
     private UserInfo sender;
     private String content;
     private List<Attachment> attachments;
-    private List<Reaction> reactions;
+    @Builder.Default
+    private List<Reaction> reactions = new ArrayList<>();
     @Builder.Default
     private MessageStatus status = MessageStatus.SENT;
     private LocalDateTime createdAt;

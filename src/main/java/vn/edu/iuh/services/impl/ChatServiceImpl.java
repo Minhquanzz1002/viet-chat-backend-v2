@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import vn.edu.iuh.dto.MessageDTO;
 import vn.edu.iuh.dto.MessageEventDTO;
 import vn.edu.iuh.dto.MessageRequestDTO;
+import vn.edu.iuh.dto.ReactionMessageDTO;
 import vn.edu.iuh.exceptions.DataNotFoundException;
 import vn.edu.iuh.exceptions.MessageRecallTimeExpiredException;
 import vn.edu.iuh.models.*;
@@ -214,6 +215,46 @@ public class ChatServiceImpl implements ChatService {
         message.setContent("Tin nhắn đã bị thu hồi");
         message.setReactions(null);
         message.setAttachments(null);
+        simpMessagingTemplate.convertAndSend("/chatroom/" + chatId, message);
+        return message;
+    }
+
+    @Override
+    public Message reactionMessage(String messageId, String chatId, UserPrincipal userPrincipal, ReactionMessageDTO reactionMessageDTO) {
+        Chat chat = findById(chatId);
+        UserInfo sender = userInfoRepository.findByUser(new User(userPrincipal.getId())).orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng"));
+        checkChatMembership(chat, sender);
+        int messageIndex = chat.getMessages().indexOf(Message.builder().messageId(new ObjectId(messageId)).build());
+        if (messageIndex < 0) {
+            throw new DataNotFoundException("Không tìm thấy tin nhắn");
+        }
+        Message message = chat.getMessages().get(messageIndex);
+        List<Reaction> reactions = message.getReactions();
+        Reaction reaction = new Reaction(sender, reactionMessageDTO.getType(), reactionMessageDTO.getQuantity());
+        if (reactions.contains(reaction)) {
+            int index = reactions.indexOf(reaction);
+            reactions.get(index).setQuantity(reactions.get(index).getQuantity() + reaction.getQuantity());
+        } else {
+            reactions.add(reaction);
+        }
+        chatRepository.save(chat);
+        simpMessagingTemplate.convertAndSend("/chatroom/" + chatId, message);
+        return message;
+    }
+
+    @Override
+    public Message deleteReactionsMessage(String messageId, String chatId, UserPrincipal userPrincipal) {
+        Chat chat = findById(chatId);
+        UserInfo sender = userInfoRepository.findByUser(new User(userPrincipal.getId())).orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng"));
+        checkChatMembership(chat, sender);
+        int messageIndex = chat.getMessages().indexOf(Message.builder().messageId(new ObjectId(messageId)).build());
+        if (messageIndex < 0) {
+            throw new DataNotFoundException("Không tìm thấy tin nhắn");
+        }
+        Message message = chat.getMessages().get(messageIndex);
+        List<Reaction> reactions = message.getReactions();
+        reactions.removeIf(reaction -> reaction.getUser().equals(sender));
+        chatRepository.save(chat);
         simpMessagingTemplate.convertAndSend("/chatroom/" + chatId, message);
         return message;
     }
