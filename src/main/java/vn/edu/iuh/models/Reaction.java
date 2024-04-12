@@ -9,6 +9,7 @@ import vn.edu.iuh.models.enums.ReactionType;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode(of = {"user", "type"})
 @ToString
 public class Reaction {
     @DocumentReference

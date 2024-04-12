@@ -3,13 +3,12 @@ package vn.edu.iuh.controllers;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import vn.edu.iuh.dto.MessageRequestDTO;
-import vn.edu.iuh.dto.SearchMessageRequestDTO;
+import vn.edu.iuh.dto.ReactionMessageDTO;
 import vn.edu.iuh.models.Chat;
 import vn.edu.iuh.models.Message;
 import vn.edu.iuh.security.UserPrincipal;
@@ -47,6 +46,50 @@ public class ChatController {
     @GetMapping("/{chat-id}/messages")
     public List<Message> getAllChat(@PathVariable("chat-id") String chatId, @AuthenticationPrincipal UserPrincipal userPrincipal) {
         return chatService.getAllMessages(chatId, userPrincipal);
+    }
+
+    @Operation(
+            summary = "Thả cảm xúc tin nhắn",
+            description = """
+                     
+                     Cảm xúc gồm: LIKE, LOVE, CRY, ANGER, WOW. Có thể cho deploy sau 1s mới bắt đầu request để giảm tải cho hệ thống
+                                       
+                     Response của API này sẽ được gửi đến người dùng thuộc phòng chat đó. Hãy bắt nó bằng cách đăng ký lắng nghe socket `/chatroom/{chatId}`
+                                       
+                    <strong>⚠️ Vui lòng không xử lý các lỗi dưới đây phía client. Các lỗi này chỉ đóng vai trò bảo vệ API khỏi các lỗi cố tình.⚠️</strong>
+                                       
+                     <strong>Forbidden: </strong>
+                     - Bạn không phải là thành viên của phòng chat này
+                     
+                     <strong>Not Found: </strong>
+                     - Không tìm thấy ID phòng chat
+                     """
+    )
+    @PutMapping("/{chat-id}/messages/{message-id}/reaction")
+    public Message reactionMessage(@PathVariable("message-id") String messageId, @PathVariable("chat-id") String chatId, @AuthenticationPrincipal UserPrincipal userPrincipal, @RequestBody ReactionMessageDTO reactionMessageDTO) {
+        return chatService.reactionMessage(messageId, chatId, userPrincipal, reactionMessageDTO);
+    }
+
+    @Operation(
+            summary = "Xóa toàn bộ cảm xúc tin nhắn",
+            description = """
+                     
+                     Xóa toàn bộ cảm xúc bạn đã thả cho tin nhắn
+                                       
+                     Response của API này sẽ được gửi đến người dùng thuộc phòng chat đó. Hãy bắt nó bằng cách đăng ký lắng nghe socket `/chatroom/{chatId}`
+                                       
+                    <strong>⚠️ Vui lòng không xử lý các lỗi dưới đây phía client. Các lỗi này chỉ đóng vai trò bảo vệ API khỏi các lỗi cố tình.⚠️</strong>
+                                       
+                     <strong>Forbidden: </strong>
+                     - Bạn không phải là thành viên của phòng chat này
+                     
+                     <strong>Not Found: </strong>
+                     - Không tìm thấy ID phòng chat
+                     """
+    )
+    @DeleteMapping("/{chat-id}/messages/{message-id}/reaction")
+    public Message deleteAllReactionsForMessage(@PathVariable("message-id") String messageId, @PathVariable("chat-id") String chatId, @AuthenticationPrincipal UserPrincipal userPrincipal) {
+        return chatService.deleteReactionsMessage(messageId, chatId, userPrincipal);
     }
 
     @Operation(

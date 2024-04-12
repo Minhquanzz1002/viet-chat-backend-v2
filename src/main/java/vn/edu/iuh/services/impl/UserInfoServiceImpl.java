@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.types.ObjectId;
 import org.modelmapper.ModelMapper;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -28,7 +27,10 @@ import vn.edu.iuh.security.UserPrincipal;
 import vn.edu.iuh.services.UserInfoService;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -64,7 +66,6 @@ public class UserInfoServiceImpl implements UserInfoService {
         return userInfoRepository.findByUser(user).orElseThrow(() -> new DataNotFoundException("Thông tin người dùng không tồn tại"));
     }
 
-    @Cacheable(value = "userInfo", key = "#userId")
     @Override
     public UserInfo findUserInfoByUserId(String userId) {
         log.info("Get profile by user ID");
@@ -276,25 +277,42 @@ public class UserInfoServiceImpl implements UserInfoService {
                 .type(MessageType.EVENT)
                 .status(MessageStatus.SENT)
                 .build();
-        Chat chat = chatRepository.save(
-                Chat.builder()
-                        .messages(List.of(message))
-                        .members(List.of(currentUserInfo, friendUserInfo))
-                        .lastMessage(
-                                LastMessage.builder()
-                                        .messageId(message.getMessageId())
-                                        .content("Hai bạn đã trở thành bạn bè")
-                                        .createdAt(LocalDateTime.now())
-                                        .build()
-                        )
-                        .build()
-        );
+        Chat chat;
+        if (pendingFriendRequest.getChat() != null) {
+            chat = chatRepository.findById(pendingFriendRequest.getChat().getId()).orElseThrow(() -> new DataNotFoundException("Không tìm thấy phòng chat"));
+            chat.getMessages().add(message);
+            chat.setLastMessage(
+                    LastMessage.builder()
+                            .messageId(message.getMessageId())
+                            .content("Hai bạn đã trở thành bạn bè")
+                            .createdAt(LocalDateTime.now())
+                            .build()
+            );
+            chatRepository.save(chat);
 
-        pendingFriendRequest.setStatus(FriendStatus.FRIEND);
-        pendingFriendRequest.setChat(chat);
+            pendingFriendRequest.setStatus(FriendStatus.FRIEND);
+            acceptedFriend.setStatus(FriendStatus.FRIEND);
+        } else {
+            chat = chatRepository.save(
+                    Chat.builder()
+                            .messages(List.of(message))
+                            .members(List.of(currentUserInfo, friendUserInfo))
+                            .lastMessage(
+                                    LastMessage.builder()
+                                            .messageId(message.getMessageId())
+                                            .content("Hai bạn đã trở thành bạn bè")
+                                            .createdAt(LocalDateTime.now())
+                                            .build()
+                            )
+                            .build()
+            );
 
-        acceptedFriend.setStatus(FriendStatus.FRIEND);
-        acceptedFriend.setChat(chat);
+            pendingFriendRequest.setStatus(FriendStatus.FRIEND);
+            pendingFriendRequest.setChat(chat);
+
+            acceptedFriend.setStatus(FriendStatus.FRIEND);
+            acceptedFriend.setChat(chat);
+        }
 
         currentUserInfo.getChats().add(
                 UserChat
