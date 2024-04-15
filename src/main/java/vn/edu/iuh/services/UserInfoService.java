@@ -1,9 +1,6 @@
 package vn.edu.iuh.services;
 
-import vn.edu.iuh.dto.ChatRoomDTO;
-import vn.edu.iuh.dto.GroupDTO;
-import vn.edu.iuh.dto.PhoneNumberDTO;
-import vn.edu.iuh.dto.UserInfoDTO;
+import vn.edu.iuh.dto.*;
 import vn.edu.iuh.models.Friend;
 import vn.edu.iuh.models.UserInfo;
 import vn.edu.iuh.security.UserPrincipal;
@@ -11,7 +8,7 @@ import vn.edu.iuh.security.UserPrincipal;
 import java.util.List;
 
 public interface UserInfoService {
-    UserInfo findUserInfoByPhone(String phone, String senderId);
+    OtherUserInfoDTO findUserInfoByPhone(String phone, String senderId);
     UserInfo findUserInfo(String phone);
     UserInfo findUserInfoByUserId(String userId);
 
