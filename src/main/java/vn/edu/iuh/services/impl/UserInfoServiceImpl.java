@@ -7,10 +7,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import vn.edu.iuh.dto.ChatRoomDTO;
-import vn.edu.iuh.dto.GroupDTO;
-import vn.edu.iuh.dto.PhoneNumberDTO;
-import vn.edu.iuh.dto.UserInfoDTO;
+import vn.edu.iuh.dto.*;
 import vn.edu.iuh.exceptions.DataNotFoundException;
 import vn.edu.iuh.exceptions.FriendshipRelationshipException;
 import vn.edu.iuh.exceptions.InvalidFriendshipRequestException;
@@ -44,10 +41,10 @@ public class UserInfoServiceImpl implements UserInfoService {
 
 
     @Override
-    public UserInfo findUserInfoByPhone(String phone, String senderId) {
+    public OtherUserInfoDTO findUserInfoByPhone(String phone, String senderId) {
         UserInfo sender = userInfoRepository.findByUser(new User(senderId)).orElseThrow(() -> new DataNotFoundException("Thông tin người dùng không tồn tại"));
 
-        User user = userRepository.findByPhone(phone).orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng nào có số điện thoại là " + phone));
+        User user = userRepository.findByPhone(phone).orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng nào có số điện thoại là " + phone));
         UserInfo userInfo = userInfoRepository.findByUser(user).orElseThrow(() -> new DataNotFoundException("Thông tin người dùng không tồn tại"));
 
         if (sender.equals(userInfo)) {
@@ -57,7 +54,10 @@ public class UserInfoServiceImpl implements UserInfoService {
         sender.getRecentSearches().remove(userInfo);
         sender.getRecentSearches().add(userInfo);
         userInfoRepository.save(sender);
-        return userInfo;
+        OtherUserInfoDTO otherUserInfoDTO = modelMapper.map(userInfo, OtherUserInfoDTO.class);
+        log.info(otherUserInfoDTO.toString());
+        otherUserInfoDTO.setPhone(userInfo.getUser().getPhone());
+        return otherUserInfoDTO;
     }
 
     @Override
