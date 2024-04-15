@@ -1,0 +1,37 @@
+# MongoDB configurations
+spring:
+  config:
+    import: optional:application-secret.yml
+  data:
+    mongodb:
+      database: viet-chat
+      field-naming-strategy: org.springframework.data.mapping.model.SnakeCaseFieldNamingStrategy
+      auto-index-creation: true
+      host: localhost
+      port: 27017
+  #      uri: mongodb+srv://root:root@cluster0.idirp.mongodb.net/
+
+  servlet:
+    multipart:
+      max-request-size: 50MB
+      max-file-size: 10MB
+server:
+  servlet:
+    context-path: /api
+
+
+# Swagger configurations
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path:
+
+
+
+app:
+  auth:
+    tokenSecret: lNLp8m5m86mRQLgNU7UnhGqfBbNdNYAM45YOFwZmP1w=
+    refreshTokenExpirationMilliseconds: 1209600000
+    accessTokenExpirationMilliseconds: 86400000
+    resetTokenExpirationMilliseconds: 300000

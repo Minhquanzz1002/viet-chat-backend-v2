@@ -16,7 +16,6 @@ import vn.edu.iuh.models.enums.FriendStatus;
 import vn.edu.iuh.security.UserPrincipal;
 import vn.edu.iuh.services.UserInfoService;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,6 +32,8 @@ public class UserController {
             summary = "Tìm kiếm người dùng bằng số điện thoại",
             description = """
                     Tìm kiếm người dùng bằng số điện thoại. Dùng cho phần tìm kiếm để kết bạn
+                    
+                    Lưu ý phần `{phone}` chỉ chấp nhận số, nếu không sẽ trả về lỗi `Not Found`
                         
                     <strong>Bad Request:</strong>
                     - Người được tìm kiếm là người yêu cầu
@@ -43,7 +44,7 @@ public class UserController {
 
     )
     @GetMapping("/profile/{phone:^\\d+$}")
-    public UserInfo getUserInfoByPhone(@PathVariable String phone, @AuthenticationPrincipal UserPrincipal userPrincipal) {
+    public OtherUserInfoDTO getUserInfoByPhone(@PathVariable String phone, @AuthenticationPrincipal UserPrincipal userPrincipal) {
         return userInfoService.findUserInfoByPhone(phone, userPrincipal.getId());
     }
 
