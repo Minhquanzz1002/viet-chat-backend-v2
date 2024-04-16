@@ -12,9 +12,9 @@ import java.util.Optional;
 
 @Repository
 public interface ChatRepository extends MongoRepository<Chat, String> {
-    @Cacheable(value = "chats", key = "#id")
+    @Cacheable(value = "chats", key = "#p0", condition = "#p0 != null")
     @Override
-    Optional<Chat> findById(String id);
+    Optional<Chat> findById(String s);
 
     @Caching(
             put = {@CachePut(value = "chats", key = "#entity.id")},

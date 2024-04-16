@@ -10,6 +10,7 @@ import java.util.List;
 public interface UserInfoService {
     OtherUserInfoDTO findUserInfoByPhone(String phone, String senderId);
     UserInfo findUserInfo(String phone);
+    UserInfo findById(String id);
     UserInfo findUserInfoByUserId(String userId);
 
     List<GroupDTO> findAllGroupToUserInfoByUserId(String userId);
