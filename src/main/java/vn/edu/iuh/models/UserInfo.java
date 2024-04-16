@@ -23,7 +23,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode(of = {"id"})
-@JsonIgnoreProperties({"user"})
+@JsonIgnoreProperties({"user", "source", "target"})
 public class UserInfo {
     @Id
     private String id;

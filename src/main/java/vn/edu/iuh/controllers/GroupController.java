@@ -1,6 +1,5 @@
 package vn.edu.iuh.controllers;
 
-import com.fasterxml.jackson.annotation.JsonIncludeProperties;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -35,10 +34,20 @@ public class GroupController {
     }
 
     @GetMapping("/{group_id}/members")
-    @Operation(summary = "Lấy danh sách thành viên của nhóm", description = "Lấy danh sách thành viên của nhóm")
-    @JsonIncludeProperties({"role", "joinMethod"})
-    public List<GroupMember> getMembers(@PathVariable(name = "group_id") String groupId) {
-        return groupService.findById(groupId).getMembers();
+    @Operation(
+            summary = "Lấy danh sách thành viên của nhóm",
+            description = """
+                    Lấy danh sách thành viên của nhóm
+                    
+                    <strong>Forbidden: </strong>
+                     - Bạn không phải là thành viên của nhóm
+                    
+                    <strong>Not Found: </strong>
+                     - Không tìm thấy ID nhóm
+                    """
+    )
+    public List<GroupMember> getMembers(@PathVariable(name = "group_id") String groupId, @AuthenticationPrincipal UserPrincipal userPrincipal) {
+        return groupService.getAllMembers(groupId, userPrincipal);
     }
 
     @DeleteMapping("/{group_id}/members/{member_id}")
@@ -47,7 +56,18 @@ public class GroupController {
         return groupService.deleteMemberById(groupId, memberId);
     }
 
-    @Operation(summary = "Tạo nhóm mới", description = "Tạo nhóm với tối thiểu 2 thành viên")
+    @Operation(
+            summary = "Tạo nhóm mới",
+            description = """
+                    Tạo nhóm với tối thiểu 2 thành viên (trừ bạn). Chú ý ResponseStatus khi thành công là `CREATED-201`
+                    
+                    Ảnh nhóm được phép bỏ qua. Hãy xử lý nó dưới client
+                    
+                    <strong>Bad Request: </strong>
+                     - Dữ liệu đầu vào không hợp lệ
+                     - Có một người dùng trong danh sách `members` không tồn tại
+                    """
+    )
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     public Group createGroup(@RequestBody @Valid GroupRequestCreateDTO groupRequestCreateDTO, @AuthenticationPrincipal UserDetails userDetails) {
@@ -55,15 +75,26 @@ public class GroupController {
     }
 
     @Operation(summary = "Lấy thông tin nhóm theo ID")
-    @GetMapping("/{id}")
-    public Group getGroup(@PathVariable String id) {
+    @GetMapping("/{group-id}")
+    public Group getGroup(@PathVariable("group-id") String id) {
         return groupService.findById(id);
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @Operation(summary = "Xóa nhóm. Chức năng này chỉ dành cho nhóm trưởng", description = "Xóa nhóm theo ID. Nếu ID không tồn tại trả về lỗi")
-    @DeleteMapping("/{id}")
-    public void deleteGroup(@PathVariable String id, @AuthenticationPrincipal UserPrincipal userPrincipal) {
+    @Operation(
+            summary = "Giải tán nhóm",
+            description = """
+                    Giải tán nhóm. Chức năng này chỉ dành cho nhóm trưởng `role="GROUP_LEADER"`
+                    
+                    <strong>Forbidden: </strong>
+                     - Bạn không phải là nhóm trưởng
+                    
+                    <strong>Not Found: </strong>
+                     - Không tìm thấy ID nhóm
+                    """
+    )
+    @DeleteMapping("/{group-id}")
+    public void deleteGroup(@PathVariable("group-id") String id, @AuthenticationPrincipal UserPrincipal userPrincipal) {
         groupService.deleteById(id, userPrincipal);
     }
 

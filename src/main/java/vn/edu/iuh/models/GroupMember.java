@@ -11,11 +11,11 @@ import vn.edu.iuh.models.enums.GroupMemberRole;
 @NoArgsConstructor
 @ToString
 @Builder
-@EqualsAndHashCode(of = "member")
+@EqualsAndHashCode(of = "profile")
 public class GroupMember {
     @Field("member_id")
     @DocumentReference(lazy = true)
-    private UserInfo member;
+    private UserInfo profile;
     private GroupMemberRole role;
     private String joinMethod;
 }

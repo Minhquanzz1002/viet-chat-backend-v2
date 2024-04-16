@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -27,6 +28,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class UserController {
     private final UserInfoService userInfoService;
+    private final ModelMapper modelMapper;
 
     @Operation(
             summary = "Tìm kiếm người dùng bằng số điện thoại",
@@ -159,9 +161,12 @@ public class UserController {
                     """
     )
     @GetMapping("/profile/friends")
-    public List<Friend> getAllFriends(@AuthenticationPrincipal UserPrincipal userPrincipal, @RequestParam FriendTypeRequest type) {
+    public List<FriendDTO> getAllFriends(@AuthenticationPrincipal UserPrincipal userPrincipal, @RequestParam FriendTypeRequest type) {
         List<Friend> friends = userInfoService.findUserInfo(userPrincipal.getUsername()).getFriends();
-        return friends.stream().filter(friend -> friend.getStatus().equals(mapToFriendStatus(type))).collect(Collectors.toList());
+        return friends.stream()
+                .filter(friend -> friend.getStatus().equals(mapToFriendStatus(type)))
+                .map(friend -> modelMapper.map(friend, FriendDTO.class))
+                .toList();
     }
 
     private FriendStatus mapToFriendStatus(FriendTypeRequest type) {
