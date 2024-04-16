@@ -15,12 +15,12 @@ import vn.edu.iuh.models.enums.FriendStatus;
 @AllArgsConstructor
 @Builder
 public class Friend {
-    @DocumentReference(lazy = false, collection = "user_info")
+    @DocumentReference(lazy = true, collection = "user_info")
     @Field("friend_id")
     private UserInfo profile;
     private String displayName;
     private FriendStatus status;
-//    @JsonIgnore
+    @JsonIgnore
     @Field("chat_id")
     @DocumentReference(lazy = true, collection = "chats")
     private Chat chat;

@@ -67,6 +67,11 @@ public class UserInfoServiceImpl implements UserInfoService {
     }
 
     @Override
+    public UserInfo findById(String id) {
+        return userInfoRepository.findById(id).orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng có ID là " + id));
+    }
+
+    @Override
     public UserInfo findUserInfoByUserId(String userId) {
         log.info("Get profile by user ID");
         return userInfoRepository.findByUser(new User(userId)).orElseThrow(() -> new DataNotFoundException("Thông tin người dùng không tồn tại"));
@@ -74,7 +79,7 @@ public class UserInfoServiceImpl implements UserInfoService {
 
     @Override
     public List<GroupDTO> findAllGroupToUserInfoByUserId(String userId) {
-        UserInfo userInfo = userInfoRepository.findByUser(new User(userId)).orElseThrow(() -> new DataNotFoundException("Thông tin người dùng không tồn tại"));
+        UserInfo userInfo = findUserInfoByUserId(userId);
         List<Group> groups = userInfo.getGroups();
         List<GroupDTO> groupDTOList = new ArrayList<>();
         groups.forEach(group -> {
@@ -95,15 +100,13 @@ public class UserInfoServiceImpl implements UserInfoService {
 
     @Override
     public String addFriendByUserId(String friendId, UserPrincipal userPrincipal) {
-        UserInfo currentUserInfo = userInfoRepository.findByUser(new User(userPrincipal.getId()))
-                .orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng"));
+        UserInfo currentUserInfo = findUserInfoByUserId(userPrincipal.getId());
 
         if (friendId.equals(currentUserInfo.getId())) {
             throw new InvalidFriendshipRequestException("Bạn không thể kết bạn với chính mình");
         }
 
-        UserInfo friendUserInfo = userInfoRepository.findById(friendId)
-                .orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng để kết bạn"));
+        UserInfo friendUserInfo = findById(friendId);
 
         return addFriend(currentUserInfo, friendUserInfo);
     }
@@ -166,8 +169,7 @@ public class UserInfoServiceImpl implements UserInfoService {
             throw new InvalidFriendshipRequestException("Bạn không thể chặn chính mình");
         }
 
-        UserInfo friendUserInfo = userInfoRepository.findById(friendId)
-                .orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng để chặn"));
+        UserInfo friendUserInfo = findById(friendId);
 
         return currentUserInfo.getFriends().stream()
                 .filter(friend -> friend.getProfile().getId().equals(friendUserInfo.getId()))
@@ -200,8 +202,8 @@ public class UserInfoServiceImpl implements UserInfoService {
 
     @Override
     public String unblockFriend(String friendId, UserPrincipal userPrincipal) {
-        UserInfo currentUserInfo = userInfoRepository.findByUser(new User(userPrincipal.getId())).orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng"));
-        UserInfo friendUserInfo = userInfoRepository.findById(friendId).orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng để kết bạn"));
+        UserInfo currentUserInfo = findUserInfoByUserId(userPrincipal.getId());
+        UserInfo friendUserInfo = findById(friendId);
 
         return currentUserInfo.getFriends().stream()
                 .filter(friend -> friend.getProfile().getId().equals(friendUserInfo.getId()) && friend.getStatus().equals(FriendStatus.BLOCK))
@@ -220,10 +222,8 @@ public class UserInfoServiceImpl implements UserInfoService {
 
     @Override
     public String deleteFriend(String friendId, UserPrincipal userPrincipal) {
-        UserInfo currentUserInfo = userInfoRepository.findByUser(new User(userPrincipal.getId()))
-                .orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng"));
-        UserInfo friendUserInfo = userInfoRepository.findById(friendId)
-                .orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng để hủy kết bạn"));
+        UserInfo currentUserInfo = findUserInfoByUserId(userPrincipal.getId());
+        UserInfo friendUserInfo = findById(friendId);
 
         return currentUserInfo.getFriends().stream()
                 .filter(friend -> friend.getProfile().getId().equals(friendUserInfo.getId()))
@@ -252,10 +252,8 @@ public class UserInfoServiceImpl implements UserInfoService {
 
     @Override
     public String acceptFriendRequest(String friendId, UserPrincipal userPrincipal) {
-        UserInfo currentUserInfo = userInfoRepository.findByUser(new User(userPrincipal.getId()))
-                .orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng"));
-        UserInfo friendUserInfo = userInfoRepository.findById(friendId)
-                .orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng để kết bạn"));
+        UserInfo currentUserInfo = findUserInfoByUserId(userPrincipal.getId());
+        UserInfo friendUserInfo = findById(friendId);
 
 
         Friend pendingFriendRequest = currentUserInfo.getFriends().stream()
@@ -278,21 +276,8 @@ public class UserInfoServiceImpl implements UserInfoService {
                 .status(MessageStatus.SENT)
                 .build();
         Chat chat;
-        if (pendingFriendRequest.getChat() != null) {
-            chat = chatRepository.findById(pendingFriendRequest.getChat().getId()).orElseThrow(() -> new DataNotFoundException("Không tìm thấy phòng chat"));
-            chat.getMessages().add(message);
-            chat.setLastMessage(
-                    LastMessage.builder()
-                            .messageId(message.getMessageId())
-                            .content("Hai bạn đã trở thành bạn bè")
-                            .createdAt(LocalDateTime.now())
-                            .build()
-            );
-            chatRepository.save(chat);
 
-            pendingFriendRequest.setStatus(FriendStatus.FRIEND);
-            acceptedFriend.setStatus(FriendStatus.FRIEND);
-        } else {
+        if (pendingFriendRequest.getChat().getId() == null) {
             chat = chatRepository.save(
                     Chat.builder()
                             .messages(List.of(message))
@@ -312,23 +297,37 @@ public class UserInfoServiceImpl implements UserInfoService {
 
             acceptedFriend.setStatus(FriendStatus.FRIEND);
             acceptedFriend.setChat(chat);
+
+            currentUserInfo.getChats().add(
+                    UserChat
+                            .builder()
+                            .chat(chat)
+                            .joinTime(LocalDateTime.now())
+                            .build()
+            );
+
+            friendUserInfo.getChats().add(
+                    UserChat
+                            .builder()
+                            .chat(chat)
+                            .joinTime(LocalDateTime.now())
+                            .build()
+            );
+        } else {
+            chat = chatRepository.findById(pendingFriendRequest.getChat().getId()).orElseThrow(() -> new DataNotFoundException("Không tìm thấy phòng chat"));
+            chat.getMessages().add(message);
+            chat.setLastMessage(
+                    LastMessage.builder()
+                            .messageId(message.getMessageId())
+                            .content("Hai bạn đã trở thành bạn bè")
+                            .createdAt(LocalDateTime.now())
+                            .build()
+            );
+            chatRepository.save(chat);
+
+            pendingFriendRequest.setStatus(FriendStatus.FRIEND);
+            acceptedFriend.setStatus(FriendStatus.FRIEND);
         }
-
-        currentUserInfo.getChats().add(
-                UserChat
-                        .builder()
-                        .chat(chat)
-                        .joinTime(LocalDateTime.now())
-                        .build()
-        );
-
-        friendUserInfo.getChats().add(
-                UserChat
-                        .builder()
-                        .chat(chat)
-                        .joinTime(LocalDateTime.now())
-                        .build()
-        );
 
         userInfoRepository.saveAll(Arrays.asList(currentUserInfo, friendUserInfo));
         Notification notification = new Notification(currentUserInfo.getLastName() + " vừa chấp nhận lời mời kết bạn", NotificationType.NEW_MESSAGE, null, LocalDateTime.now());
@@ -338,10 +337,8 @@ public class UserInfoServiceImpl implements UserInfoService {
 
     @Override
     public String declineFriendRequest(String friendId, UserPrincipal userPrincipal) {
-        UserInfo currentUserInfo = userInfoRepository.findByUser(new User(userPrincipal.getId()))
-                .orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng"));
-        UserInfo friendUserInfo = userInfoRepository.findById(friendId)
-                .orElseThrow(() -> new DataNotFoundException("Không tìm thấy đối phương, không thể hủy yêu cầu kết bạn"));
+        UserInfo currentUserInfo = findUserInfoByUserId(userPrincipal.getId());
+        UserInfo friendUserInfo = findById(friendId);
 
         return currentUserInfo.getFriends().stream()
                 .filter(friend -> friend.getProfile().getId().equals(friendUserInfo.getId()))
@@ -370,7 +367,7 @@ public class UserInfoServiceImpl implements UserInfoService {
 
     @Override
     public List<ChatRoomDTO> getAllChats(UserPrincipal userPrincipal) {
-        UserInfo userInfo = userInfoRepository.findByUser(new User(userPrincipal.getId())).orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng"));
+        UserInfo userInfo = findUserInfoByUserId(userPrincipal.getId());
         List<UserChat> userChatList = userInfo.getChats();
         List<ChatRoomDTO> chatRoomDTOList = new ArrayList<>();
         userChatList.forEach(

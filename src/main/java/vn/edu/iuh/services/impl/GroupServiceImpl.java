@@ -122,7 +122,8 @@ public class GroupServiceImpl implements GroupService {
     public Group addMembersToGroup(String groupId, List<String> users, UserDetails userDetails) {
         // validate whether the user is in the group
         UserInfo userInfo = userInfoRepository.findByUser(new User(((UserPrincipal) userDetails).getId())).orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng"));
-        Group group = groupRepository.findById(groupId).orElseThrow(() -> new DataNotFoundException("Nhóm không tồn tại"));
+        Group group = findById(groupId);
+
         boolean isValid = group.getMembers().stream().anyMatch(groupMember -> groupMember.getProfile().equals(userInfo));
 
         if (isValid) {
@@ -136,9 +137,8 @@ public class GroupServiceImpl implements GroupService {
                 }
             });
             return groupRepository.save(group);
-        } else {
-            throw new RuntimeException("Người dùng không có quyền thêm thành viên vào nhóm.");
         }
+        throw new AccessDeniedException("Bạn không phải thành viên của nhóm này");
     }
 
 

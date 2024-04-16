@@ -28,7 +28,12 @@ public class GroupController {
     private final GroupService groupService;
 
     @PostMapping("/{group_id}/members")
-    @Operation(summary = "Thêm thành viên vào nhóm", description = "Thêm một hoặc nhiều thành viên vào nhóm chat")
+    @Operation(
+            summary = "Thêm thành viên vào nhóm",
+            description = """
+                    Thêm một hoặc nhiều thành viên vào nhóm chat. Bất kì ai cũng có thể thêm thành viên vào nhóm
+                    """
+    )
     public Group addMembers(@PathVariable(name = "group_id") String groupId, @RequestBody List<String> users, @AuthenticationPrincipal UserDetails userDetails) {
         return groupService.addMembersToGroup(groupId, users, userDetails);
     }
