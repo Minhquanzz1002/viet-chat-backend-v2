@@ -36,7 +36,7 @@ public class ChatServiceImpl implements ChatService {
 
     private void checkChatMembership(Chat chat, UserInfo sender) {
         if ((chat.getGroup() == null && !chat.getMembers().contains(sender)) ||
-                (chat.getGroup() != null && !chat.getGroup().getMembers().contains(GroupMember.builder().member(sender).build()))) {
+                (chat.getGroup() != null && !chat.getGroup().getMembers().contains(GroupMember.builder().profile(sender).build()))) {
             throw new AccessDeniedException("Bạn không phải là thành viên của phòng chat này");
         }
     }

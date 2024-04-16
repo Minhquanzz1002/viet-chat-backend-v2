@@ -20,7 +20,7 @@ public class Friend {
     private UserInfo profile;
     private String displayName;
     private FriendStatus status;
-    @JsonIgnore
+//    @JsonIgnore
     @Field("chat_id")
     @DocumentReference(lazy = true, collection = "chats")
     private Chat chat;
