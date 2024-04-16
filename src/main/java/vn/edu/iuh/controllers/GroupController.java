@@ -75,15 +75,26 @@ public class GroupController {
     }
 
     @Operation(summary = "Lấy thông tin nhóm theo ID")
-    @GetMapping("/{id}")
-    public Group getGroup(@PathVariable String id) {
+    @GetMapping("/{group-id}")
+    public Group getGroup(@PathVariable("group-id") String id) {
         return groupService.findById(id);
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @Operation(summary = "Xóa nhóm. Chức năng này chỉ dành cho nhóm trưởng", description = "Xóa nhóm theo ID. Nếu ID không tồn tại trả về lỗi")
-    @DeleteMapping("/{id}")
-    public void deleteGroup(@PathVariable String id, @AuthenticationPrincipal UserPrincipal userPrincipal) {
+    @Operation(
+            summary = "Giải tán nhóm",
+            description = """
+                    Giải tán nhóm. Chức năng này chỉ dành cho nhóm trưởng `role="GROUP_LEADER"`
+                    
+                    <strong>Forbidden: </strong>
+                     - Bạn không phải là nhóm trưởng
+                    
+                    <strong>Not Found: </strong>
+                     - Không tìm thấy ID nhóm
+                    """
+    )
+    @DeleteMapping("/{group-id}")
+    public void deleteGroup(@PathVariable("group-id") String id, @AuthenticationPrincipal UserPrincipal userPrincipal) {
         groupService.deleteById(id, userPrincipal);
     }
 

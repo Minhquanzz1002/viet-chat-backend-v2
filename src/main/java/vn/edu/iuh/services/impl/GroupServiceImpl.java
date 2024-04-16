@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import vn.edu.iuh.dto.GroupRequestCreateDTO;
 import vn.edu.iuh.exceptions.DataNotFoundException;
 import vn.edu.iuh.exceptions.InvalidRequestException;
-import vn.edu.iuh.exceptions.UnauthorizedException;
 import vn.edu.iuh.models.*;
 import vn.edu.iuh.models.enums.GroupMemberRole;
 import vn.edu.iuh.models.enums.MessageType;
@@ -20,7 +19,6 @@ import vn.edu.iuh.repositories.GroupRepository;
 import vn.edu.iuh.repositories.UserInfoRepository;
 import vn.edu.iuh.security.UserPrincipal;
 import vn.edu.iuh.services.GroupService;
-import vn.edu.iuh.services.UserInfoService;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -42,7 +40,6 @@ public class GroupServiceImpl implements GroupService {
         }
         return group.getMembers();
     }
-
 
 
     @Override
@@ -74,7 +71,7 @@ public class GroupServiceImpl implements GroupService {
                                 .messageId(message.getMessageId())
                                 .content(message.getContent())
                                 .createdAt(message.getCreatedAt())
-                        .build()
+                                .build()
                 )
                 .build();
         chatRepository.save(chat);
@@ -112,12 +109,12 @@ public class GroupServiceImpl implements GroupService {
     @Override
     public void deleteById(String id, UserPrincipal userPrincipal) {
         UserInfo userInfo = userInfoRepository.findByUser(new User(userPrincipal.getId())).orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng"));
-        Group group = groupRepository.findById(id).orElseThrow(() -> new DataNotFoundException("Không tìm thấy nhóm có ID là " + id));
+        Group group = findById(id);
         boolean isValid = group.getMembers().stream().anyMatch(groupMember -> groupMember.getProfile().equals(userInfo) && groupMember.getRole().equals(GroupMemberRole.GROUP_LEADER));
         if (isValid) {
             groupRepository.delete(group);
-        }else {
-            throw new UnauthorizedException("Bạn không được cấp quyền xóa nhóm");
+        } else {
+            throw new AccessDeniedException("Bạn không phải là nhóm trưởng nên không thể giải tán nhóm");
         }
     }
 
@@ -139,7 +136,7 @@ public class GroupServiceImpl implements GroupService {
                 }
             });
             return groupRepository.save(group);
-        }else {
+        } else {
             throw new RuntimeException("Người dùng không có quyền thêm thành viên vào nhóm.");
         }
     }
