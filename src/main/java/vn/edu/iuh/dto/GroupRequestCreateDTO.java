@@ -1,8 +1,11 @@
 package vn.edu.iuh.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.*;
+import org.hibernate.validator.constraints.Length;
 
 import java.util.List;
 @Getter
@@ -11,10 +14,11 @@ import java.util.List;
 @AllArgsConstructor
 @ToString
 public class GroupRequestCreateDTO {
-    @NotBlank
+    @NotNull(message = "Tên nhóm là bắt buộc")
+    @NotEmpty(message = "Tên nhóm không được rỗng")
     private String name;
-    @NotBlank
     private String thumbnailAvatar;
-    @NotNull
+    @NotNull(message = "Thành viên nhóm là bắt buộc")
+    @Size(min = 2, message = "Mời tối thiểu 2 người khác để tạo nhóm")
     private List<String> members;
 }

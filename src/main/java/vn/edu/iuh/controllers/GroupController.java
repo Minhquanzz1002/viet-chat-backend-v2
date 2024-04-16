@@ -56,7 +56,18 @@ public class GroupController {
         return groupService.deleteMemberById(groupId, memberId);
     }
 
-    @Operation(summary = "Tạo nhóm mới", description = "Tạo nhóm với tối thiểu 2 thành viên")
+    @Operation(
+            summary = "Tạo nhóm mới",
+            description = """
+                    Tạo nhóm với tối thiểu 2 thành viên (trừ bạn). Chú ý ResponseStatus khi thành công là `CREATED-201`
+                    
+                    Ảnh nhóm được phép bỏ qua. Hãy xử lý nó dưới client
+                    
+                    <strong>Bad Request: </strong>
+                     - Dữ liệu đầu vào không hợp lệ
+                     - Có một người dùng trong danh sách `members` không tồn tại
+                    """
+    )
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     public Group createGroup(@RequestBody @Valid GroupRequestCreateDTO groupRequestCreateDTO, @AuthenticationPrincipal UserDetails userDetails) {
