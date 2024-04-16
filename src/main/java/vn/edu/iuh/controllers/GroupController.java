@@ -1,6 +1,5 @@
 package vn.edu.iuh.controllers;
 
-import com.fasterxml.jackson.annotation.JsonIncludeProperties;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -35,10 +34,20 @@ public class GroupController {
     }
 
     @GetMapping("/{group_id}/members")
-    @Operation(summary = "Lấy danh sách thành viên của nhóm", description = "Lấy danh sách thành viên của nhóm")
-    @JsonIncludeProperties({"role", "joinMethod"})
-    public List<GroupMember> getMembers(@PathVariable(name = "group_id") String groupId) {
-        return groupService.findById(groupId).getMembers();
+    @Operation(
+            summary = "Lấy danh sách thành viên của nhóm",
+            description = """
+                    Lấy danh sách thành viên của nhóm
+                    
+                    <strong>Forbidden: </strong>
+                     - Bạn không phải là thành viên của nhóm
+                    
+                    <strong>Not Found: </strong>
+                     - Không tìm thấy ID nhóm
+                    """
+    )
+    public List<GroupMember> getMembers(@PathVariable(name = "group_id") String groupId, @AuthenticationPrincipal UserPrincipal userPrincipal) {
+        return groupService.getAllMembers(groupId, userPrincipal);
     }
 
     @DeleteMapping("/{group_id}/members/{member_id}")
