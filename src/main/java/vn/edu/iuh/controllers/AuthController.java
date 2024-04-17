@@ -31,9 +31,17 @@ public class AuthController {
     }
 
     @Operation(
-            summary = "Xử lý yêu cầu đăng nhập",
+            summary = "Đăng nhập",
             description = """
-                    Đăng nhập và trả về access (30 phút) và refresh token (14 ngày)
+                    Đăng nhập và trả về access (30 phút cho môi trường thật và 1 giờ cho môi trường dev) và refresh token (14 ngày)
+                    
+                    Danh sách tài khoản:
+                    - 0354927402 - Nguyễn Minh Quân
+                    - 0342036135 - Bành Xuân Mụi
+                    - 0961613087 - Trần Khánh Linh
+                    - 0929635572 - Hà Huy Hùng
+                    - 0939730322 - Phạm Hà Gia Huy
+                    - 0354062270 - Trần Quang Khải
                     """
     )
     @PostMapping("/login")

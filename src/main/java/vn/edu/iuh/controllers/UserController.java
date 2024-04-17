@@ -17,8 +17,8 @@ import vn.edu.iuh.models.enums.FriendStatus;
 import vn.edu.iuh.security.UserPrincipal;
 import vn.edu.iuh.services.UserInfoService;
 
+import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/v1/users")
@@ -62,11 +62,27 @@ public class UserController {
 
     @Operation(
             summary = "Lấy danh sách tất cả nhóm của người dùng",
-            description = "Lấy danh sách nhóm mà người dùng đang là tham gia. Chỉ trả về các thông tin cơ bản phục vụ cho render danh sách nhóm"
+            description = """
+                    Lấy danh sách nhóm mà người dùng đang là tham gia. Chỉ trả về các thông tin cơ bản phục vụ cho render danh sách nhóm
+                    
+                    Danh sách đang được sắp xếp theo `name`. sort chỉ chấp nhận `asc` hoặc `desc`
+                    
+                    <strong>Internal Server Error: </strong>
+                    - Lỗi tham số sort
+                    """
     )
     @GetMapping("/profile/groups")
-    public List<GroupDTO> getAllGroups(@AuthenticationPrincipal UserPrincipal userPrincipal) {
-        return userInfoService.findAllGroupToUserInfoByUserId(userPrincipal.getId());
+    public List<GroupDTO> getAllGroups(@AuthenticationPrincipal UserPrincipal userPrincipal, @RequestParam(defaultValue = "asc") String sort) {
+        if (!sort.equalsIgnoreCase("asc") && !sort.equalsIgnoreCase("desc")) {
+            throw new IllegalArgumentException("Giá trị của tham số 'sort' phải là 'asc' hoặc 'desc'.");
+        }
+        List<GroupDTO> groupDTOList =  userInfoService.findAllGroupToUserInfoByUserId(userPrincipal.getId());
+        if (sort.equals("asc")) {
+            groupDTOList.sort(Comparator.comparing(GroupDTO::getName));
+        }else {
+            groupDTOList.sort(Comparator.comparing(GroupDTO::getName).reversed());
+        }
+        return groupDTOList;
     }
 
     @Operation(
@@ -156,6 +172,7 @@ public class UserController {
             description = """
                     Lấy danh sách bạn bè, chặn, chờ kết bạn của người dùng
                     + request: danh sách lời mời kết bạn
+                    + sent: danh sách lời mời kết bạn đã gửi
                     + friend: danh sách bạn bè
                     + block: danh sách bị chặn
                     """
@@ -174,6 +191,7 @@ public class UserController {
             case friend -> FriendStatus.FRIEND;
             case request -> FriendStatus.PENDING;
             case block -> FriendStatus.BLOCKED;
+            case sent -> FriendStatus.FRIEND_REQUEST;
         };
     }
 
