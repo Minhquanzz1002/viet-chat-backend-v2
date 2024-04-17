@@ -277,7 +277,7 @@ public class UserInfoServiceImpl implements UserInfoService {
                 .build();
         Chat chat;
 
-        if (pendingFriendRequest.getChat().getId() == null) {
+        if (pendingFriendRequest.getChat() == null || pendingFriendRequest.getChat().getId() == null) {
             chat = chatRepository.save(
                     Chat.builder()
                             .messages(List.of(message))
