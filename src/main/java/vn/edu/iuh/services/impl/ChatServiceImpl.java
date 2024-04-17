@@ -233,9 +233,12 @@ public class ChatServiceImpl implements ChatService {
         Reaction reaction = new Reaction(sender, reactionMessageDTO.getType(), reactionMessageDTO.getQuantity());
         if (reactions.contains(reaction)) {
             int index = reactions.indexOf(reaction);
-            reactions.get(index).setQuantity(reactions.get(index).getQuantity() + reaction.getQuantity());
+            Reaction existingReaction = reactions.remove(index);
+            existingReaction.setQuantity(existingReaction.getQuantity() + reaction.getQuantity());
+            reactions.add(0, existingReaction);
+//            reactions.get(index).setQuantity(reactions.get(index).getQuantity() + reaction.getQuantity());
         } else {
-            reactions.add(reaction);
+            reactions.add(0, reaction);
         }
         chatRepository.save(chat);
         simpMessagingTemplate.convertAndSend("/chatroom/" + chatId, message);
