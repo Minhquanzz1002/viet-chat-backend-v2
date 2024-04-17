@@ -108,9 +108,7 @@ public class ChatServiceImpl implements ChatService {
     public Message saveMessage(MessageRequestDTO messageRequestDTO, String chatId, UserPrincipal userPrincipal) {
         UserInfo sender = userInfoRepository.findByUser(new User(userPrincipal.getId())).orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng"));
         Chat chat = chatRepository.findById(chatId).orElseThrow(() -> new DataNotFoundException("Không tìm thấy phòng chat có ID " + chatId));
-
         checkChatMembership(chat, sender);
-
         Message message = Message.builder()
                 .messageId(new ObjectId())
                 .replyMessageId(messageRequestDTO.getReplyMessageId() != null ? new ObjectId(messageRequestDTO.getReplyMessageId()) : null)
@@ -122,7 +120,9 @@ public class ChatServiceImpl implements ChatService {
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .build();
-        chat.getMessages().add(message);
+        List<Message> messages = new ArrayList<>(chat.getMessages());
+        messages.add(message);
+        chat.setMessages(messages);
         LastMessage lastMessage = LastMessage.builder()
                 .messageId(message.getMessageId())
                 .createdAt(message.getCreatedAt())
