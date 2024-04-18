@@ -27,6 +27,7 @@ public interface UserInfoService {
     String deleteFriend(String friendId, UserPrincipal userPrincipal);
     String acceptFriendRequest(String friendId, UserPrincipal userPrincipal);
     String declineFriendRequest(String friendId, UserPrincipal userPrincipal);
+    String cancelFriendRequest(String friendId, UserPrincipal userPrincipal);
 
     List<ChatRoomDTO> getAllChats(UserPrincipal userPrincipal);
 }
