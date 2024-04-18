@@ -13,6 +13,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import vn.edu.iuh.dto.GroupDTO;
 import vn.edu.iuh.dto.GroupRequestCreateDTO;
+import vn.edu.iuh.dto.GroupRoleUpdateRequestDTO;
 import vn.edu.iuh.dto.GroupUpdateRequestDTO;
 import vn.edu.iuh.models.Group;
 import vn.edu.iuh.models.GroupMember;
@@ -36,10 +37,10 @@ public class GroupController {
             summary = "Thêm thành viên vào nhóm",
             description = """
                     Thêm một hoặc nhiều thành viên vào nhóm chat. Bất kì ai cũng có thể thêm thành viên vào nhóm
-                    
+                                        
                     <strong>Forbidden: </strong>
                      - Bạn không phải là thành viên của nhóm
-                    
+                                        
                     <strong>Not Found: </strong>
                      - Không tìm thấy ID nhóm
                     """
@@ -53,10 +54,10 @@ public class GroupController {
             summary = "Lấy danh sách thành viên của nhóm",
             description = """
                     Lấy danh sách thành viên của nhóm
-                    
+                                        
                     <strong>Forbidden: </strong>
                      - Bạn không phải là thành viên của nhóm
-                    
+                                        
                     <strong>Not Found: </strong>
                      - Không tìm thấy ID nhóm
                     """
@@ -71,12 +72,12 @@ public class GroupController {
             summary = "Xóa một thành viên khỏi nhóm.",
             description = """
                     Xóa một thành viên khỏi nhóm chat. Chức năng này chỉ dành cho nhóm trưởng `role = 'GROUP_LEADER'` hoặc nhóm phó `role = 'DEPUTY_GROUP_LEADER'`
-                    
+                                        
                     Nếu thành công `status = NO_CONTENT`
-                    
+                                        
                     <strong>Forbidden: </strong>
                      - Bạn không phải là thành viên của nhóm
-                    
+                                        
                     <strong>Not Found: </strong>
                      - Không tìm thấy ID nhóm
                     """
@@ -86,18 +87,20 @@ public class GroupController {
     }
 
     @Operation(
-            summary = "Thay đổi nhóm trưởng",
+            summary = "Thay đổi chức vụ",
             description = """
+                    Thay đổi chức vụ thành nhóm trưởng (role = 'GROUP_LEADER') hoặc nhóm phó (role = 'DEPUTY_GROUP_LEADER'). Đây là chức năng chỉ dành cho nhóm trưởng
+                    
                     <strong>Forbidden: </strong>
                      - Bạn không phải nhóm trưởng
-                    
+                                        
                     <strong>Not Found: </strong>
                      - Không tìm thấy ID nhóm
                     """
     )
-    @PutMapping("/{group-id}/change-leader")
-    public String changeLeaderGroup(@PathVariable("group-id") String groupId, @RequestBody GroupUpdateRequestDTO groupUpdateRequestDTO, @AuthenticationPrincipal UserPrincipal userPrincipal) {
-        return null;
+    @PutMapping("/{group-id}/members/{member-id}")
+    public GroupMember changeRoleMember(@PathVariable("group-id") String groupId, @PathVariable("member-id") String memberId, @RequestBody GroupRoleUpdateRequestDTO groupRoleUpdateRequestDTO, @AuthenticationPrincipal UserPrincipal userPrincipal) {
+        return groupService.changeRoleMember(groupId, memberId, groupRoleUpdateRequestDTO, userPrincipal);
     }
 
     @Operation(
@@ -105,7 +108,7 @@ public class GroupController {
             description = """
                     <strong>Forbidden: </strong>
                      - Bạn không phải thành viên của nhóm này
-                    
+                                        
                     <strong>Not Found: </strong>
                      - Không tìm thấy ID nhóm
                     """
@@ -119,9 +122,9 @@ public class GroupController {
             summary = "Tạo nhóm mới",
             description = """
                     Tạo nhóm với tối thiểu 2 thành viên (trừ bạn). Chú ý ResponseStatus khi thành công là `CREATED-201`
-                    
+                                        
                     Ảnh nhóm được phép bỏ qua. Hãy xử lý nó dưới client
-                    
+                                        
                     <strong>Bad Request: </strong>
                      - Dữ liệu đầu vào không hợp lệ
                      - Có một người dùng trong danh sách `members` không tồn tại
@@ -138,7 +141,7 @@ public class GroupController {
             description = """
                     <strong>Forbidden: </strong>
                      - Bạn không phải thành viên của nhóm này
-                    
+                                        
                     <strong>Not Found: </strong>
                      - Không tìm thấy ID nhóm
                     """
@@ -154,10 +157,10 @@ public class GroupController {
             summary = "Giải tán nhóm",
             description = """
                     Giải tán nhóm. Chức năng này chỉ dành cho nhóm trưởng `role="GROUP_LEADER"`
-                    
+                                        
                     <strong>Forbidden: </strong>
                      - Bạn không phải là nhóm trưởng
-                    
+                                        
                     <strong>Not Found: </strong>
                      - Không tìm thấy ID nhóm
                     """
