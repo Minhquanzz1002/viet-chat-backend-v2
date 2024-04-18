@@ -13,6 +13,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import vn.edu.iuh.dto.GroupDTO;
 import vn.edu.iuh.dto.GroupRequestCreateDTO;
+import vn.edu.iuh.dto.GroupUpdateRequestDTO;
 import vn.edu.iuh.models.Group;
 import vn.edu.iuh.models.GroupMember;
 import vn.edu.iuh.security.UserPrincipal;
@@ -82,6 +83,21 @@ public class GroupController {
     )
     public void deleteMember(@PathVariable(name = "group_id") String groupId, @PathVariable(name = "member_id") String memberId, @AuthenticationPrincipal UserPrincipal userPrincipal) {
         groupService.deleteMemberById(groupId, memberId, userPrincipal);
+    }
+
+    @Operation(
+            summary = "Cập nhật thông tin nhóm",
+            description = """
+                    <strong>Forbidden: </strong>
+                     - Bạn không phải thành viên của nhóm này
+                    
+                    <strong>Not Found: </strong>
+                     - Không tìm thấy ID nhóm
+                    """
+    )
+    @PutMapping("/{group-id}")
+    public GroupDTO updateGroup(@PathVariable("group-id") String groupId, @RequestBody GroupUpdateRequestDTO groupUpdateRequestDTO, @AuthenticationPrincipal UserPrincipal userPrincipal) {
+        return groupService.updateById(groupId, groupUpdateRequestDTO, userPrincipal);
     }
 
     @Operation(

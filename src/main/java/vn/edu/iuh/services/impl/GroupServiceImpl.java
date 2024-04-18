@@ -3,12 +3,15 @@ package vn.edu.iuh.services.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.types.ObjectId;
+import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import vn.edu.iuh.dto.GroupDTO;
 import vn.edu.iuh.dto.GroupRequestCreateDTO;
+import vn.edu.iuh.dto.GroupUpdateRequestDTO;
 import vn.edu.iuh.exceptions.DataNotFoundException;
 import vn.edu.iuh.exceptions.InvalidRequestException;
 import vn.edu.iuh.models.*;
@@ -32,6 +35,7 @@ public class GroupServiceImpl implements GroupService {
     private final GroupRepository groupRepository;
     private final UserInfoRepository userInfoRepository;
     private final ChatRepository chatRepository;
+    private final ModelMapper modelMapper;
 
     @Override
     public List<GroupMember> getAllMembers(String groupId, UserPrincipal userPrincipal) {
@@ -101,6 +105,20 @@ public class GroupServiceImpl implements GroupService {
     @Override
     public Group findById(String id) {
         return groupRepository.findById(id).orElseThrow(() -> new DataNotFoundException("Không tìm thấy nhóm có ID là " + id));
+    }
+
+    @Override
+    public GroupDTO updateById(String id, GroupUpdateRequestDTO groupUpdateRequestDTO, UserPrincipal userPrincipal) {
+        UserInfo senderInfo = userInfoRepository.findByUser(new User(userPrincipal.getId())).orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng"));
+        Group group = findById(id);
+        boolean isValid = group.getMembers().stream().anyMatch(groupMember -> groupMember.getProfile().equals(senderInfo));
+        if (isValid) {
+            modelMapper.map(groupUpdateRequestDTO, group);
+            groupRepository.save(group);
+            return modelMapper.map(group, GroupDTO.class);
+        } else {
+            throw new AccessDeniedException("Bạn không phải là thành viên nhóm");
+        }
     }
 
     @Override
