@@ -71,6 +71,22 @@ public class UserController {
                     - Lỗi tham số sort
                     """
     )
+    @GetMapping("/profile/groups/{group-id}/leave")
+    public List<GroupDTO> leaveGroup(@PathVariable("group-id") String groupId, @AuthenticationPrincipal UserPrincipal userPrincipal) {
+        return null;
+    }
+
+    @Operation(
+            summary = "Lấy danh sách tất cả nhóm của người dùng",
+            description = """
+                    Lấy danh sách nhóm mà người dùng đang là tham gia. Chỉ trả về các thông tin cơ bản phục vụ cho render danh sách nhóm
+                    
+                    Danh sách đang được sắp xếp theo `name`. sort chỉ chấp nhận `asc` hoặc `desc`
+                    
+                    <strong>Internal Server Error: </strong>
+                    - Lỗi tham số sort
+                    """
+    )
     @GetMapping("/profile/groups")
     public List<GroupDTO> getAllGroups(@AuthenticationPrincipal UserPrincipal userPrincipal, @RequestParam(defaultValue = "asc") String sort) {
         if (!sort.equalsIgnoreCase("asc") && !sort.equalsIgnoreCase("desc")) {
