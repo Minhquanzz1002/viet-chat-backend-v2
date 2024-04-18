@@ -1,6 +1,7 @@
 package vn.edu.iuh.controllers;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +24,10 @@ public class AuthController {
             summary = "Đăng ký tài khoản",
             description = """
                     Cập nhật mật khẩu và các thông tin cơ bản sau khi số điện thoại đã được xác thực
-                    """
+                    """,
+            security = {
+                    @SecurityRequirement(name = "bearerAuth")
+            }
     )
     @PostMapping("/register")
     public String register(@RequestBody @Valid RegisterRequestDTO registerRequestDTO, @AuthenticationPrincipal UserPrincipal userPrincipal) {

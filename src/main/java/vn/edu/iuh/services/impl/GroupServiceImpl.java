@@ -11,6 +11,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import vn.edu.iuh.dto.GroupDTO;
 import vn.edu.iuh.dto.GroupRequestCreateDTO;
+import vn.edu.iuh.dto.GroupRoleUpdateRequestDTO;
 import vn.edu.iuh.dto.GroupUpdateRequestDTO;
 import vn.edu.iuh.exceptions.DataNotFoundException;
 import vn.edu.iuh.exceptions.InvalidRequestException;
@@ -27,6 +28,7 @@ import vn.edu.iuh.services.GroupService;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -124,8 +126,28 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
-    public String changeLeaderGroup(String groupId, UserPrincipal userPrincipal) {
-        return null;
+    public GroupMember changeRoleMember(String groupId, String memberId, GroupRoleUpdateRequestDTO groupRoleUpdateRequestDTO, UserPrincipal userPrincipal) {
+        UserInfo senderInfo = userInfoRepository.findByUser(new User(userPrincipal.getId())).orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng"));
+        UserInfo memberInfo = userInfoRepository.findById(memberId).orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng"));
+        Group group = findById(groupId);
+        boolean isValid = group.getMembers().stream().anyMatch(groupMember -> groupMember.getProfile().equals(senderInfo) && groupMember.getRole().equals(GroupMemberRole.GROUP_LEADER));
+        if (isValid) {
+            Optional<GroupMember> updatedMember = group.getMembers().stream()
+                    .filter(groupMember -> groupMember.getProfile().equals(memberInfo))
+                    .findFirst()
+                    .map(groupMember -> {
+                        groupMember.setRole(groupRoleUpdateRequestDTO.getRole());
+                        return groupMember;
+                    });
+            if (updatedMember.isPresent()) {
+                groupRepository.save(group);
+                return updatedMember.get();
+            } else {
+                throw new DataNotFoundException("Không tìm thấy thành viên trong nhóm");
+            }
+        } else {
+            throw new AccessDeniedException("Bạn phải là nhóm trưởng");
+        }
     }
 
     @Override
