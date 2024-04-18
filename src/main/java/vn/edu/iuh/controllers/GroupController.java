@@ -6,11 +6,14 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import vn.edu.iuh.dto.GroupDTO;
 import vn.edu.iuh.dto.GroupRequestCreateDTO;
+import vn.edu.iuh.dto.GroupUpdateRequestDTO;
 import vn.edu.iuh.models.Group;
 import vn.edu.iuh.models.GroupMember;
 import vn.edu.iuh.security.UserPrincipal;
@@ -26,15 +29,22 @@ import java.util.List;
 @RequiredArgsConstructor
 public class GroupController {
     private final GroupService groupService;
+    private final ModelMapper modelMapper;
 
-    @PostMapping("/{group_id}/members")
+    @PutMapping("/{group_id}/members")
     @Operation(
             summary = "Thêm thành viên vào nhóm",
             description = """
                     Thêm một hoặc nhiều thành viên vào nhóm chat. Bất kì ai cũng có thể thêm thành viên vào nhóm
+                    
+                    <strong>Forbidden: </strong>
+                     - Bạn không phải là thành viên của nhóm
+                    
+                    <strong>Not Found: </strong>
+                     - Không tìm thấy ID nhóm
                     """
     )
-    public Group addMembers(@PathVariable(name = "group_id") String groupId, @RequestBody List<String> users, @AuthenticationPrincipal UserDetails userDetails) {
+    public List<GroupMember> addMembers(@PathVariable(name = "group_id") String groupId, @RequestBody List<String> users, @AuthenticationPrincipal UserDetails userDetails) {
         return groupService.addMembersToGroup(groupId, users, userDetails);
     }
 
@@ -55,10 +65,39 @@ public class GroupController {
         return groupService.getAllMembers(groupId, userPrincipal);
     }
 
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/{group_id}/members/{member_id}")
-    @Operation(summary = "Xóa một thành viên khỏi nhóm. Chức năng này chỉ dành cho nhóm trưởng", description = "Xóa một thành viên khỏi nhóm chat theo ID. **Chức năng này chỉ dành cho nhóm trưởng**")
-    public Group deleteMember(@PathVariable(name = "group_id") String groupId, @PathVariable(name = "member_id") String memberId) {
-        return groupService.deleteMemberById(groupId, memberId);
+    @Operation(
+            summary = "Xóa một thành viên khỏi nhóm.",
+            description = """
+                    Xóa một thành viên khỏi nhóm chat. Chức năng này chỉ dành cho nhóm trưởng `role = 'GROUP_LEADER'` hoặc nhóm phó `role = 'DEPUTY_GROUP_LEADER'`
+                    
+                    Nếu thành công `status = NO_CONTENT`
+                    
+                    <strong>Forbidden: </strong>
+                     - Bạn không phải là thành viên của nhóm
+                    
+                    <strong>Not Found: </strong>
+                     - Không tìm thấy ID nhóm
+                    """
+    )
+    public void deleteMember(@PathVariable(name = "group_id") String groupId, @PathVariable(name = "member_id") String memberId, @AuthenticationPrincipal UserPrincipal userPrincipal) {
+        groupService.deleteMemberById(groupId, memberId, userPrincipal);
+    }
+
+    @Operation(
+            summary = "Cập nhật thông tin nhóm",
+            description = """
+                    <strong>Forbidden: </strong>
+                     - Bạn không phải thành viên của nhóm này
+                    
+                    <strong>Not Found: </strong>
+                     - Không tìm thấy ID nhóm
+                    """
+    )
+    @PutMapping("/{group-id}")
+    public GroupDTO updateGroup(@PathVariable("group-id") String groupId, @RequestBody GroupUpdateRequestDTO groupUpdateRequestDTO, @AuthenticationPrincipal UserPrincipal userPrincipal) {
+        return groupService.updateById(groupId, groupUpdateRequestDTO, userPrincipal);
     }
 
     @Operation(
@@ -79,10 +118,20 @@ public class GroupController {
         return groupService.create(groupRequestCreateDTO, (UserPrincipal) userDetails);
     }
 
-    @Operation(summary = "Lấy thông tin nhóm theo ID")
+    @Operation(
+            summary = "Lấy thông tin nhóm theo ID",
+            description = """
+                    <strong>Forbidden: </strong>
+                     - Bạn không phải thành viên của nhóm này
+                    
+                    <strong>Not Found: </strong>
+                     - Không tìm thấy ID nhóm
+                    """
+    )
     @GetMapping("/{group-id}")
-    public Group getGroup(@PathVariable("group-id") String id) {
-        return groupService.findById(id);
+    public GroupDTO getGroup(@PathVariable("group-id") String id) {
+        Group group = groupService.findById(id);
+        return modelMapper.map(group, GroupDTO.class);
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)

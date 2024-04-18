@@ -3,16 +3,20 @@ package vn.edu.iuh.services.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.types.ObjectId;
+import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import vn.edu.iuh.dto.GroupDTO;
 import vn.edu.iuh.dto.GroupRequestCreateDTO;
+import vn.edu.iuh.dto.GroupUpdateRequestDTO;
 import vn.edu.iuh.exceptions.DataNotFoundException;
 import vn.edu.iuh.exceptions.InvalidRequestException;
 import vn.edu.iuh.models.*;
 import vn.edu.iuh.models.enums.GroupMemberRole;
+import vn.edu.iuh.models.enums.GroupStatus;
 import vn.edu.iuh.models.enums.MessageType;
 import vn.edu.iuh.repositories.ChatRepository;
 import vn.edu.iuh.repositories.GroupRepository;
@@ -21,6 +25,7 @@ import vn.edu.iuh.security.UserPrincipal;
 import vn.edu.iuh.services.GroupService;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -30,6 +35,7 @@ public class GroupServiceImpl implements GroupService {
     private final GroupRepository groupRepository;
     private final UserInfoRepository userInfoRepository;
     private final ChatRepository chatRepository;
+    private final ModelMapper modelMapper;
 
     @Override
     public List<GroupMember> getAllMembers(String groupId, UserPrincipal userPrincipal) {
@@ -102,54 +108,92 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
+    public GroupDTO updateById(String id, GroupUpdateRequestDTO groupUpdateRequestDTO, UserPrincipal userPrincipal) {
+        UserInfo senderInfo = userInfoRepository.findByUser(new User(userPrincipal.getId())).orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng"));
+        Group group = findById(id);
+        boolean isValid = group.getMembers().stream().anyMatch(groupMember -> groupMember.getProfile().equals(senderInfo));
+        if (isValid) {
+            modelMapper.map(groupUpdateRequestDTO, group);
+            groupRepository.save(group);
+            return modelMapper.map(group, GroupDTO.class);
+        } else {
+            throw new AccessDeniedException("Bạn không phải là thành viên nhóm");
+        }
+    }
+
+    @Override
     public Page<Group> findAllWithPagination(Pageable pageable) {
         return groupRepository.findAll(pageable);
     }
 
     @Override
     public void deleteById(String id, UserPrincipal userPrincipal) {
-        UserInfo userInfo = userInfoRepository.findByUser(new User(userPrincipal.getId())).orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng"));
+        UserInfo sender = userInfoRepository.findByUser(new User(userPrincipal.getId())).orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng"));
         Group group = findById(id);
-        boolean isValid = group.getMembers().stream().anyMatch(groupMember -> groupMember.getProfile().equals(userInfo) && groupMember.getRole().equals(GroupMemberRole.GROUP_LEADER));
+        boolean isValid = group.getMembers().stream().anyMatch(groupMember -> groupMember.getProfile().equals(sender) && groupMember.getRole().equals(GroupMemberRole.GROUP_LEADER));
         if (isValid) {
-            groupRepository.delete(group);
+            group.getMembers().forEach(groupMember -> {
+                UserInfo member = userInfoRepository.findById(groupMember.getProfile().getId()).orElseThrow(() -> new DataNotFoundException("Không tìm thấy thành viên"));
+                member.getGroups().remove(group);
+                member.getChats().removeIf(userChat -> group.getChat().equals(userChat.getChat()));
+                userInfoRepository.save(member);
+            });
+            group.setStatus(GroupStatus.DELETED);
+            groupRepository.save(group);
         } else {
             throw new AccessDeniedException("Bạn không phải là nhóm trưởng nên không thể giải tán nhóm");
         }
     }
 
     @Override
-    public Group addMembersToGroup(String groupId, List<String> users, UserDetails userDetails) {
+    public List<GroupMember> addMembersToGroup(String groupId, List<String> users, UserDetails userDetails) {
         // validate whether the user is in the group
-        UserInfo userInfo = userInfoRepository.findByUser(new User(((UserPrincipal) userDetails).getId())).orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng"));
+        UserInfo senderInfo = userInfoRepository.findByUser(new User(((UserPrincipal) userDetails).getId())).orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng"));
         Group group = findById(groupId);
 
-        boolean isValid = group.getMembers().stream().anyMatch(groupMember -> groupMember.getProfile().equals(userInfo));
-
+        boolean isValid = group.getMembers().stream().anyMatch(groupMember -> groupMember.getProfile().equals(senderInfo));
+        List<GroupMember> addedMembers = new ArrayList<>();
         if (isValid) {
-            List<UserInfo> userInfos = userInfoRepository.findAllById(users);
-            userInfos.forEach(userInfo1 -> {
-                if (group.getMembers().stream().noneMatch(groupMember -> groupMember.getProfile().equals(userInfo1))) {
-                    GroupMember groupMember = new GroupMember(userInfo1, GroupMemberRole.MEMBER, "Thêm bởi " + userInfo.getLastName());
-                    group.getMembers().add(groupMember);
-                    userInfo1.getGroups().add(group);
-                    userInfoRepository.save(userInfo1);
+            List<UserInfo> memberInfos = userInfoRepository.findAllById(users);
+            memberInfos.forEach(memberInfo -> {
+                if (group.getMembers().stream().noneMatch(groupMember -> groupMember.getProfile().equals(memberInfo))) {
+                    GroupMember newGroupMember;
+                    boolean isLeader = group.getMembers().stream().anyMatch(groupMember1 -> groupMember1.getProfile().equals(senderInfo) && groupMember1.getRole().equals(GroupMemberRole.GROUP_LEADER));
+                    if (isLeader) {
+                        newGroupMember = new GroupMember(memberInfo, GroupMemberRole.MEMBER, "Thêm bởi nhóm trưởng");
+                    } else {
+                        newGroupMember = new GroupMember(memberInfo, GroupMemberRole.MEMBER, "Thêm bởi " + senderInfo.getLastName());
+                    }
+                    addedMembers.add(newGroupMember);
+                    group.getMembers().add(newGroupMember);
+                    memberInfo.getGroups().add(group);
+                    memberInfo.getChats().add(UserChat.builder().chat(group.getChat()).build());
+                    userInfoRepository.save(memberInfo);
                 }
             });
-            return groupRepository.save(group);
+            groupRepository.save(group);
+            return addedMembers;
         }
         throw new AccessDeniedException("Bạn không phải thành viên của nhóm này");
     }
 
 
     @Override
-    public Group deleteMemberById(String groupId, String memberId) {
-        Group group = groupRepository.findById(groupId).orElseThrow(() -> new DataNotFoundException("Không tìm thấy nhóm có ID là " + groupId));
-        List<GroupMember> members = group.getMembers();
-        boolean removed = members.removeIf(member -> member.getProfile().getId().equals(memberId));
-        if (!removed) {
-            throw new DataNotFoundException("Không tìm thấy thành viên.");
+    public void deleteMemberById(String groupId, String memberId, UserPrincipal userPrincipal) {
+        UserInfo senderInfo = userInfoRepository.findByUser(new User(userPrincipal.getId())).orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng"));
+        Group group = findById(groupId);
+        boolean isValid = group.getMembers().stream().anyMatch(groupMember -> groupMember.getProfile().equals(senderInfo) && (groupMember.getRole().equals(GroupMemberRole.GROUP_LEADER) || groupMember.getRole().equals(GroupMemberRole.DEPUTY_GROUP_LEADER)));
+        if (isValid) {
+            if (!group.getMembers().removeIf(member -> member.getProfile().getId().equals(memberId))) {
+                throw new DataNotFoundException("Thành viên này không thuộc nhóm hoặc không tồn tại");
+            }
+            UserInfo memberInfo = userInfoRepository.findById(memberId).orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng"));
+            memberInfo.getGroups().remove(group);
+            memberInfo.getChats().remove(UserChat.builder().chat(group.getChat()).build());
+            userInfoRepository.save(memberInfo);
+            groupRepository.save(group);
+        } else {
+            throw new AccessDeniedException("Bạn phải là thành viên và có vai trò nhóm trưởng hoặc nhóm phó");
         }
-        return groupRepository.save(group);
     }
 }
