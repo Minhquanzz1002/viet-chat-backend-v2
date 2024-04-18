@@ -22,6 +22,7 @@ import vn.edu.iuh.security.UserPrincipal;
 import vn.edu.iuh.services.GroupService;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -127,24 +128,33 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
-    public Group addMembersToGroup(String groupId, List<String> users, UserDetails userDetails) {
+    public List<GroupMember> addMembersToGroup(String groupId, List<String> users, UserDetails userDetails) {
         // validate whether the user is in the group
-        UserInfo userInfo = userInfoRepository.findByUser(new User(((UserPrincipal) userDetails).getId())).orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng"));
+        UserInfo senderInfo = userInfoRepository.findByUser(new User(((UserPrincipal) userDetails).getId())).orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng"));
         Group group = findById(groupId);
 
-        boolean isValid = group.getMembers().stream().anyMatch(groupMember -> groupMember.getProfile().equals(userInfo));
-
+        boolean isValid = group.getMembers().stream().anyMatch(groupMember -> groupMember.getProfile().equals(senderInfo));
+        List<GroupMember> addedMembers = new ArrayList<>();
         if (isValid) {
-            List<UserInfo> userInfos = userInfoRepository.findAllById(users);
-            userInfos.forEach(userInfo1 -> {
-                if (group.getMembers().stream().noneMatch(groupMember -> groupMember.getProfile().equals(userInfo1))) {
-                    GroupMember groupMember = new GroupMember(userInfo1, GroupMemberRole.MEMBER, "Thêm bởi " + userInfo.getLastName());
-                    group.getMembers().add(groupMember);
-                    userInfo1.getGroups().add(group);
-                    userInfoRepository.save(userInfo1);
+            List<UserInfo> memberInfos = userInfoRepository.findAllById(users);
+            memberInfos.forEach(memberInfo -> {
+                if (group.getMembers().stream().noneMatch(groupMember -> groupMember.getProfile().equals(memberInfo))) {
+                    GroupMember newGroupMember;
+                    boolean isLeader = group.getMembers().stream().anyMatch(groupMember1 -> groupMember1.getProfile().equals(senderInfo) && groupMember1.getRole().equals(GroupMemberRole.GROUP_LEADER));
+                    if (isLeader) {
+                        newGroupMember = new GroupMember(memberInfo, GroupMemberRole.MEMBER, "Thêm bởi nhóm trưởng");
+                    } else {
+                        newGroupMember = new GroupMember(memberInfo, GroupMemberRole.MEMBER, "Thêm bởi " + senderInfo.getLastName());
+                    }
+                    addedMembers.add(newGroupMember);
+                    group.getMembers().add(newGroupMember);
+                    memberInfo.getGroups().add(group);
+                    memberInfo.getChats().add(UserChat.builder().chat(group.getChat()).build());
+                    userInfoRepository.save(memberInfo);
                 }
             });
-            return groupRepository.save(group);
+            groupRepository.save(group);
+            return addedMembers;
         }
         throw new AccessDeniedException("Bạn không phải thành viên của nhóm này");
     }
