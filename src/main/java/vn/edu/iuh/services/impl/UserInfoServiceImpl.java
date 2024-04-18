@@ -422,6 +422,7 @@ public class UserInfoServiceImpl implements UserInfoService {
                             .avatar(avatar)
                             .lastMessage(chat.getChat().getLastMessage())
                             .isGroup(chat.getChat().getGroup() != null)
+                            .groupId(chat.getChat().getGroup() == null ? null : chat.getChat().getGroup().getId())
                             .lastSeenMessageId(chat.getLastSeenMessageId())
                             .build();
                     chatRoomDTOList.add(chatRoomDTO);

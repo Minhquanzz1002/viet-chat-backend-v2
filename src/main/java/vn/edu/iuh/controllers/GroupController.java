@@ -86,6 +86,21 @@ public class GroupController {
     }
 
     @Operation(
+            summary = "Thay đổi nhóm trưởng",
+            description = """
+                    <strong>Forbidden: </strong>
+                     - Bạn không phải nhóm trưởng
+                    
+                    <strong>Not Found: </strong>
+                     - Không tìm thấy ID nhóm
+                    """
+    )
+    @PutMapping("/{group-id}/change-leader")
+    public String changeLeaderGroup(@PathVariable("group-id") String groupId, @RequestBody GroupUpdateRequestDTO groupUpdateRequestDTO, @AuthenticationPrincipal UserPrincipal userPrincipal) {
+        return null;
+    }
+
+    @Operation(
             summary = "Cập nhật thông tin nhóm",
             description = """
                     <strong>Forbidden: </strong>
