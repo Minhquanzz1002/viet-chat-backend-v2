@@ -15,6 +15,7 @@ import vn.edu.iuh.models.Friend;
 import vn.edu.iuh.models.UserInfo;
 import vn.edu.iuh.models.enums.FriendStatus;
 import vn.edu.iuh.security.UserPrincipal;
+import vn.edu.iuh.services.GroupService;
 import vn.edu.iuh.services.UserInfoService;
 
 import java.util.Comparator;
@@ -28,6 +29,7 @@ import java.util.List;
 @Slf4j
 public class UserController {
     private final UserInfoService userInfoService;
+    private final GroupService groupService;
     private final ModelMapper modelMapper;
 
     @Operation(
@@ -61,19 +63,21 @@ public class UserController {
     }
 
     @Operation(
-            summary = "Lấy danh sách tất cả nhóm của người dùng",
+            summary = "Rời nhóm",
             description = """
-                    Lấy danh sách nhóm mà người dùng đang là tham gia. Chỉ trả về các thông tin cơ bản phục vụ cho render danh sách nhóm
+                    Chú ý: nếu bạn là nhóm trưởng bạn sẽ không được phép rời nhóm. Vui lòng chuyển quyền nhóm trưởng trước khi rời đi
                     
-                    Danh sách đang được sắp xếp theo `name`. sort chỉ chấp nhận `asc` hoặc `desc`
-                    
-                    <strong>Internal Server Error: </strong>
-                    - Lỗi tham số sort
+                    <strong>Forbidden: </strong>
+                     - Bạn không phải là thành viên của nhóm
+                     - Bạn là nhóm trưởng không thể rời nhóm. Hãy chuyển giao vị trí trước
+                     
+                    <strong>Not Found: </strong>
+                     - Không tìm thấy ID nhóm
                     """
     )
-    @GetMapping("/profile/groups/{group-id}/leave")
-    public List<GroupDTO> leaveGroup(@PathVariable("group-id") String groupId, @AuthenticationPrincipal UserPrincipal userPrincipal) {
-        return null;
+    @PutMapping("/profile/groups/{group-id}/leave")
+    public String leaveGroup(@PathVariable("group-id") String groupId, @AuthenticationPrincipal UserPrincipal userPrincipal) {
+        return groupService.leaveGroup(groupId, userPrincipal);
     }
 
     @Operation(

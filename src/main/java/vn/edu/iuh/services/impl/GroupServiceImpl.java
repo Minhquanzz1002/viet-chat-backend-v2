@@ -103,6 +103,27 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
+    public String leaveGroup(String groupId, UserPrincipal userPrincipal) {
+        Group group = findById(groupId);
+        UserInfo senderInfo = userInfoRepository.findByUser(new User(userPrincipal.getId())).orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng"));
+        if (group.getMembers().stream().anyMatch(groupMember -> groupMember.getProfile().equals(senderInfo) && groupMember.getRole().equals(GroupMemberRole.GROUP_LEADER))) {
+            throw new AccessDeniedException("Bạn là nhóm trưởng không thể rời nhóm. Hãy chuyển giao vị trí trước khi rời đi");
+        }
+        boolean isValid = group.getMembers().stream().anyMatch(groupMember -> groupMember.getProfile().equals(senderInfo));
+        if (isValid) {
+            group.getMembers().removeIf(groupMember -> groupMember.getProfile().equals(senderInfo));
+            groupRepository.save(group);
+
+            senderInfo.getChats().removeIf(userChat -> userChat.getChat().equals(group.getChat()));
+            senderInfo.getGroups().remove(group);
+            userInfoRepository.save(senderInfo);
+            return "Rời khỏi nhóm thành công";
+        } else {
+            throw new AccessDeniedException("Bạn không phải là thành viên của nhóm");
+        }
+    }
+
+    @Override
     public Group findById(String id) {
         return groupRepository.findById(id).orElseThrow(() -> new DataNotFoundException("Không tìm thấy nhóm có ID là " + id));
     }
