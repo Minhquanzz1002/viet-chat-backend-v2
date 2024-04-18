@@ -124,6 +124,11 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
+    public String changeLeaderGroup(String groupId, UserPrincipal userPrincipal) {
+        return null;
+    }
+
+    @Override
     public Group findById(String id) {
         return groupRepository.findById(id).orElseThrow(() -> new DataNotFoundException("Không tìm thấy nhóm có ID là " + id));
     }

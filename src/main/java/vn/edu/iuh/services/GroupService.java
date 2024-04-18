@@ -16,6 +16,7 @@ public interface GroupService {
     List<GroupMember> getAllMembers(String groupId, UserPrincipal userPrincipal);
     Group create(GroupRequestCreateDTO groupRequestCreateDTO, UserPrincipal userPrincipal);
     String leaveGroup(String groupId, UserPrincipal userPrincipal);
+    String changeLeaderGroup(String groupId, UserPrincipal userPrincipal);
     Group findById(String id);
     GroupDTO updateById(String id, GroupUpdateRequestDTO groupUpdateRequestDTO, UserPrincipal userPrincipal);
     Page<Group> findAllWithPagination(Pageable pageable);
