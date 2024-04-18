@@ -98,6 +98,22 @@ public class UserController {
     }
 
     @Operation(
+            summary = "Thu hồi lời mời kết bạn",
+            description = """
+                    Thu hồi lời mời kết bạn đã gửi
+                    
+                    <strong>Bad Request:</strong>
+                    - Không tìm thấy lời mời đã gửi
+                    - Bị chặn
+                    - Bạn đã chặn đối phương
+                    """
+    )
+    @PutMapping("/profile/friends/{friend-id}/cancel")
+    public String cancelFriendRequest(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable("friend-id") String friendId) {
+        return userInfoService.cancelFriendRequest(friendId, userPrincipal);
+    }
+
+    @Operation(
             summary = "Từ chối lời mời kết bạn",
             description = """
                     Không chấp nhận lời mời kết bạn từ người khác<br>

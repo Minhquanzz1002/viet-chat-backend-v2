@@ -366,6 +366,36 @@ public class UserInfoServiceImpl implements UserInfoService {
     }
 
     @Override
+    public String cancelFriendRequest(String friendId, UserPrincipal userPrincipal) {
+        UserInfo currentUserInfo = findUserInfoByUserId(userPrincipal.getId());
+        UserInfo friendUserInfo = findById(friendId);
+
+        return currentUserInfo.getFriends().stream()
+                .filter(friend -> friend.getProfile().getId().equals(friendUserInfo.getId()))
+                .findFirst()
+                .map(friend -> {
+                    if (friend.getStatus().equals(FriendStatus.FRIEND_REQUEST)) {
+                        friend.setStatus(FriendStatus.STRANGER);
+
+                        friendUserInfo.getFriends().stream()
+                                .filter(f -> f.getProfile().getId().equals(currentUserInfo.getId()))
+                                .findFirst()
+                                .ifPresent(f -> f.setStatus(FriendStatus.STRANGER));
+
+                        userInfoRepository.saveAll(Arrays.asList(currentUserInfo, friendUserInfo));
+                        return "Thu hồi lời mời kết bạn với " + friendUserInfo.getUser().getPhone() + " thành công.";
+                    } else if (friend.getStatus().equals(FriendStatus.BLOCK)) {
+                        throw new FriendshipRelationshipException("Bạn đã chặn người này. Hãy bỏ chặn trước");
+                    } else if (friend.getStatus().equals(FriendStatus.BLOCKED)) {
+                        throw new FriendshipRelationshipException("Bạn đã bị chặn đối phương");
+                    } else {
+                        throw new FriendshipRelationshipException("Không có yêu cầu kết bạn nào được tìm thấy.");
+                    }
+                })
+                .orElseThrow(() -> new FriendshipRelationshipException("Không có yêu cầu kết bạn nào được tìm thấy."));
+    }
+
+    @Override
     public List<ChatRoomDTO> getAllChats(UserPrincipal userPrincipal) {
         UserInfo userInfo = findUserInfoByUserId(userPrincipal.getId());
         List<UserChat> userChatList = userInfo.getChats();
