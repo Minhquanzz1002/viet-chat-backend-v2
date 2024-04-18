@@ -15,6 +15,7 @@ import vn.edu.iuh.models.Friend;
 import vn.edu.iuh.models.UserInfo;
 import vn.edu.iuh.models.enums.FriendStatus;
 import vn.edu.iuh.security.UserPrincipal;
+import vn.edu.iuh.services.GroupService;
 import vn.edu.iuh.services.UserInfoService;
 
 import java.util.Comparator;
@@ -28,6 +29,7 @@ import java.util.List;
 @Slf4j
 public class UserController {
     private final UserInfoService userInfoService;
+    private final GroupService groupService;
     private final ModelMapper modelMapper;
 
     @Operation(
@@ -58,6 +60,24 @@ public class UserController {
     public List<UserInfo> getUserInfoRecentSearches(@AuthenticationPrincipal UserPrincipal userPrincipal, @RequestParam(defaultValue = "4") int size) {
         List<UserInfo> userInfos = userInfoService.findUserInfoByUserId(userPrincipal.getId()).getRecentSearches();
         return userInfos.subList(0, Math.min(size, userInfos.size()));
+    }
+
+    @Operation(
+            summary = "Rời nhóm",
+            description = """
+                    Chú ý: nếu bạn là nhóm trưởng bạn sẽ không được phép rời nhóm. Vui lòng chuyển quyền nhóm trưởng trước khi rời đi
+                    
+                    <strong>Forbidden: </strong>
+                     - Bạn không phải là thành viên của nhóm
+                     - Bạn là nhóm trưởng không thể rời nhóm. Hãy chuyển giao vị trí trước
+                     
+                    <strong>Not Found: </strong>
+                     - Không tìm thấy ID nhóm
+                    """
+    )
+    @PutMapping("/profile/groups/{group-id}/leave")
+    public String leaveGroup(@PathVariable("group-id") String groupId, @AuthenticationPrincipal UserPrincipal userPrincipal) {
+        return groupService.leaveGroup(groupId, userPrincipal);
     }
 
     @Operation(

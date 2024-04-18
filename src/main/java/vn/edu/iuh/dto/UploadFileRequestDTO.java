@@ -13,7 +13,7 @@ import vn.edu.iuh.dto.enums.UploadType;
 @NoArgsConstructor
 public class UploadFileRequestDTO {
     @NotNull(message = "Tên file là bắt buộc")
-    @Pattern(regexp = "^[\\w\\s-_]+\\.[A-Za-z]+$", message = "File phải có dạng <file>.<extension> VD: example.txt ")
+    @Pattern(regexp = "^[\\w\\s-_()]+\\.[A-Za-z]+$", message = "File phải có dạng <file>.<extension> VD: example.txt ")
     private String filename;
     @NotNull(message = "Loại file là bắt buộc")
     private UploadType type;
