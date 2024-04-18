@@ -6,10 +6,12 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import vn.edu.iuh.dto.GroupDTO;
 import vn.edu.iuh.dto.GroupRequestCreateDTO;
 import vn.edu.iuh.models.Group;
 import vn.edu.iuh.models.GroupMember;
@@ -26,6 +28,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class GroupController {
     private final GroupService groupService;
+    private final ModelMapper modelMapper;
 
     @PostMapping("/{group_id}/members")
     @Operation(
@@ -79,10 +82,20 @@ public class GroupController {
         return groupService.create(groupRequestCreateDTO, (UserPrincipal) userDetails);
     }
 
-    @Operation(summary = "Lấy thông tin nhóm theo ID")
+    @Operation(
+            summary = "Lấy thông tin nhóm theo ID",
+            description = """
+                    <strong>Forbidden: </strong>
+                     - Bạn không phải thành viên của nhóm này
+                    
+                    <strong>Not Found: </strong>
+                     - Không tìm thấy ID nhóm
+                    """
+    )
     @GetMapping("/{group-id}")
-    public Group getGroup(@PathVariable("group-id") String id) {
-        return groupService.findById(id);
+    public GroupDTO getGroup(@PathVariable("group-id") String id) {
+        Group group = groupService.findById(id);
+        return modelMapper.map(group, GroupDTO.class);
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)

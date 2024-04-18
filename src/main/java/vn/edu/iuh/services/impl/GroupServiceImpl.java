@@ -13,6 +13,7 @@ import vn.edu.iuh.exceptions.DataNotFoundException;
 import vn.edu.iuh.exceptions.InvalidRequestException;
 import vn.edu.iuh.models.*;
 import vn.edu.iuh.models.enums.GroupMemberRole;
+import vn.edu.iuh.models.enums.GroupStatus;
 import vn.edu.iuh.models.enums.MessageType;
 import vn.edu.iuh.repositories.ChatRepository;
 import vn.edu.iuh.repositories.GroupRepository;
@@ -108,11 +109,18 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     public void deleteById(String id, UserPrincipal userPrincipal) {
-        UserInfo userInfo = userInfoRepository.findByUser(new User(userPrincipal.getId())).orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng"));
+        UserInfo sender = userInfoRepository.findByUser(new User(userPrincipal.getId())).orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng"));
         Group group = findById(id);
-        boolean isValid = group.getMembers().stream().anyMatch(groupMember -> groupMember.getProfile().equals(userInfo) && groupMember.getRole().equals(GroupMemberRole.GROUP_LEADER));
+        boolean isValid = group.getMembers().stream().anyMatch(groupMember -> groupMember.getProfile().equals(sender) && groupMember.getRole().equals(GroupMemberRole.GROUP_LEADER));
         if (isValid) {
-            groupRepository.delete(group);
+            group.getMembers().forEach(groupMember -> {
+                UserInfo member = userInfoRepository.findById(groupMember.getProfile().getId()).orElseThrow(() -> new DataNotFoundException("Không tìm thấy thành viên"));
+                member.getGroups().remove(group);
+                member.getChats().removeIf(userChat -> group.getChat().equals(userChat.getChat()));
+                userInfoRepository.save(member);
+            });
+            group.setStatus(GroupStatus.DELETED);
+            groupRepository.save(group);
         } else {
             throw new AccessDeniedException("Bạn không phải là nhóm trưởng nên không thể giải tán nhóm");
         }
