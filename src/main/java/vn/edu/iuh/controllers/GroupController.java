@@ -36,6 +36,9 @@ public class GroupController {
             description = """
                     Thêm một hoặc nhiều thành viên vào nhóm chat. Bất kì ai cũng có thể thêm thành viên vào nhóm
                     
+                    <strong>Forbidden: </strong>
+                     - Bạn không phải là thành viên của nhóm
+                    
                     <strong>Not Found: </strong>
                      - Không tìm thấy ID nhóm
                     """
@@ -61,10 +64,24 @@ public class GroupController {
         return groupService.getAllMembers(groupId, userPrincipal);
     }
 
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/{group_id}/members/{member_id}")
-    @Operation(summary = "Xóa một thành viên khỏi nhóm. Chức năng này chỉ dành cho nhóm trưởng", description = "Xóa một thành viên khỏi nhóm chat theo ID. **Chức năng này chỉ dành cho nhóm trưởng**")
-    public Group deleteMember(@PathVariable(name = "group_id") String groupId, @PathVariable(name = "member_id") String memberId) {
-        return groupService.deleteMemberById(groupId, memberId);
+    @Operation(
+            summary = "Xóa một thành viên khỏi nhóm.",
+            description = """
+                    Xóa một thành viên khỏi nhóm chat. Chức năng này chỉ dành cho nhóm trưởng `role = 'GROUP_LEADER'` hoặc nhóm phó `role = 'DEPUTY_GROUP_LEADER'`
+                    
+                    Nếu thành công `status = NO_CONTENT`
+                    
+                    <strong>Forbidden: </strong>
+                     - Bạn không phải là thành viên của nhóm
+                    
+                    <strong>Not Found: </strong>
+                     - Không tìm thấy ID nhóm
+                    """
+    )
+    public void deleteMember(@PathVariable(name = "group_id") String groupId, @PathVariable(name = "member_id") String memberId, @AuthenticationPrincipal UserPrincipal userPrincipal) {
+        groupService.deleteMemberById(groupId, memberId, userPrincipal);
     }
 
     @Operation(

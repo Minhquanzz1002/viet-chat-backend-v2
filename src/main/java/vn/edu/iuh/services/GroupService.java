@@ -17,5 +17,5 @@ public interface GroupService {
     Page<Group> findAllWithPagination(Pageable pageable);
     void deleteById(String id, UserPrincipal userPrincipal);
     List<GroupMember> addMembersToGroup(String groupId, List<String> users, UserDetails userDetails);
-    Group deleteMemberById(String groupId, String memberId);
+    void deleteMemberById(String groupId, String memberId, UserPrincipal userPrincipal);
 }

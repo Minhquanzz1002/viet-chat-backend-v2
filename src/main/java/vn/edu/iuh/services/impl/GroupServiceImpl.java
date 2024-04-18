@@ -161,13 +161,21 @@ public class GroupServiceImpl implements GroupService {
 
 
     @Override
-    public Group deleteMemberById(String groupId, String memberId) {
-        Group group = groupRepository.findById(groupId).orElseThrow(() -> new DataNotFoundException("Không tìm thấy nhóm có ID là " + groupId));
-        List<GroupMember> members = group.getMembers();
-        boolean removed = members.removeIf(member -> member.getProfile().getId().equals(memberId));
-        if (!removed) {
-            throw new DataNotFoundException("Không tìm thấy thành viên.");
+    public void deleteMemberById(String groupId, String memberId, UserPrincipal userPrincipal) {
+        UserInfo senderInfo = userInfoRepository.findByUser(new User(userPrincipal.getId())).orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng"));
+        Group group = findById(groupId);
+        boolean isValid = group.getMembers().stream().anyMatch(groupMember -> groupMember.getProfile().equals(senderInfo) && (groupMember.getRole().equals(GroupMemberRole.GROUP_LEADER) || groupMember.getRole().equals(GroupMemberRole.DEPUTY_GROUP_LEADER)));
+        if (isValid) {
+            if (!group.getMembers().removeIf(member -> member.getProfile().getId().equals(memberId))) {
+                throw new DataNotFoundException("Thành viên này không thuộc nhóm hoặc không tồn tại");
+            }
+            UserInfo memberInfo = userInfoRepository.findById(memberId).orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng"));
+            memberInfo.getGroups().remove(group);
+            memberInfo.getChats().remove(UserChat.builder().chat(group.getChat()).build());
+            userInfoRepository.save(memberInfo);
+            groupRepository.save(group);
+        } else {
+            throw new AccessDeniedException("Bạn phải là thành viên và có vai trò nhóm trưởng hoặc nhóm phó");
         }
-        return groupRepository.save(group);
     }
 }
