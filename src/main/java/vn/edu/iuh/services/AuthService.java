@@ -1,9 +1,6 @@
 package vn.edu.iuh.services;
 
-import vn.edu.iuh.dto.LoginRequestDTO;
-import vn.edu.iuh.dto.ResetTokenDTO;
-import vn.edu.iuh.dto.TokenResponseDTO;
-import vn.edu.iuh.dto.RegisterRequestDTO;
+import vn.edu.iuh.dto.*;
 import vn.edu.iuh.security.UserPrincipal;
 
 public interface AuthService {
@@ -16,5 +13,5 @@ public interface AuthService {
     String forgotPassword(String phone);
     ResetTokenDTO validateResetPassword(String phone, String otp);
     String resetPassword(String token, String password);
-    String changePassword( String passwordole,String newpass, String phone);
+    String changePassword(ChangePasswordRequestDTO changePasswordRequestDTO, UserPrincipal userPrincipal);
 }
