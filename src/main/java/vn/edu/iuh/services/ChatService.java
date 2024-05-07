@@ -1,5 +1,7 @@
 package vn.edu.iuh.services;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import vn.edu.iuh.dto.MessageDTO;
 import vn.edu.iuh.dto.MessageEventDTO;
 import vn.edu.iuh.dto.MessageRequestDTO;
@@ -8,10 +10,8 @@ import vn.edu.iuh.models.Chat;
 import vn.edu.iuh.models.Message;
 import vn.edu.iuh.security.UserPrincipal;
 
-import java.util.List;
-
 public interface ChatService {
-    List<Message> getAllMessages(String chatId, UserPrincipal userPrincipal);
+    Page<Message> getAllMessages(String chatId, UserPrincipal userPrincipal, Pageable pageable, String content);
 
     Chat findById(String id);
 
@@ -34,6 +34,5 @@ public interface ChatService {
 
     void seenMessage(String chatId, String userInfoId);
 
-    List<Message> findByChat(String id, String mes);
 
 }

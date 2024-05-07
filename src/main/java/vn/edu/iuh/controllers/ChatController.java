@@ -5,6 +5,10 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import vn.edu.iuh.dto.MessageRequestDTO;
@@ -13,8 +17,6 @@ import vn.edu.iuh.models.Chat;
 import vn.edu.iuh.models.Message;
 import vn.edu.iuh.security.UserPrincipal;
 import vn.edu.iuh.services.ChatService;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/v1/chats")
@@ -26,9 +28,9 @@ public class ChatController {
     private final ChatService chatService;
 
     @Operation(
-            summary = "Lấy tất cả tin nhắn của phòng chat",
+            summary = "Lấy tin nhắn của phòng chat",
             description = """
-                    Lấy toàn bộ tin nhắn của phòng chat theo ID. Trả về danh sách tin nhắn và thông tin người gửi phục vụ cho render tin nhắn.
+                    Lấy tin nhắn của phòng chat theo ID (có phân trang và kết hợp tìm kiếm tương đối). Trả về danh sách tin nhắn và thông tin người gửi phục vụ cho render tin nhắn.
                                         
                     Đối với các tin nhắn bị thu hồi thì phần nội dung sẽ chuyển sang `Tin nhắn đã bị thu hồi` và phần tệp đánh kèm cũng sẽ chuyển sang `null`
                                         
@@ -44,8 +46,9 @@ public class ChatController {
                     """
     )
     @GetMapping("/{chat-id}/messages")
-    public List<Message> getAllChat(@PathVariable("chat-id") String chatId, @AuthenticationPrincipal UserPrincipal userPrincipal) {
-        return chatService.getAllMessages(chatId, userPrincipal);
+    public Page<Message> getAllChat(@PathVariable("chat-id") String chatId, @AuthenticationPrincipal UserPrincipal userPrincipal, @RequestParam(required = false, defaultValue = "0") int page, @RequestParam(required = false, defaultValue = "20") int size , @RequestParam(required = false) String content) {
+        Pageable pageable = PageRequest.of(page, size);
+        return chatService.getAllMessages(chatId, userPrincipal, pageable, content);
     }
 
     @Operation(
@@ -200,10 +203,4 @@ public class ChatController {
     public Chat getChat(@PathVariable("chat-id") String id) {
         return chatService.findById(id);
     }
-    @GetMapping("/{chatId}/search/{mess}")
-    public List<Message> timKiemTinNhan(@PathVariable("chatId") String id, @PathVariable("mess") String noiDung) {
-        return chatService.findByChat(id, noiDung);
-    }
-
-
 }

@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import vn.edu.iuh.dto.*;
+import vn.edu.iuh.exceptions.InvalidRequestException;
 import vn.edu.iuh.security.UserPrincipal;
 import vn.edu.iuh.services.AuthService;
 
@@ -114,8 +115,21 @@ public class AuthController {
     public String resetPassword(@RequestBody @Valid ResetPasswordRequestDTO resetPasswordRequestDTO) {
         return authService.resetPassword(resetPasswordRequestDTO.getToken(), resetPasswordRequestDTO.getPassword());
     }
+    @Operation(
+            summary = "Cập nhật mật khẩu",
+            description = """
+            Cập nhật mật khẩu mới bằng mật khẩu hiện tại
+            
+             <strong>Bad Request: </strong>
+             - Mật khẩu mới trùng với mật khẩu hiện tại
+             - Mật khẩu hiện tại không chính xác
+             """
+    )
     @PostMapping("/password/change")
-    public String changePassword(@RequestBody @Valid ChangePasswordRequestDTO changePasswordRequestDTO) {
-        return authService.changePassword(changePasswordRequestDTO.getPasswordold(), changePasswordRequestDTO.getPasswordnew(),changePasswordRequestDTO.getPhone());
+    public String changePassword(@RequestBody @Valid ChangePasswordRequestDTO changePasswordRequestDTO, @AuthenticationPrincipal UserPrincipal userPrincipal) {
+        if (changePasswordRequestDTO.getOldPassword().equals(changePasswordRequestDTO.getNewPassword())) {
+            throw new InvalidRequestException("Mật khẩu mới không được trùng với mật khẩu hiện tại");
+        }
+        return authService.changePassword(changePasswordRequestDTO, userPrincipal);
     }
 }

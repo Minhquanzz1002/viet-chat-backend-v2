@@ -6,14 +6,8 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import vn.edu.iuh.dto.LoginRequestDTO;
-import vn.edu.iuh.dto.RegisterRequestDTO;
-import vn.edu.iuh.dto.ResetTokenDTO;
-import vn.edu.iuh.dto.TokenResponseDTO;
-import vn.edu.iuh.exceptions.DataExistsException;
-import vn.edu.iuh.exceptions.DataNotFoundException;
-import vn.edu.iuh.exceptions.OTPMismatchException;
-import vn.edu.iuh.exceptions.UnauthorizedException;
+import vn.edu.iuh.dto.*;
+import vn.edu.iuh.exceptions.*;
 import vn.edu.iuh.models.RefreshToken;
 import vn.edu.iuh.models.User;
 import vn.edu.iuh.models.UserInfo;
@@ -206,15 +200,14 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public String changePassword(String passwordole,String newpass, String phone) {
-        String phoneSuffix = phone.substring(phone.length() - 3);
-        User user = userRepository.findByPhone(phone).orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy tài khoản có số điện thoại là ***" + phoneSuffix));
-        System.out.println(user);
-        if(passwordEncoder.matches(passwordole, user.getPassword())){
-            user.setPassword(passwordEncoder.encode(newpass));
+    public String changePassword(ChangePasswordRequestDTO changePasswordRequestDTO, UserPrincipal userPrincipal) {
+        String phoneSuffix = userPrincipal.getUsername().substring(userPrincipal.getUsername().length() - 3);
+        User user = userRepository.findByPhone(userPrincipal.getUsername()).orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy tài khoản có số điện thoại là ***" + phoneSuffix));
+        if(passwordEncoder.matches(changePasswordRequestDTO.getOldPassword(), user.getPassword())){
+            user.setPassword(passwordEncoder.encode(changePasswordRequestDTO.getNewPassword()));
             userRepository.save(user);
             return "Cập nhật mật khẩu thành công.";
         }
-        return "mật khẩu nhập sai";
+        throw new InvalidRequestException("Mật khẩu hiện tại không chính xác. Vui lòng nhập lại");
     }
 }
