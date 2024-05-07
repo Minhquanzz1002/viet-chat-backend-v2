@@ -3,6 +3,9 @@ package vn.edu.iuh.services.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.types.ObjectId;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -42,7 +45,7 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
-    public List<Message> getAllMessages(String chatId, UserPrincipal userPrincipal) {
+    public Page<Message> getAllMessages(String chatId, UserPrincipal userPrincipal, Pageable pageable, String content) {
         UserInfo sender = userInfoRepository.findByUser(new User(userPrincipal.getId())).orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng"));
         Chat chat = findById(chatId);
 
@@ -57,11 +60,19 @@ public class ChatServiceImpl implements ChatService {
                             message.setAttachments(null);
                             message.setReactions(null);
                         }
-                        messages.add(message);
+                        if (content == null || message.getContent().toLowerCase().contains(content.toLowerCase())) {
+                            messages.add(message);
+                        }
                     }
                 }
         );
-        return messages;
+
+        int pageSize = pageable.getPageSize();
+        int pageNumber = pageable.getPageNumber();
+        int start = Math.max(0, messages.size() - pageSize - (pageNumber * pageSize));
+        int end = messages.size() - (pageNumber * pageSize);
+        List<Message> responseMessage = messages.subList(start, end);
+        return new PageImpl<>(responseMessage, pageable, messages.size());
     }
 
     @Override
@@ -281,19 +292,6 @@ public class ChatServiceImpl implements ChatService {
         int index = userInfo.getChats().indexOf(UserChat.builder().chat(chat).build());
         userInfo.getChats().get(index).setLastSeenMessageId(chat.getMessages().get(chat.getMessages().size() - 1).getMessageId());
         userInfoRepository.save(userInfo);
-    }
-
-    @Override
-    public List<Message> findByChat(String id,String mes) {
-        Chat chat = chatRepository.findById(id).orElseThrow(() -> new DataNotFoundException("Không tìm thấy phòng chat có ID " + id));
-        List<Message> list =  chat.getMessages();
-        List<Message> listFine =new ArrayList<>();
-        for (Message message : list) {
-            if (message.getContent().contains(mes)) {
-                listFine.add(message);
-            }
-        }
-        return listFine;
     }
 
 }
