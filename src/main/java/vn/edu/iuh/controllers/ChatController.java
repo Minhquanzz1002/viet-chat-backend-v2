@@ -46,7 +46,7 @@ public class ChatController {
                     """
     )
     @GetMapping("/{chat-id}/messages")
-    public Page<Message> getAllChat(@PathVariable("chat-id") String chatId, @AuthenticationPrincipal UserPrincipal userPrincipal, @RequestParam(required = false, defaultValue = "0") int page, @RequestParam(required = false, defaultValue = "10") int size , @RequestParam(required = false) String content) {
+    public Page<Message> getAllChat(@PathVariable("chat-id") String chatId, @AuthenticationPrincipal UserPrincipal userPrincipal, @RequestParam(required = false, defaultValue = "0") int page, @RequestParam(required = false, defaultValue = "20") int size , @RequestParam(required = false) String content) {
         Pageable pageable = PageRequest.of(page, size);
         return chatService.getAllMessages(chatId, userPrincipal, pageable, content);
     }
