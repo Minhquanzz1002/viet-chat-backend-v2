@@ -1,0 +1,447 @@
+[{
+  "_id": {
+    "$oid": "661e50113a414911d99ca922"
+  },
+  "messages": [
+    {
+      "message_id": {
+        "$oid": "661e50113a414911d99ca921"
+      },
+      "type": "EVENT",
+      "sender_id": null,
+      "content": "Hai bạn đã trở thành bạn bè",
+      "reactions": [],
+      "status": "SENT",
+      "created_at": {
+        "$date": "2024-04-16T10:16:49.816Z"
+      },
+      "updated_at": {
+        "$date": "2024-04-16T10:16:49.816Z"
+      },
+      "delete_by": []
+    },
+    {
+      "message_id": {
+        "$oid": "661e68af9404cd696610606a"
+      },
+      "type": "EVENT",
+      "sender_id": null,
+      "content": "Hai bạn đã trở thành bạn bè",
+      "reactions": [],
+      "status": "SENT",
+      "created_at": {
+        "$date": "2024-04-16T12:01:51.148Z"
+      },
+      "updated_at": {
+        "$date": "2024-04-16T12:01:51.148Z"
+      },
+      "delete_by": []
+    },
+    {
+      "message_id": {
+        "$oid": "661e6bcd9404cd696610606e"
+      },
+      "type": "EVENT",
+      "sender_id": null,
+      "content": "Hai bạn đã trở thành bạn bè",
+      "reactions": [],
+      "status": "SENT",
+      "created_at": {
+        "$date": "2024-04-16T12:15:09.786Z"
+      },
+      "updated_at": {
+        "$date": "2024-04-16T12:15:09.786Z"
+      },
+      "delete_by": []
+    },
+    {
+      "message_id": {
+        "$oid": "661e6d149404cd6966106072"
+      },
+      "type": "EVENT",
+      "content": "Hai bạn đã trở thành bạn bè",
+      "reactions": [],
+      "status": "SENT",
+      "created_at": {
+        "$date": "2024-04-16T12:20:36.863Z"
+      },
+      "updated_at": {
+        "$date": "2024-04-16T12:20:36.863Z"
+      },
+      "delete_by": []
+    }
+  ],
+  "members": [
+    {
+      "$oid": "661e4acd3a414911d99ca910"
+    },
+    {
+      "$oid": "661e4d4a3a414911d99ca919"
+    }
+  ],
+  "last_message": {
+    "message_id": "661e6d149404cd6966106072",
+    "content": "Hai bạn đã trở thành bạn bè",
+    "created_at": {
+      "$date": "2024-04-16T12:20:36.868Z"
+    }
+  },
+  "created_at": {
+    "$date": "2024-04-16T10:16:49.821Z"
+  },
+  "updated_at": {
+    "$date": "2024-04-16T12:20:36.871Z"
+  },
+  "_class": "vn.edu.iuh.models.Chat"
+},
+{
+  "_id": {
+    "$oid": "661e7e82645311463c79aaf5"
+  },
+  "messages": [
+    {
+      "message_id": {
+        "$oid": "661e7e82645311463c79aaf4"
+      },
+      "type": "EVENT",
+      "content": "Hai bạn đã trở thành bạn bè",
+      "reactions": [],
+      "status": "SENT",
+      "created_at": {
+        "$date": "2024-04-16T13:34:58.238Z"
+      },
+      "updated_at": {
+        "$date": "2024-04-16T13:34:58.238Z"
+      },
+      "delete_by": []
+    }
+  ],
+  "members": [
+    {
+      "$oid": "661e4acd3a414911d99ca910"
+    },
+    {
+      "$oid": "661e4d813a414911d99ca91c"
+    }
+  ],
+  "last_message": {
+    "message_id": "661e7e82645311463c79aaf4",
+    "content": "Hai bạn đã trở thành bạn bè",
+    "created_at": {
+      "$date": "2024-04-16T13:34:58.239Z"
+    }
+  },
+  "created_at": {
+    "$date": "2024-04-16T13:34:58.247Z"
+  },
+  "updated_at": {
+    "$date": "2024-04-16T13:34:58.247Z"
+  },
+  "_class": "vn.edu.iuh.models.Chat"
+},
+{
+  "_id": {
+    "$oid": "661e95f5f5921e073b0c61d9"
+  },
+  "messages": [
+    {
+      "message_id": {
+        "$oid": "661e95f5f5921e073b0c61d8"
+      },
+      "type": "EVENT",
+      "content": "Hai bạn đã trở thành bạn bè",
+      "reactions": [],
+      "status": "SENT",
+      "created_at": {
+        "$date": "2024-04-16T15:15:01.334Z"
+      },
+      "updated_at": {
+        "$date": "2024-04-16T15:15:01.334Z"
+      },
+      "delete_by": []
+    }
+  ],
+  "members": [
+    {
+      "$oid": "661e4c663a414911d99ca913"
+    },
+    {
+      "$oid": "661e4d813a414911d99ca91c"
+    }
+  ],
+  "last_message": {
+    "message_id": "661e95f5f5921e073b0c61d8",
+    "content": "Hai bạn đã trở thành bạn bè",
+    "created_at": {
+      "$date": "2024-04-16T15:15:01.334Z"
+    }
+  },
+  "created_at": {
+    "$date": "2024-04-16T15:15:01.339Z"
+  },
+  "updated_at": {
+    "$date": "2024-04-16T15:15:01.339Z"
+  },
+  "_class": "vn.edu.iuh.models.Chat"
+},
+{
+  "_id": {
+    "$oid": "661e9859f5921e073b0c61df"
+  },
+  "messages": [
+    {
+      "message_id": {
+        "$oid": "661e9859f5921e073b0c61de"
+      },
+      "type": "EVENT",
+      "content": "Hai bạn đã trở thành bạn bè",
+      "reactions": [],
+      "status": "SENT",
+      "created_at": {
+        "$date": "2024-04-16T15:25:13.598Z"
+      },
+      "updated_at": {
+        "$date": "2024-04-16T15:25:13.598Z"
+      },
+      "delete_by": []
+    }
+  ],
+  "members": [
+    {
+      "$oid": "661e523e3a414911d99ca929"
+    },
+    {
+      "$oid": "661e4d813a414911d99ca91c"
+    }
+  ],
+  "last_message": {
+    "message_id": "661e9859f5921e073b0c61de",
+    "content": "Hai bạn đã trở thành bạn bè",
+    "created_at": {
+      "$date": "2024-04-16T15:25:13.598Z"
+    }
+  },
+  "created_at": {
+    "$date": "2024-04-16T15:25:13.600Z"
+  },
+  "updated_at": {
+    "$date": "2024-04-16T15:25:13.600Z"
+  },
+  "_class": "vn.edu.iuh.models.Chat"
+},
+{
+  "_id": {
+    "$oid": "661e9a6c3c7b713c1beda4e9"
+  },
+  "messages": [
+    {
+      "message_id": {
+        "$oid": "661e9a6c3c7b713c1beda4e8"
+      },
+      "type": "EVENT",
+      "content": "Hai bạn đã trở thành bạn bè",
+      "reactions": [],
+      "status": "SENT",
+      "created_at": {
+        "$date": "2024-04-16T15:34:04.158Z"
+      },
+      "updated_at": {
+        "$date": "2024-04-16T15:34:04.158Z"
+      },
+      "delete_by": []
+    }
+  ],
+  "members": [
+    {
+      "$oid": "661e523e3a414911d99ca929"
+    },
+    {
+      "$oid": "661e4c663a414911d99ca913"
+    }
+  ],
+  "last_message": {
+    "message_id": "661e9a6c3c7b713c1beda4e8",
+    "content": "Hai bạn đã trở thành bạn bè",
+    "created_at": {
+      "$date": "2024-04-16T15:34:04.158Z"
+    }
+  },
+  "created_at": {
+    "$date": "2024-04-16T15:34:04.163Z"
+  },
+  "updated_at": {
+    "$date": "2024-04-16T15:34:04.163Z"
+  },
+  "_class": "vn.edu.iuh.models.Chat"
+},
+{
+  "_id": {
+    "$oid": "661ec45ead6f614a5cf5e37a"
+  },
+  "group_id": {
+    "$oid": "661ec45ead6f614a5cf5e378"
+  },
+  "messages": [
+    {
+      "message_id": {
+        "$oid": "661ec45ead6f614a5cf5e379"
+      },
+      "type": "EVENT",
+      "content": "Hãy bắt đầu trò chuyện và chia sẻ cùng nhau.",
+      "reactions": [],
+      "status": "SENT",
+      "created_at": {
+        "$date": "2024-04-16T18:33:02.504Z"
+      },
+      "updated_at": {
+        "$date": "2024-04-16T18:33:02.505Z"
+      },
+      "delete_by": []
+    }
+  ],
+  "members": [],
+  "last_message": {
+    "message_id": "661ec45ead6f614a5cf5e379",
+    "content": "Hãy bắt đầu trò chuyện và chia sẻ cùng nhau.",
+    "created_at": {
+      "$date": "2024-04-16T18:33:02.504Z"
+    }
+  },
+  "created_at": {
+    "$date": "2024-04-16T18:33:02.508Z"
+  },
+  "updated_at": {
+    "$date": "2024-04-16T18:33:02.508Z"
+  },
+  "_class": "vn.edu.iuh.models.Chat"
+},
+{
+  "_id": {
+    "$oid": "661ed2a606cfc03fd66251f1"
+  },
+  "group_id": {
+    "$oid": "661ed2a606cfc03fd66251ef"
+  },
+  "messages": [
+    {
+      "message_id": {
+        "$oid": "661ed2a606cfc03fd66251f0"
+      },
+      "type": "EVENT",
+      "sender_id": null,
+      "content": "Hãy bắt đầu trò chuyện và chia sẻ cùng nhau.",
+      "reactions": [],
+      "status": "SENT",
+      "created_at": {
+        "$date": "2024-04-16T19:33:58.466Z"
+      },
+      "updated_at": {
+        "$date": "2024-04-16T19:33:58.466Z"
+      },
+      "delete_by": []
+    },
+    {
+      "message_id": {
+        "$oid": "661ede8906cfc03fd662521b"
+      },
+      "type": "MESSAGE",
+      "sender_id": {
+        "$oid": "661e4acd3a414911d99ca910"
+      },
+      "content": "Hello",
+      "reactions": [],
+      "status": "SENT",
+      "created_at": {
+        "$date": "2024-04-16T20:24:41.490Z"
+      },
+      "updated_at": {
+        "$date": "2024-04-16T20:24:41.490Z"
+      },
+      "delete_by": []
+    },
+    {
+      "message_id": {
+        "$oid": "661ededd06cfc03fd662521c"
+      },
+      "type": "MESSAGE",
+      "sender_id": {
+        "$oid": "661e4acd3a414911d99ca910"
+      },
+      "content": "Tin nhắn đã bị thu hồi",
+      "status": "UNSEND",
+      "created_at": {
+        "$date": "2024-04-16T20:26:05.384Z"
+      },
+      "updated_at": {
+        "$date": "2024-04-16T20:26:05.384Z"
+      },
+      "delete_by": []
+    },
+    {
+      "message_id": {
+        "$oid": "661edf1f06cfc03fd662521d"
+      },
+      "type": "MESSAGE",
+      "sender_id": {
+        "$oid": "661e4acd3a414911d99ca910"
+      },
+      "content": "Thả tim đi",
+      "reactions": [
+        {
+          "user_id": {
+            "$oid": "661e4acd3a414911d99ca910"
+          },
+          "type": "ANGER",
+          "quantity": 10
+        },
+        {
+          "user_id": {
+            "$oid": "661e4acd3a414911d99ca910"
+          },
+          "type": "LOVE",
+          "quantity": 30
+        },
+        {
+          "user_id": {
+            "$oid": "661e4acd3a414911d99ca910"
+          },
+          "type": "WOW",
+          "quantity": 50
+        },
+        {
+          "user_id": {
+            "$oid": "661e4acd3a414911d99ca910"
+          },
+          "type": "LIKE",
+          "quantity": 10
+        }
+      ],
+      "status": "SENT",
+      "created_at": {
+        "$date": "2024-04-16T20:27:11.428Z"
+      },
+      "updated_at": {
+        "$date": "2024-04-16T20:27:11.428Z"
+      },
+      "delete_by": []
+    }
+  ],
+  "members": [],
+  "last_message": {
+    "message_id": "661edf1f06cfc03fd662521d",
+    "content": "Thả tim đi",
+    "sender_id": {
+      "$oid": "661e4acd3a414911d99ca910"
+    },
+    "created_at": {
+      "$date": "2024-04-16T20:27:11.428Z"
+    }
+  },
+  "created_at": {
+    "$date": "2024-04-16T19:33:58.469Z"
+  },
+  "updated_at": {
+    "$date": "2024-04-16T20:36:44.657Z"
+  },
+  "_class": "vn.edu.iuh.models.Chat"
+}]

@@ -1,121 +1,676 @@
 [{
   "_id": {
-    "$oid": "65ddba794f8ab150db6dfa81"
+    "$oid": "661e4acd3a414911d99ca910"
   },
   "first_name": "Nguyễn Minh",
   "last_name": "Quân",
-  "bio": "Newbie Dev",
-  "thumbnail_avatar": "link avatar",
-  "cover_image": "link cover image",
+  "bio": "BE DEV",
+  "thumbnail_avatar": "https://viet-chat-avatars.s3.ap-southeast-1.amazonaws.com/avatars/65dcd570e36d2418dacb1b62.png",
   "gender": true,
   "birthday": {
-    "$date": "2002-11-19T17:00:00.000Z"
+    "$date": "2002-10-09T17:00:00.000Z"
   },
   "groups": [
     {
-      "$oid": "65df5d8fbd262f5cf9a9f697"
+      "$oid": "661ec45ead6f614a5cf5e378"
+    },
+    {
+      "$oid": "661ed2a606cfc03fd66251ef"
     }
   ],
   "friends": [
     {
       "friend_id": {
-        "$oid": "65df83a0f52cda6a46bde971"
+        "$oid": "661e4d4a3a414911d99ca919"
       },
-      "display_name": "Nguyễn Minh Nam",
-      "status": "FRIEND_REQUEST"
-    }
-  ],
-  "created_at": {
-    "$date": "2024-02-27T10:33:29.567Z"
-  },
-  "updated_at": {
-    "$date": "2024-02-29T06:25:00.753Z"
-  },
-  "user_id": {
-    "$oid": "65dcd570e36d2418dacb1b62"
-  },
-  "_class": "vn.edu.iuh.models.UserInfo"
-},
-{
-  "_id": {
-    "$oid": "65ddba944f8ab150db6dfa82"
-  },
-  "first_name": "Nguyễn",
-  "last_name": "Nữ",
-  "bio": "DevOps",
-  "thumbnail_avatar": "link avatar",
-  "cover_image": "link cover image",
-  "gender": false,
-  "birthday": {
-    "$date": "2002-11-19T17:00:00.000Z"
-  },
-  "groups": [
-    {
-      "$oid": "65df5d8fbd262f5cf9a9f697"
-    }
-  ],
-  "friends": [
-    {
-      "friend_id": {
-        "$oid": "65df83a0f52cda6a46bde971"
+      "display_name": "Bùi Xuân Mạnh",
+      "status": "FRIEND",
+      "chat_id": {
+        "$oid": "661e50113a414911d99ca922"
       },
-      "display_name": "Nguyễn Minh Nam",
-      "status": "FRIEND"
-    }
-  ],
-  "created_at": {
-    "$date": "2024-02-27T10:33:56.730Z"
-  },
-  "updated_at": {
-    "$date": "2024-02-29T06:48:41.371Z"
-  },
-  "user_id": {
-    "$oid": "65dcd570e36d2418dacb1b61"
-  },
-  "_class": "vn.edu.iuh.models.UserInfo"
-},
-{
-  "_id": {
-    "$oid": "65df83a0f52cda6a46bde971"
-  },
-  "first_name": "Nguyễn Minh",
-  "last_name": "Nam",
-  "bio": "Newbie Dev",
-  "thumbnail_avatar": "link avatar",
-  "cover_image": "link cover image",
-  "gender": true,
-  "birthday": {
-    "$date": "2002-11-19T17:00:00.000Z"
-  },
-  "groups": [
-    {
-      "$oid": "65df5d8fbd262f5cf9a9f697"
-    }
-  ],
-  "friends": [
-    {
-      "friend_id": {
-        "$oid": "65ddba944f8ab150db6dfa82"
-      },
-      "display_name": "Nguyễn Nữ",
-      "status": "FRIEND"
+      "is_best_friend": false
     },
     {
       "friend_id": {
-        "$oid": "65ddba794f8ab150db6dfa81"
+        "$oid": "661e4d813a414911d99ca91c"
       },
-      "display_name": "Nguyễn Minh Quân",
-      "status": "PENDING"
+      "display_name": "Trần Khánh Linh",
+      "status": "FRIEND",
+      "chat_id": {
+        "$oid": "661e7e82645311463c79aaf5"
+      },
+      "is_best_friend": false
+    },
+    {
+      "friend_id": {
+        "$oid": "661e4c663a414911d99ca913"
+      },
+      "display_name": "Trần Quang Khải",
+      "status": "PENDING",
+      "chat_id": null,
+      "is_best_friend": false
+    },
+    {
+      "friend_id": {
+        "$oid": "661e4cc83a414911d99ca916"
+      },
+      "display_name": "Hà Huy Hùng",
+      "status": "FRIEND_REQUEST",
+      "chat_id": null,
+      "is_best_friend": false
+    },
+    {
+      "friend_id": {
+        "$oid": "661e523e3a414911d99ca929"
+      },
+      "display_name": "Phạm Hà Gia Huy",
+      "status": "FRIEND_REQUEST",
+      "chat_id": null,
+      "is_best_friend": false
     }
   ],
   "created_at": {
-    "$date": "2024-02-27T10:33:29.567Z"
+    "$date": "2024-04-16T09:54:21.931Z"
   },
   "updated_at": {
-    "$date": "2024-02-29T06:48:41.373Z"
+    "$date": "2024-04-16T19:33:58.490Z"
   },
   "user_id": {
-    "$oid": "65df8385f52cda6a46bde96f"
+    "$oid": "661e4aad3a414911d99ca90e"
   },
+  "chats": [
+    {
+      "chat_id": {
+        "$oid": "661e50113a414911d99ca922"
+      },
+      "join_time": {
+        "$date": "2024-04-16T10:16:49.845Z"
+      }
+    },
+    {
+      "chat_id": {
+        "$oid": "661e7e82645311463c79aaf5"
+      },
+      "join_time": {
+        "$date": "2024-04-16T13:34:58.266Z"
+      }
+    },
+    {
+      "chat_id": {
+        "$oid": "661ec45ead6f614a5cf5e37a"
+      },
+      "join_time": {
+        "$date": "2024-04-16T18:33:02.521Z"
+      }
+    },
+    {
+      "chat_id": {
+        "$oid": "661ed2a606cfc03fd66251f1"
+      },
+      "join_time": {
+        "$date": "2024-04-16T19:33:58.488Z"
+      }
+    }
+  ],
+  "recent_searches": [
+    {
+      "$oid": "661e4d4a3a414911d99ca919"
+    }
+  ],
+  "_class": "vn.edu.iuh.models.UserInfo"
+},
+{
+  "_id": {
+    "$oid": "661e4c663a414911d99ca913"
+  },
+  "first_name": "Trần Quang",
+  "last_name": "Khải",
+  "gender": true,
+  "birthday": {
+    "$date": "2002-10-09T17:00:00.000Z"
+  },
+  "groups": [
+    {
+      "$oid": "661ec45ead6f614a5cf5e378"
+    },
+    {
+      "$oid": "661ed2a606cfc03fd66251ef"
+    }
+  ],
+  "friends": [
+    {
+      "friend_id": {
+        "$oid": "661e4d813a414911d99ca91c"
+      },
+      "display_name": "Trần Khánh Linh",
+      "status": "FRIEND",
+      "chat_id": {
+        "$oid": "661e95f5f5921e073b0c61d9"
+      },
+      "is_best_friend": false
+    },
+    {
+      "friend_id": {
+        "$oid": "661e4acd3a414911d99ca910"
+      },
+      "display_name": "Nguyễn Minh Quân",
+      "status": "FRIEND_REQUEST",
+      "chat_id": null,
+      "is_best_friend": false
+    },
+    {
+      "friend_id": {
+        "$oid": "661e4cc83a414911d99ca916"
+      },
+      "display_name": "Hà Huy Hùng",
+      "status": "FRIEND_REQUEST",
+      "chat_id": null,
+      "is_best_friend": false
+    },
+    {
+      "friend_id": {
+        "$oid": "661e4d4a3a414911d99ca919"
+      },
+      "display_name": "Bùi Xuân Mạnh",
+      "status": "FRIEND_REQUEST",
+      "chat_id": null,
+      "is_best_friend": false
+    },
+    {
+      "friend_id": {
+        "$oid": "661e523e3a414911d99ca929"
+      },
+      "display_name": "Phạm Hà Gia Huy",
+      "status": "FRIEND",
+      "chat_id": {
+        "$oid": "661e9a6c3c7b713c1beda4e9"
+      },
+      "is_best_friend": false
+    }
+  ],
+  "created_at": {
+    "$date": "2024-04-16T10:01:10.584Z"
+  },
+  "updated_at": {
+    "$date": "2024-04-16T19:33:58.517Z"
+  },
+  "user_id": {
+    "$oid": "661e4c2b3a414911d99ca911"
+  },
+  "chats": [
+    {
+      "chat_id": {
+        "$oid": "661e95f5f5921e073b0c61d9"
+      },
+      "join_time": {
+        "$date": "2024-04-16T15:15:01.343Z"
+      }
+    },
+    {
+      "chat_id": {
+        "$oid": "661e9a6c3c7b713c1beda4e9"
+      },
+      "join_time": {
+        "$date": "2024-04-16T15:34:04.168Z"
+      }
+    },
+    {
+      "chat_id": {
+        "$oid": "661ec45ead6f614a5cf5e37a"
+      },
+      "join_time": {
+        "$date": "2024-04-16T18:33:02.545Z"
+      }
+    },
+    {
+      "chat_id": {
+        "$oid": "661ed2a606cfc03fd66251f1"
+      },
+      "join_time": {
+        "$date": "2024-04-16T19:33:58.517Z"
+      }
+    }
+  ],
+  "recent_searches": [],
+  "_class": "vn.edu.iuh.models.UserInfo"
+},
+{
+  "_id": {
+    "$oid": "661e4cc83a414911d99ca916"
+  },
+  "first_name": "Hà Huy",
+  "last_name": "Hùng",
+  "gender": true,
+  "birthday": {
+    "$date": "2002-10-09T17:00:00.000Z"
+  },
+  "groups": [
+    {
+      "$oid": "661ec45ead6f614a5cf5e378"
+    },
+    {
+      "$oid": "661ed2a606cfc03fd66251ef"
+    }
+  ],
+  "friends": [
+    {
+      "friend_id": {
+        "$oid": "661e4d813a414911d99ca91c"
+      },
+      "display_name": "Trần Khánh Linh",
+      "status": "PENDING",
+      "chat_id": null,
+      "is_best_friend": false
+    },
+    {
+      "friend_id": {
+        "$oid": "661e4c663a414911d99ca913"
+      },
+      "display_name": "Trần Quang Khải",
+      "status": "PENDING",
+      "chat_id": null,
+      "is_best_friend": false
+    },
+    {
+      "friend_id": {
+        "$oid": "661e4acd3a414911d99ca910"
+      },
+      "display_name": "Nguyễn Minh Quân",
+      "status": "PENDING",
+      "chat_id": null,
+      "is_best_friend": false
+    },
+    {
+      "friend_id": {
+        "$oid": "661e4d4a3a414911d99ca919"
+      },
+      "display_name": "Bùi Xuân Mạnh",
+      "status": "FRIEND_REQUEST",
+      "chat_id": null,
+      "is_best_friend": false
+    },
+    {
+      "friend_id": {
+        "$oid": "661e523e3a414911d99ca929"
+      },
+      "display_name": "Phạm Hà Gia Huy",
+      "status": "FRIEND_REQUEST",
+      "chat_id": null,
+      "is_best_friend": false
+    }
+  ],
+  "created_at": {
+    "$date": "2024-04-16T10:02:48.231Z"
+  },
+  "updated_at": {
+    "$date": "2024-04-16T19:33:58.528Z"
+  },
+  "user_id": {
+    "$oid": "661e4c913a414911d99ca914"
+  },
+  "chats": [
+    {
+      "chat_id": {
+        "$oid": "661ec45ead6f614a5cf5e37a"
+      },
+      "join_time": {
+        "$date": "2024-04-16T18:33:02.552Z"
+      }
+    },
+    {
+      "chat_id": {
+        "$oid": "661ed2a606cfc03fd66251f1"
+      },
+      "join_time": {
+        "$date": "2024-04-16T19:33:58.527Z"
+      }
+    }
+  ],
+  "recent_searches": [],
+  "_class": "vn.edu.iuh.models.UserInfo"
+},
+{
+  "_id": {
+    "$oid": "661e4d4a3a414911d99ca919"
+  },
+  "first_name": "Bùi Xuân",
+  "last_name": "Mạnh",
+  "gender": true,
+  "birthday": {
+    "$date": "2002-12-08T17:00:00.000Z"
+  },
+  "groups": [
+    {
+      "$oid": "661ec45ead6f614a5cf5e378"
+    },
+    {
+      "$oid": "661ed2a606cfc03fd66251ef"
+    }
+  ],
+  "friends": [
+    {
+      "friend_id": {
+        "$oid": "661e4acd3a414911d99ca910"
+      },
+      "display_name": "Nguyễn Minh Quân",
+      "status": "FRIEND",
+      "chat_id": {
+        "$oid": "661e50113a414911d99ca922"
+      },
+      "is_best_friend": false
+    },
+    {
+      "friend_id": {
+        "$oid": "661e4d813a414911d99ca91c"
+      },
+      "display_name": "Trần Khánh Linh",
+      "status": "PENDING",
+      "chat_id": null,
+      "is_best_friend": false
+    },
+    {
+      "friend_id": {
+        "$oid": "661e4c663a414911d99ca913"
+      },
+      "display_name": "Trần Quang Khải",
+      "status": "PENDING",
+      "chat_id": null,
+      "is_best_friend": false
+    },
+    {
+      "friend_id": {
+        "$oid": "661e4cc83a414911d99ca916"
+      },
+      "display_name": "Hà Huy Hùng",
+      "status": "PENDING",
+      "chat_id": null,
+      "is_best_friend": false
+    },
+    {
+      "friend_id": {
+        "$oid": "661e523e3a414911d99ca929"
+      },
+      "display_name": "Phạm Hà Gia Huy",
+      "status": "FRIEND_REQUEST",
+      "chat_id": null,
+      "is_best_friend": false
+    }
+  ],
+  "created_at": {
+    "$date": "2024-04-16T10:04:58.876Z"
+  },
+  "updated_at": {
+    "$date": "2024-04-16T19:33:58.540Z"
+  },
+  "user_id": {
+    "$oid": "661e4d213a414911d99ca917"
+  },
+  "chats": [
+    {
+      "chat_id": {
+        "$oid": "661e50113a414911d99ca922"
+      },
+      "join_time": {
+        "$date": "2024-04-16T10:16:49.845Z"
+      }
+    },
+    {
+      "chat_id": {
+        "$oid": "661ec45ead6f614a5cf5e37a"
+      },
+      "join_time": {
+        "$date": "2024-04-16T18:33:02.561Z"
+      }
+    },
+    {
+      "chat_id": {
+        "$oid": "661ed2a606cfc03fd66251f1"
+      },
+      "join_time": {
+        "$date": "2024-04-16T19:33:58.539Z"
+      }
+    }
+  ],
+  "recent_searches": [],
+  "_class": "vn.edu.iuh.models.UserInfo"
+},
+{
+  "_id": {
+    "$oid": "661e4d813a414911d99ca91c"
+  },
+  "first_name": "Trần Khánh",
+  "last_name": "Linh",
+  "gender": true,
+  "birthday": {
+    "$date": "2002-01-30T17:00:00.000Z"
+  },
+  "groups": [
+    {
+      "$oid": "661ec45ead6f614a5cf5e378"
+    },
+    {
+      "$oid": "661ed2a606cfc03fd66251ef"
+    }
+  ],
+  "friends": [
+    {
+      "friend_id": {
+        "$oid": "661e4acd3a414911d99ca910"
+      },
+      "display_name": "Nguyễn Minh Quân",
+      "status": "FRIEND",
+      "chat_id": {
+        "$oid": "661e7e82645311463c79aaf5"
+      },
+      "is_best_friend": false
+    },
+    {
+      "friend_id": {
+        "$oid": "661e4d4a3a414911d99ca919"
+      },
+      "display_name": "Bùi Xuân Mạnh",
+      "status": "FRIEND_REQUEST",
+      "chat_id": null,
+      "is_best_friend": false
+    },
+    {
+      "friend_id": {
+        "$oid": "661e523e3a414911d99ca929"
+      },
+      "display_name": "Phạm Hà Gia Huy",
+      "status": "FRIEND",
+      "chat_id": {
+        "$oid": "661e9859f5921e073b0c61df"
+      },
+      "is_best_friend": false
+    },
+    {
+      "friend_id": {
+        "$oid": "661e4cc83a414911d99ca916"
+      },
+      "display_name": "Hà Huy Hùng",
+      "status": "FRIEND_REQUEST",
+      "chat_id": null,
+      "is_best_friend": false
+    },
+    {
+      "friend_id": {
+        "$oid": "661e4c663a414911d99ca913"
+      },
+      "display_name": "Trần Quang Khải",
+      "status": "FRIEND",
+      "chat_id": {
+        "$oid": "661e95f5f5921e073b0c61d9"
+      },
+      "is_best_friend": false
+    }
+  ],
+  "created_at": {
+    "$date": "2024-04-16T10:05:53.688Z"
+  },
+  "updated_at": {
+    "$date": "2024-04-16T19:33:58.556Z"
+  },
+  "user_id": {
+    "$oid": "661e4d603a414911d99ca91a"
+  },
+  "chats": [
+    {
+      "chat_id": {
+        "$oid": "661e7e82645311463c79aaf5"
+      },
+      "join_time": {
+        "$date": "2024-04-16T13:34:58.266Z"
+      }
+    },
+    {
+      "chat_id": {
+        "$oid": "661e95f5f5921e073b0c61d9"
+      },
+      "join_time": {
+        "$date": "2024-04-16T15:15:01.343Z"
+      }
+    },
+    {
+      "chat_id": {
+        "$oid": "661e9859f5921e073b0c61df"
+      },
+      "join_time": {
+        "$date": "2024-04-16T15:25:13.602Z"
+      }
+    },
+    {
+      "chat_id": {
+        "$oid": "661ec45ead6f614a5cf5e37a"
+      },
+      "join_time": {
+        "$date": "2024-04-16T18:33:02.575Z"
+      }
+    },
+    {
+      "chat_id": {
+        "$oid": "661ed2a606cfc03fd66251f1"
+      },
+      "join_time": {
+        "$date": "2024-04-16T19:33:58.556Z"
+      }
+    }
+  ],
+  "recent_searches": [],
+  "_class": "vn.edu.iuh.models.UserInfo"
+},
+{
+  "_id": {
+    "$oid": "661e523e3a414911d99ca929"
+  },
+  "first_name": "Phạm Hà Gia",
+  "last_name": "Huy",
+  "gender": true,
+  "birthday": {
+    "$date": "2002-01-30T17:00:00.000Z"
+  },
+  "groups": [
+    {
+      "$oid": "661ec45ead6f614a5cf5e378"
+    },
+    {
+      "$oid": "661ed2a606cfc03fd66251ef"
+    }
+  ],
+  "friends": [
+    {
+      "friend_id": {
+        "$oid": "661e4d813a414911d99ca91c"
+      },
+      "display_name": "Trần Khánh Linh",
+      "status": "FRIEND",
+      "chat_id": {
+        "$oid": "661e9859f5921e073b0c61df"
+      },
+      "is_best_friend": false
+    },
+    {
+      "friend_id": {
+        "$oid": "661e4c663a414911d99ca913"
+      },
+      "display_name": "Trần Quang Khải",
+      "status": "FRIEND",
+      "chat_id": {
+        "$oid": "661e9a6c3c7b713c1beda4e9"
+      },
+      "is_best_friend": false
+    },
+    {
+      "friend_id": {
+        "$oid": "661e4acd3a414911d99ca910"
+      },
+      "display_name": "Nguyễn Minh Quân",
+      "status": "PENDING",
+      "chat_id": null,
+      "is_best_friend": false
+    },
+    {
+      "friend_id": {
+        "$oid": "661e4cc83a414911d99ca916"
+      },
+      "display_name": "Hà Huy Hùng",
+      "status": "PENDING",
+      "chat_id": null,
+      "is_best_friend": false
+    },
+    {
+      "friend_id": {
+        "$oid": "661e4d4a3a414911d99ca919"
+      },
+      "display_name": "Bùi Xuân Mạnh",
+      "status": "PENDING",
+      "chat_id": null,
+      "is_best_friend": false
+    }
+  ],
+  "created_at": {
+    "$date": "2024-04-16T10:26:06.308Z"
+  },
+  "updated_at": {
+    "$date": "2024-04-16T19:33:58.569Z"
+  },
+  "user_id": {
+    "$oid": "661e52173a414911d99ca927"
+  },
+  "chats": [
+    {
+      "chat_id": {
+        "$oid": "661e9859f5921e073b0c61df"
+      },
+      "join_time": {
+        "$date": "2024-04-16T15:25:13.602Z"
+      }
+    },
+    {
+      "chat_id": {
+        "$oid": "661e9a6c3c7b713c1beda4e9"
+      },
+      "join_time": {
+        "$date": "2024-04-16T15:34:04.168Z"
+      }
+    },
+    {
+      "chat_id": {
+        "$oid": "661ec45ead6f614a5cf5e37a"
+      },
+      "join_time": {
+        "$date": "2024-04-16T18:33:02.584Z"
+      }
+    },
+    {
+      "chat_id": {
+        "$oid": "661ed2a606cfc03fd66251f1"
+      },
+      "join_time": {
+        "$date": "2024-04-16T19:33:58.568Z"
+      }
+    }
+  ],
+  "recent_searches": [],
   "_class": "vn.edu.iuh.models.UserInfo"
 }]

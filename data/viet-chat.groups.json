@@ -1,34 +1,122 @@
 [{
   "_id": {
-    "$oid": "65df5d8fbd262f5cf9a9f697"
+    "$oid": "661ec45ead6f614a5cf5e378"
   },
-  "name": "Nhom chat 3",
-  "thumbnail_avatar": "link",
+  "name": "Công nghệ mới",
+  "thumbnail_avatar": "https://viet-chat-avatars.s3.ap-southeast-1.amazonaws.com/avatars/65dcd570e36d2418dacb1b62.png",
   "members": [
     {
       "member_id": {
-        "$oid": "65ddba944f8ab150db6dfa82"
+        "$oid": "661e4acd3a414911d99ca910"
       },
       "role": "GROUP_LEADER",
       "join_method": "Trưởng nhóm"
     },
     {
       "member_id": {
-        "$oid": "65ddba794f8ab150db6dfa81"
+        "$oid": "661e4c663a414911d99ca913"
       },
       "role": "MEMBER",
       "join_method": "Thêm bởi nhóm trưởng"
     },
     {
       "member_id": {
-        "$oid": "65df83a0f52cda6a46bde971"
+        "$oid": "661e4cc83a414911d99ca916"
       },
       "role": "MEMBER",
-      "join_method": "Thêm bởi Nữ"
+      "join_method": "Thêm bởi nhóm trưởng"
+    },
+    {
+      "member_id": {
+        "$oid": "661e4d4a3a414911d99ca919"
+      },
+      "role": "MEMBER",
+      "join_method": "Thêm bởi nhóm trưởng"
+    },
+    {
+      "member_id": {
+        "$oid": "661e4d813a414911d99ca91c"
+      },
+      "role": "MEMBER",
+      "join_method": "Thêm bởi nhóm trưởng"
+    },
+    {
+      "member_id": {
+        "$oid": "661e523e3a414911d99ca929"
+      },
+      "role": "MEMBER",
+      "join_method": "Thêm bởi nhóm trưởng"
     }
   ],
+  "chat_id": {
+    "$oid": "661ec45ead6f614a5cf5e37a"
+  },
   "created_at": {
-    "$date": "2024-02-28T16:21:35.964Z"
+    "$date": "2024-04-16T18:33:02.472Z"
+  },
+  "updated_at": {
+    "$date": "2024-04-16T18:33:02.588Z"
+  },
+  "_class": "vn.edu.iuh.models.Group"
+},
+{
+  "_id": {
+    "$oid": "661ed2a606cfc03fd66251ef"
+  },
+  "name": "Công nghệ cũ",
+  "thumbnail_avatar": "https://viet-chat-avatars.s3.ap-southeast-1.amazonaws.com/avatars/65dcd570e36d2418dacb1b62.png",
+  "members": [
+    {
+      "member_id": {
+        "$oid": "661e4acd3a414911d99ca910"
+      },
+      "role": "GROUP_LEADER",
+      "join_method": "Trưởng nhóm"
+    },
+    {
+      "member_id": {
+        "$oid": "661e4c663a414911d99ca913"
+      },
+      "role": "MEMBER",
+      "join_method": "Thêm bởi nhóm trưởng"
+    },
+    {
+      "member_id": {
+        "$oid": "661e4cc83a414911d99ca916"
+      },
+      "role": "MEMBER",
+      "join_method": "Thêm bởi nhóm trưởng"
+    },
+    {
+      "member_id": {
+        "$oid": "661e4d4a3a414911d99ca919"
+      },
+      "role": "MEMBER",
+      "join_method": "Thêm bởi nhóm trưởng"
+    },
+    {
+      "member_id": {
+        "$oid": "661e4d813a414911d99ca91c"
+      },
+      "role": "MEMBER",
+      "join_method": "Thêm bởi nhóm trưởng"
+    },
+    {
+      "member_id": {
+        "$oid": "661e523e3a414911d99ca929"
+      },
+      "role": "MEMBER",
+      "join_method": "Thêm bởi nhóm trưởng"
+    }
+  ],
+  "chat_id": {
+    "$oid": "661ed2a606cfc03fd66251f1"
+  },
+  "created_at": {
+    "$date": "2024-04-16T19:33:58.449Z"
+  },
+  "updated_at": {
+    "$date": "2024-04-16T19:33:58.574Z"
   },
   "_class": "vn.edu.iuh.models.Group"
 }]
