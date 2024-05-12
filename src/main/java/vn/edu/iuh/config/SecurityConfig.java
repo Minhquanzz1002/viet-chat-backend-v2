@@ -38,6 +38,7 @@ public class SecurityConfig {
             "/v1/auth/logout/all",
             "/v1/auth/logout",
             "/v1/auth/login",
+            "/socket",
             "/v1/auth/password/forgot",
             "/v1/auth/password/reset/**",
             "/v1/auth/refresh-token",
