@@ -24,10 +24,8 @@ import vn.edu.iuh.security.UserPrincipal;
 import vn.edu.iuh.services.UserInfoService;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -397,38 +395,94 @@ public class UserInfoServiceImpl implements UserInfoService {
 
     @Override
     public List<ChatRoomDTO> getAllChats(UserPrincipal userPrincipal) {
-        UserInfo userInfo = findUserInfoByUserId(userPrincipal.getId());
-        List<UserChat> userChatList = userInfo.getChats();
-        List<ChatRoomDTO> chatRoomDTOList = new ArrayList<>();
-        userChatList.forEach(
-                chat -> {
-                    String name = null;
-                    String avatar = null;
-                    if (chat.getChat().getGroup() != null) {
-                        name = chat.getChat().getGroup().getName();
-                        avatar = chat.getChat().getGroup().getThumbnailAvatar();
+        UserInfo senderInfo = findUserInfoByUserId(userPrincipal.getId());
+        List<UserChat> userChats = senderInfo.getChats();
+        return userChats.stream()
+                .map(chat -> buildChatRoomDTO(chat, senderInfo))
+                .sorted((chat1, chat2) -> {
+                    if (chat1.getPinnedAt() != null && chat2.getPinnedAt() != null) {
+                        return chat2.getPinnedAt().compareTo(chat1.getPinnedAt());
+                    } else if (chat1.getPinnedAt() != null) {
+                        return -1;
+                    } else if (chat2.getPinnedAt() != null) {
+                        return 1;
                     } else {
-                        for (int i = 0; i < chat.getChat().getMembers().size(); i++) {
-                            if (!chat.getChat().getMembers().get(i).getId().equals(userInfo.getId())) {
-                                name = chat.getChat().getMembers().get(i).getFirstName() + " " + chat.getChat().getMembers().get(i).getLastName();
-                                avatar = chat.getChat().getMembers().get(i).getThumbnailAvatar();
-                                break;
-                            }
-                        }
+                        LocalDateTime time1 = chat1.getLastMessage().getCreatedAt();
+                        LocalDateTime time2 = chat2.getLastMessage().getCreatedAt();
+                        return time2.compareTo(time1);
                     }
-                    ChatRoomDTO chatRoomDTO = ChatRoomDTO.builder()
-                            .id(chat.getChat().getId())
-                            .name(name)
-                            .avatar(avatar)
-                            .lastMessage(chat.getChat().getLastMessage())
-                            .isGroup(chat.getChat().getGroup() != null)
-                            .groupId(chat.getChat().getGroup() == null ? null : chat.getChat().getGroup().getId())
-                            .lastSeenMessageId(chat.getLastSeenMessageId())
-                            .build();
-                    chatRoomDTOList.add(chatRoomDTO);
+                })
+                .collect(Collectors.toList());
+
+    }
+
+    @Override
+    public ChatRoomDTO updateUserChat(UserPrincipal userPrincipal, String chatId, UserChatUpdateDTO userChatUpdateDTO) {
+        UserInfo senderInfo = findUserInfoByUserId(userPrincipal.getId());
+        Optional<UserChat> chatToUpdate = senderInfo.getChats().stream()
+                .filter(userChat -> userChat.getChat().getId().equals(chatId))
+                .findFirst();
+        if (chatToUpdate.isPresent()) {
+            UserChat userChat = chatToUpdate.get();
+
+            boolean dataChanged = false;
+
+            if (userChatUpdateDTO.getHidden() != null && userChat.isHidden() != userChatUpdateDTO.getHidden()) {
+                userChat.setHidden(userChatUpdateDTO.getHidden());
+                dataChanged = true;
+            }
+            if (userChatUpdateDTO.getPin() != null) {
+                boolean isCurrentPinned = (userChat.getPinnedAt() != null);
+                if (userChatUpdateDTO.getPin() != isCurrentPinned) {
+                    if (userChatUpdateDTO.getPin()) {
+                        userChat.setPinnedAt(LocalDateTime.now());
+                    } else {
+                        userChat.setPinnedAt(null);
+                    }
+                    dataChanged = true;
                 }
-        );
-        chatRoomDTOList.sort(Comparator.comparing(chatRoomDTO -> chatRoomDTO.getLastMessage().getCreatedAt(), Comparator.reverseOrder()));
-        return chatRoomDTOList;
+            }
+            if (dataChanged) {
+                userInfoRepository.save(senderInfo);
+            }
+            return buildChatRoomDTO(userChat, senderInfo);
+        }
+        throw new DataNotFoundException("Không tìm thấy phòng chat");
+    }
+
+    private ChatRoomDTO buildChatRoomDTO(UserChat chat, UserInfo senderInfo) {
+        Chat chatRoom = chat.getChat();
+        Group group = chatRoom.getGroup();
+        boolean isGroup = (group != null);
+        String name = isGroup ? chatRoom.getGroup().getName() : getMemberName(chatRoom, senderInfo);
+        String avatar = isGroup ? chatRoom.getGroup().getThumbnailAvatar() : getMemberAvatar(chatRoom, senderInfo);
+        return ChatRoomDTO.builder()
+                .id(chatRoom.getId())
+                .name(name)
+                .avatar(avatar)
+                .lastMessage(chatRoom.getLastMessage())
+                .isGroup(isGroup)
+                .groupId(isGroup ? chatRoom.getGroup().getId() : null)
+                .lastSeenMessageId(chat.getLastSeenMessageId())
+                .hidden(chat.isHidden())
+                .pinnedAt(chat.getPinnedAt())
+                .build();
+    }
+
+    private String getMemberName(Chat chatRoom, UserInfo senderInfo) {
+        return chatRoom.getMembers().stream()
+                .filter(member -> !member.getId().equals(senderInfo.getId()))
+                .map(member -> member.getFirstName() + " " + member.getLastName())
+                .findFirst()
+                .orElse(null);
+    }
+
+    private String getMemberAvatar(Chat chatRoom, UserInfo senderInfo) {
+        return chatRoom.getMembers().stream()
+                .filter(member -> !member.getId().equals(senderInfo.getId()))
+                .map(UserInfo::getThumbnailAvatar)
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElse(null);
     }
 }

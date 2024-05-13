@@ -17,6 +17,9 @@ public class UserChat {
     @DocumentReference
     @Field("chat_id")
     private Chat chat;
+    private LocalDateTime pinnedAt;
+    @Builder.Default
+    private boolean hidden = false;
     private String lastSeenMessageId;
     private LocalDateTime lastDeleteChatTime;
     private LocalDateTime joinTime;

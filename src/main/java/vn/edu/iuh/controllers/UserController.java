@@ -250,8 +250,19 @@ public class UserController {
                     """
     )
     @GetMapping("/profile/chats")
-    public List<ChatRoomDTO> updateUserInfo(@AuthenticationPrincipal UserPrincipal userPrincipal) {
+    public List<ChatRoomDTO> getAllChats(@AuthenticationPrincipal UserPrincipal userPrincipal) {
         return userInfoService.getAllChats(userPrincipal);
+    }
+
+    @Operation(
+            summary = "Cập nhật ẩn/hiện hoặc ghim/bỏ ghim tin nhắn",
+            description = """
+                    Lấy danh sách phòng chat. Cả chat đơn và chat nhóm
+                    """
+    )
+    @PutMapping("/profile/chats/{chat-id}")
+    public ChatRoomDTO updateUserChat(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable("chat-id") String chatId, @RequestBody UserChatUpdateDTO userChatUpdateDTO) {
+        return userInfoService.updateUserChat(userPrincipal, chatId, userChatUpdateDTO);
     }
 
     @Operation(

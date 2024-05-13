@@ -30,4 +30,5 @@ public interface UserInfoService {
     String cancelFriendRequest(String friendId, UserPrincipal userPrincipal);
 
     List<ChatRoomDTO> getAllChats(UserPrincipal userPrincipal);
+    ChatRoomDTO updateUserChat(UserPrincipal userPrincipal, String chatId, UserChatUpdateDTO userChatUpdateDTO);
 }
