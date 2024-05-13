@@ -257,7 +257,10 @@ public class UserController {
     @Operation(
             summary = "Cập nhật ẩn/hiện hoặc ghim/bỏ ghim tin nhắn",
             description = """
-                    Lấy danh sách phòng chat. Cả chat đơn và chat nhóm
+                    Cập nhật ẩn/hiện hoặc ghim/bỏ ghim tin nhắn.
+                    
+                    <strong>Not Found: </strong>
+                     - Không tìm thấy ID phòng chat
                     """
     )
     @PutMapping("/profile/chats/{chat-id}")
