@@ -15,10 +15,10 @@ twilio:
   phoneNumberTrial: +16266465296
 ```
 ## Cập nhật
-Tính năng ẩn/hiện phòng chat
+Tính năng ẩn/hiện, ghim/bỏ ghim phòng chat
 - Phòng chat có trạng thái `hidden: true` sẽ không được hiển thị trong danh sách phòng chat. Chỉ có thể tìm kiếm và nhập mật khẩu 4 số để truy cập (theo Zalo). Phần mật khẩu chưa xử lý
 - Bổ sung `boolean hidden` vào thông tin phòng chat
-- Thêm API cập nhật thông tin phòng chat `PUT: /v1/chats/{chat-id}`
+- Bổ sung `LocalDateTime pinnedAt` vào thông tin phòng chat
 
 Cập nhật API `GET: /v1/users/profile/chats`
 - Bổ sung `hidden: boolean` trong kết quả trả về
