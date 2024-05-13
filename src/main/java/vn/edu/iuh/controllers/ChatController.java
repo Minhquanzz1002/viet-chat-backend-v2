@@ -193,7 +193,7 @@ public class ChatController {
             description = """
                     Xóa lịch sử trò chuyện
                                        
-                    User Info ID sẽ thêm vào `deleteBy: ['id']`
+                    `lastDeleteChatTime: LocalDateTime.now()`
                                        
                     <strong>⚠️ Vui lòng không xử lý các lỗi dưới đây phía client. Các lỗi này chỉ đóng vai trò bảo vệ API khỏi các lỗi cố tình.⚠️</strong>
                                        
@@ -202,7 +202,6 @@ public class ChatController {
                      
                      <strong>Not Found: </strong>
                      - Không tìm thấy ID phòng chat
-                     - Không tìm thấy tin nhắn
                      """
     )
     @DeleteMapping("/{chat-id}/messages")
