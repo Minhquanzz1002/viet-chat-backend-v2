@@ -45,5 +45,21 @@ API mới: `PUT: /v1/users/profile/chats/{chat-id}`. Cập nhật ẩn/hiện, g
     "detail": "Không tìm thấy phòng chat"
 }
 ```
+
+API mới: `DELETE: /v1/chats/{chat-id}/messages`
+- Response:
+```text
+Xóa lịch sử trò chuyện thành công
+```
+- Error:
+  - 404 - Not Found: `{chat-id}` không tồn tại
+```json
+{
+    "timestamp": "13-05-2024 17:43:19",
+    "status": 404,
+    "error": "Not Found",
+    "detail": "Không tìm thấy phòng chat"
+}
+```
 ## API
 
