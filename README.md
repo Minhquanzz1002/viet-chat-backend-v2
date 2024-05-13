@@ -14,5 +14,36 @@ twilio:
   authToken: 9db70f2d921fa3110a98f25c63653b9b
   phoneNumberTrial: +16266465296
 ```
+## Cập nhật
+Tính năng ẩn/hiện phòng chat
+- Phòng chat có trạng thái `hidden: true` sẽ không được hiển thị trong danh sách phòng chat. Chỉ có thể tìm kiếm và nhập mật khẩu 4 số để truy cập (theo Zalo). Phần mật khẩu chưa xử lý
+- Bổ sung `boolean hidden` vào thông tin phòng chat
+- Thêm API cập nhật thông tin phòng chat `PUT: /v1/chats/{chat-id}`
+
+Cập nhật API `GET: /v1/users/profile/chats`
+- Bổ sung `hidden: boolean` trong kết quả trả về
+- Bổ sung `pinnedAt: LocalDateTime` trong kết quả trả về
+- Danh sách chat được sắp xếp theo thứ tự:
+  - Danh sách phòng chat được ghim (cái được ghim mới nhất sẽ ở trên đầu mảng)
+  - Các phòng chat còn lại (sắp xếp theo thời gian gửi tin nhắn cuối)
+
+API mới: `PUT: /v1/users/profile/chats/{chat-id}`. Cập nhật ẩn/hiện, ghim/bỏ ghim phòng chat
+- Body: những thông tin không thay đổi không cần bỏ vào
+```
+{
+  hidden: bool;
+  pin: bool
+}
+```
+- Error: 
+  - 404 - Not Found: `{chat-id}` không tồn tại
+```json
+{
+    "timestamp": "13-05-2024 17:43:19",
+    "status": 404,
+    "error": "Not Found",
+    "detail": "Không tìm thấy phòng chat"
+}
+```
 ## API
 
