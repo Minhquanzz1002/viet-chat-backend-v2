@@ -24,7 +24,7 @@ public interface ChatService {
     String deleteMessage(String messageId, String chatId, UserPrincipal userPrincipal);
 
     void deleteMessage(MessageEventDTO messageEventDTO, String chatId);
-
+    String deleteAllMessages(UserPrincipal userPrincipal, String chatId);
     Message unsendMessage(MessageEventDTO messageEventDTO, String chatId);
 
     Message reactionMessage(String messageId, String chatId, UserPrincipal userPrincipal, ReactionMessageDTO reactionMessageDTO);
@@ -33,6 +33,4 @@ public interface ChatService {
     String seenMessage(String chatId, UserPrincipal userPrincipal);
 
     void seenMessage(String chatId, String userInfoId);
-
-
 }

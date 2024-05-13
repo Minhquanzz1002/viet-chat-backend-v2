@@ -28,6 +28,7 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -46,26 +47,28 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     public Page<Message> getAllMessages(String chatId, UserPrincipal userPrincipal, Pageable pageable, String content) {
-        UserInfo sender = userInfoRepository.findByUser(new User(userPrincipal.getId())).orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng"));
+        UserInfo senderInfo = userInfoRepository.findByUser(new User(userPrincipal.getId())).orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng"));
         Chat chat = findById(chatId);
 
-        checkChatMembership(chat, sender);
+        UserChat userChat = senderInfo.getChats().stream()
+                .filter(userChat1 -> userChat1.getChat().getId().equals(chatId))
+                .findFirst()
+                .get();
 
-        List<Message> messages = new ArrayList<>();
-        chat.getMessages().forEach(
-                message -> {
-                    if (!message.getDeleteBy().contains(sender)) {
-                        if (message.getStatus().equals(MessageStatus.UNSEND)) {
-                            message.setContent("Tin nhắn đã bị thu hồi");
-                            message.setAttachments(null);
-                            message.setReactions(null);
-                        }
-                        if (content == null || message.getContent().toLowerCase().contains(content.toLowerCase())) {
-                            messages.add(message);
-                        }
+        checkChatMembership(chat, senderInfo);
+
+        List<Message> messages = chat.getMessages().stream()
+                .filter(message -> userChat.getLastDeleteChatTime() == null || message.getCreatedAt().isAfter(userChat.getLastDeleteChatTime()))
+                .filter(message -> !message.getDeleteBy().contains(senderInfo))
+                .filter(message -> content == null || message.getContent().toLowerCase().contains(content.toLowerCase()))
+                .peek(message -> {
+                    if (message.getStatus().equals(MessageStatus.UNSEND)) {
+                        message.setContent("Tin nhắn đã bị thu hồi");
+                        message.setAttachments(null);
+                        message.setReactions(null);
                     }
-                }
-        );
+                })
+                .toList();
 
         int pageSize = pageable.getPageSize();
         int pageNumber = pageable.getPageNumber();
@@ -205,6 +208,21 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
+    public String deleteAllMessages(UserPrincipal userPrincipal, String chatId) {
+        UserInfo senderInfo = findUserInfoByUserPrincipal(userPrincipal);
+        Optional<UserChat> chatToUpdate = senderInfo.getChats().stream()
+                .filter(userChat -> userChat.getChat().getId().equals(chatId))
+                .findFirst();
+        if (chatToUpdate.isPresent()) {
+            UserChat userChat = chatToUpdate.get();
+            userChat.setLastDeleteChatTime(LocalDateTime.now());
+            userInfoRepository.save(senderInfo);
+            return "Xóa lịch sử trò chuyện thành công";
+        }
+        throw new DataNotFoundException("Không tìm thấy phòng chat");
+    }
+
+    @Override
     public Message unsendMessage(MessageEventDTO messageEventDTO, String chatId) {
         UserInfo userInfo = userInfoRepository.findById(messageEventDTO.getSenderId()).orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng"));
         Chat chat = chatRepository.findById(chatId).orElseThrow(() -> new DataNotFoundException("Không tìm thấy phòng chat có ID " + chatId));
@@ -233,7 +251,7 @@ public class ChatServiceImpl implements ChatService {
     @Override
     public Message reactionMessage(String messageId, String chatId, UserPrincipal userPrincipal, ReactionMessageDTO reactionMessageDTO) {
         Chat chat = findById(chatId);
-        UserInfo sender = userInfoRepository.findByUser(new User(userPrincipal.getId())).orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng"));
+        UserInfo sender = findUserInfoByUserPrincipal(userPrincipal);
         checkChatMembership(chat, sender);
         int messageIndex = chat.getMessages().indexOf(Message.builder().messageId(new ObjectId(messageId)).build());
         if (messageIndex < 0) {
@@ -274,8 +292,8 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
-    public String seenMessage(String chatId,  UserPrincipal userPrincipal) {
-        UserInfo userInfo = userInfoRepository.findByUser(new User(userPrincipal.getId())).orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng"));
+    public String seenMessage(String chatId, UserPrincipal userPrincipal) {
+        UserInfo userInfo = findUserInfoByUserPrincipal(userPrincipal);
         Chat chat = chatRepository.findById(chatId).orElseThrow(() -> new DataNotFoundException("Không tìm thấy phòng chat có ID " + chatId));
         checkChatMembership(chat, userInfo);
         int index = userInfo.getChats().indexOf(UserChat.builder().chat(chat).build());
@@ -294,4 +312,7 @@ public class ChatServiceImpl implements ChatService {
         userInfoRepository.save(userInfo);
     }
 
+    private UserInfo findUserInfoByUserPrincipal(UserPrincipal userPrincipal) {
+        return userInfoRepository.findByUser(new User(userPrincipal.getId())).orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng"));
+    }
 }
