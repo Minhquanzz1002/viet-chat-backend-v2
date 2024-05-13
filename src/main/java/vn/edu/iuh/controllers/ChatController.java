@@ -189,6 +189,28 @@ public class ChatController {
     }
 
     @Operation(
+            summary = "Xóa lịch sử trò chuyện (xóa toàn bộ tin nhắn)",
+            description = """
+                    Xóa lịch sử trò chuyện
+                                       
+                    User Info ID sẽ thêm vào `deleteBy: ['id']`
+                                       
+                    <strong>⚠️ Vui lòng không xử lý các lỗi dưới đây phía client. Các lỗi này chỉ đóng vai trò bảo vệ API khỏi các lỗi cố tình.⚠️</strong>
+                                       
+                     <strong>Forbidden: </strong>
+                     - Bạn không phải là thành viên của phòng chat này
+                     
+                     <strong>Not Found: </strong>
+                     - Không tìm thấy ID phòng chat
+                     - Không tìm thấy tin nhắn
+                     """
+    )
+    @DeleteMapping("/{chat-id}/messages")
+    public String deleteAllMessages(@PathVariable("chat-id") String chatId, @AuthenticationPrincipal UserPrincipal userPrincipal) {
+        return chatService.deleteAllMessages(userPrincipal, chatId);
+    }
+
+    @Operation(
             summary = "Lấy thông tin nhóm chat theo ID",
             description = """
                     Lấy thông tin nhóm chat theo ID<br>
