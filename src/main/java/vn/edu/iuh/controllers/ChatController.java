@@ -73,6 +73,57 @@ public class ChatController {
     }
 
     @Operation(
+            summary = "Ghim tin nhắn",
+            description = """
+                    Ghim tin nhắn và trả về một Message dạng event qua cả response và socket cho người còn trong phòng chat.
+                    
+                    Nội dung message event dạng: `{id người ghim} đã ghim một tin nhắn`. Hãy chuyển ID thành tên người dùng. Trường hợp không tìm thấy thì ẩn event
+                        
+                    <strong>⚠️ Vui lòng không xử lý các lỗi dưới đây phía client. Các lỗi này chỉ đóng vai trò bảo vệ API khỏi các lỗi cố tình.⚠️</strong>
+                                       
+                     <strong>Forbidden: </strong>
+                     - Bạn không phải là thành viên của phòng chat này
+                     
+                     <strong>Not Found: </strong>
+                     - Không tìm thấy ID phòng chat
+                     - Không tìm thấy tin nhắn
+                     
+                     <strong>Bad Request: </strong>
+                     - Tin nhắn đã được ghim trước đó
+                     - Ghim tối đa 3 tin nhắn
+                     """
+    )
+    @PutMapping("/{chat-id}/messages/{message-id}/pin")
+    public Message pinMessage(@PathVariable("message-id") String messageId, @PathVariable("chat-id") String chatId, @AuthenticationPrincipal UserPrincipal userPrincipal) {
+        return chatService.pinMessage(userPrincipal, chatId, messageId);
+    }
+
+    @Operation(
+            summary = "Bỏ ghim tin nhắn",
+            description = """
+                    Bỏ ghim tin nhắn và trả về một Message dạng event qua cả response và socket cho người còn trong phòng chat
+                    
+                    Nội dung message event dạng: `{id người bỏ ghim} đã bỏ ghim một tin nhắn`. Hãy chuyển ID thành tên người dùng. Trường hợp không tìm thấy thì ẩn event
+                    
+                    <strong>⚠️ Vui lòng không xử lý các lỗi dưới đây phía client. Các lỗi này chỉ đóng vai trò bảo vệ API khỏi các lỗi cố tình.⚠️</strong>
+                                       
+                     <strong>Forbidden: </strong>
+                     - Bạn không phải là thành viên của phòng chat này
+                     
+                     <strong>Not Found: </strong>
+                     - Không tìm thấy ID phòng chat
+                     - Không tìm thấy tin nhắn
+                     
+                     <strong>Bad Request: </strong>
+                     - Tin nhắn không được ghim trước đó
+                     """
+    )
+    @PutMapping("/{chat-id}/messages/{message-id}/unpin")
+    public Message unpinMessage(@PathVariable("message-id") String messageId, @PathVariable("chat-id") String chatId, @AuthenticationPrincipal UserPrincipal userPrincipal) {
+        return chatService.unpinMessage(userPrincipal, chatId, messageId);
+    }
+
+    @Operation(
             summary = "Xóa toàn bộ cảm xúc tin nhắn",
             description = """
                      

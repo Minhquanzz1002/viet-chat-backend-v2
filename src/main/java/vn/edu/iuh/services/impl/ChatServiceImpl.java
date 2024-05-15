@@ -15,6 +15,7 @@ import vn.edu.iuh.dto.MessageEventDTO;
 import vn.edu.iuh.dto.MessageRequestDTO;
 import vn.edu.iuh.dto.ReactionMessageDTO;
 import vn.edu.iuh.exceptions.DataNotFoundException;
+import vn.edu.iuh.exceptions.InvalidRequestException;
 import vn.edu.iuh.exceptions.MessageRecallTimeExpiredException;
 import vn.edu.iuh.models.*;
 import vn.edu.iuh.models.enums.MessageStatus;
@@ -305,14 +306,83 @@ public class ChatServiceImpl implements ChatService {
     @Override
     public void seenMessage(String chatId, String userInfoId) {
         UserInfo userInfo = userInfoRepository.findById(userInfoId).orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng"));
-        Chat chat = chatRepository.findById(chatId).orElseThrow(() -> new DataNotFoundException("Không tìm thấy phòng chat có ID " + chatId));
+        Chat chat = findChatById(chatId);
         checkChatMembership(chat, userInfo);
         int index = userInfo.getChats().indexOf(UserChat.builder().chat(chat).build());
         userInfo.getChats().get(index).setLastSeenMessageId(chat.getMessages().get(chat.getMessages().size() - 1).getMessageId());
         userInfoRepository.save(userInfo);
     }
 
+    @Override
+    public Message pinMessage(UserPrincipal userPrincipal, String chatId, String messageId) {
+        UserInfo senderInfo = findUserInfoByUserPrincipal(userPrincipal);
+        Chat chatroom = findChatById(chatId);
+        checkChatMembership(chatroom, senderInfo);
+
+        Message messageToPin = chatroom.getMessages().stream()
+                .filter(msg -> msg.getMessageId().equals(messageId))
+                .findFirst()
+                .orElseThrow(() -> new DataNotFoundException("Không tìm thấy tin nhắn"));
+
+        if (chatroom.getPinnedMessages().contains(messageToPin)) {
+            throw new InvalidRequestException("Tin nhắn đã được ghim trước đó");
+        }
+        if (chatroom.getPinnedMessages().size() >= 3) {
+            throw new InvalidRequestException("Số lượng tin nhắn ghim tối đa là 3");
+        }
+
+        chatroom.getPinnedMessages().add(messageToPin);
+
+        Message messageEvent = Message.builder()
+                .messageId(new ObjectId())
+                .type(MessageType.EVENT)
+                .status(MessageStatus.SENT)
+                .content("{" + senderInfo.getId() + "}" + " đã ghim một tin nhắn")
+                .createdAt(LocalDateTime.now())
+                .build();
+        chatroom.getMessages().add(messageEvent);
+        chatRepository.save(chatroom);
+
+        simpMessagingTemplate.convertAndSend("/chatroom/" + chatId, messageEvent);
+        return messageEvent;
+    }
+
+    @Override
+    public Message unpinMessage(UserPrincipal userPrincipal, String chatId, String messageId) {
+        UserInfo senderInfo = findUserInfoByUserPrincipal(userPrincipal);
+        Chat chatroom = findChatById(chatId);
+        checkChatMembership(chatroom, senderInfo);
+
+        Message messageToUnpin = chatroom.getMessages().stream()
+                .filter(msg -> msg.getMessageId().equals(messageId))
+                .findFirst()
+                .orElseThrow(() -> new DataNotFoundException("Không tìm thấy tin nhắn"));
+
+        if (!chatroom.getPinnedMessages().contains(messageToUnpin)) {
+            throw new InvalidRequestException("Tin nhắn không được ghim trước đó");
+        }
+
+        chatroom.getPinnedMessages().remove(messageToUnpin);
+
+        Message messageEvent = Message.builder()
+                .messageId(new ObjectId())
+                .type(MessageType.EVENT)
+                .status(MessageStatus.SENT)
+                .content("{" + senderInfo.getId() + "}" + " đã bỏ ghim một tin nhắn")
+                .createdAt(LocalDateTime.now())
+                .build();
+        chatroom.getMessages().add(messageEvent);
+        chatRepository.save(chatroom);
+
+        simpMessagingTemplate.convertAndSend("/chatroom/" + chatId, messageEvent);
+        return messageEvent;
+    }
+
     private UserInfo findUserInfoByUserPrincipal(UserPrincipal userPrincipal) {
         return userInfoRepository.findByUser(new User(userPrincipal.getId())).orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng"));
+    }
+
+    private Chat findChatById(String chatId) {
+        return chatRepository.findById(chatId).orElseThrow(() -> new DataNotFoundException("Không tìm thấy phòng chat có ID " + chatId));
     }
 }
