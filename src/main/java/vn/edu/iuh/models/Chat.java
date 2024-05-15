@@ -34,6 +34,8 @@ public class Chat {
     @Builder.Default
     private List<UserInfo> members = new ArrayList<>();
     private LastMessage lastMessage;
+    @Builder.Default
+    private List<Message> pinnedMessages = new ArrayList<>();
     @CreatedDate
     private LocalDateTime createdAt;
     @LastModifiedDate

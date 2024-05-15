@@ -33,4 +33,7 @@ public interface ChatService {
     String seenMessage(String chatId, UserPrincipal userPrincipal);
 
     void seenMessage(String chatId, String userInfoId);
+
+    Message pinMessage(UserPrincipal userPrincipal, String chatId, String messageId);
+    Message unpinMessage(UserPrincipal userPrincipal, String chatId, String messageId);
 }
