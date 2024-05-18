@@ -3,6 +3,7 @@ package vn.edu.iuh.controllers;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -65,10 +66,13 @@ public class ChatController {
                      
                      <strong>Not Found: </strong>
                      - Không tìm thấy ID phòng chat
+                     
+                     <strong>Bad Request: </strong>
+                     - Số lượng tối thiểu là 1
                      """
     )
     @PutMapping("/{chat-id}/messages/{message-id}/reaction")
-    public Message reactionMessage(@PathVariable("message-id") String messageId, @PathVariable("chat-id") String chatId, @AuthenticationPrincipal UserPrincipal userPrincipal, @RequestBody ReactionMessageDTO reactionMessageDTO) {
+    public Message reactionMessage(@PathVariable("message-id") String messageId, @PathVariable("chat-id") String chatId, @AuthenticationPrincipal UserPrincipal userPrincipal,@Valid @RequestBody ReactionMessageDTO reactionMessageDTO) {
         return chatService.reactionMessage(messageId, chatId, userPrincipal, reactionMessageDTO);
     }
 
