@@ -36,4 +36,5 @@ public interface ChatService {
 
     Message pinMessage(UserPrincipal userPrincipal, String chatId, String messageId);
     Message unpinMessage(UserPrincipal userPrincipal, String chatId, String messageId);
+
 }

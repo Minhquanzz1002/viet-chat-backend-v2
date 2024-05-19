@@ -255,16 +255,16 @@ public class UserController {
     }
 
     @Operation(
-            summary = "Cập nhật ẩn/hiện hoặc ghim/bỏ ghim tin nhắn",
+            summary = "Cập nhật ẩn/hiện, xóa hội thoại hoặc ghim/bỏ ghim tin nhắn",
             description = """
-                    Cập nhật ẩn/hiện hoặc ghim/bỏ ghim tin nhắn.
+                    Cập nhật ẩn/hiện, xóa hội thoại hoặc ghim/bỏ ghim tin nhắn
                     
                     <strong>Not Found: </strong>
                      - Không tìm thấy ID phòng chat
                     """
     )
     @PutMapping("/profile/chats/{chat-id}")
-    public ChatRoomDTO updateUserChat(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable("chat-id") String chatId, @RequestBody UserChatUpdateDTO userChatUpdateDTO) {
+    public ChatRoomDTO updateUserChat(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable("chat-id") String chatId,@Valid  @RequestBody UserChatUpdateDTO userChatUpdateDTO) {
         return userInfoService.updateUserChat(userPrincipal, chatId, userChatUpdateDTO);
     }
 

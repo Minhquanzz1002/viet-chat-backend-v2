@@ -13,10 +13,7 @@ import vn.edu.iuh.exceptions.FriendshipRelationshipException;
 import vn.edu.iuh.exceptions.InvalidFriendshipRequestException;
 import vn.edu.iuh.exceptions.InvalidRequestException;
 import vn.edu.iuh.models.*;
-import vn.edu.iuh.models.enums.FriendStatus;
-import vn.edu.iuh.models.enums.MessageStatus;
-import vn.edu.iuh.models.enums.MessageType;
-import vn.edu.iuh.models.enums.NotificationType;
+import vn.edu.iuh.models.enums.*;
 import vn.edu.iuh.repositories.ChatRepository;
 import vn.edu.iuh.repositories.UserInfoRepository;
 import vn.edu.iuh.repositories.UserRepository;
@@ -398,13 +395,14 @@ public class UserInfoServiceImpl implements UserInfoService {
         UserInfo senderInfo = findUserInfoByUserId(userPrincipal.getId());
         List<UserChat> userChats = senderInfo.getChats();
         return userChats.stream()
+                .filter(userChat -> !userChat.getStatus().equals(UserChatStatus.DELETED))
                 .map(chat -> buildChatRoomDTO(chat, senderInfo))
                 .sorted((chat1, chat2) -> {
-                    if (chat1.getPinnedAt() != null && chat2.getPinnedAt() != null) {
-                        return chat2.getPinnedAt().compareTo(chat1.getPinnedAt());
-                    } else if (chat1.getPinnedAt() != null) {
+                    if (chat1.getStatus().equals(UserChatStatus.PINNED) && chat2.getStatus().equals(UserChatStatus.PINNED)) {
+                        return chat2.getName().compareTo(chat1.getName());
+                    } else if (chat1.getStatus().equals(UserChatStatus.PINNED)) {
                         return -1;
-                    } else if (chat2.getPinnedAt() != null) {
+                    } else if (chat2.getStatus().equals(UserChatStatus.PINNED)) {
                         return 1;
                     } else {
                         LocalDateTime time1 = chat1.getLastMessage().getCreatedAt();
@@ -424,27 +422,14 @@ public class UserInfoServiceImpl implements UserInfoService {
                 .findFirst();
         if (chatToUpdate.isPresent()) {
             UserChat userChat = chatToUpdate.get();
-
-            boolean dataChanged = false;
-
-            if (userChatUpdateDTO.getHidden() != null && userChat.isHidden() != userChatUpdateDTO.getHidden()) {
-                userChat.setHidden(userChatUpdateDTO.getHidden());
-                dataChanged = true;
+            userChat.setStatus(userChatUpdateDTO.getStatus());
+            if (userChatUpdateDTO.getStatus().equals(UserChatStatus.DELETED)) {
+                userChat.setLastDeleteChatTime(LocalDateTime.now());
+                Chat chat = chatRepository.findById(userChat.getChat().getId()).orElseThrow(() -> new DataNotFoundException("Không tìm thấy phòng chat để cập nhật"));
+                chat.getDeleteBy().add(senderInfo.getId());
+                chatRepository.save(chat);
             }
-            if (userChatUpdateDTO.getPin() != null) {
-                boolean isCurrentPinned = (userChat.getPinnedAt() != null);
-                if (userChatUpdateDTO.getPin() != isCurrentPinned) {
-                    if (userChatUpdateDTO.getPin()) {
-                        userChat.setPinnedAt(LocalDateTime.now());
-                    } else {
-                        userChat.setPinnedAt(null);
-                    }
-                    dataChanged = true;
-                }
-            }
-            if (dataChanged) {
-                userInfoRepository.save(senderInfo);
-            }
+            userInfoRepository.save(senderInfo);
             return buildChatRoomDTO(userChat, senderInfo);
         }
         throw new DataNotFoundException("Không tìm thấy phòng chat");
@@ -464,8 +449,7 @@ public class UserInfoServiceImpl implements UserInfoService {
                 .isGroup(isGroup)
                 .groupId(isGroup ? chatRoom.getGroup().getId() : null)
                 .lastSeenMessageId(chat.getLastSeenMessageId())
-                .hidden(chat.isHidden())
-                .pinnedAt(chat.getPinnedAt())
+                .status(chat.getStatus())
                 .build();
     }
 
