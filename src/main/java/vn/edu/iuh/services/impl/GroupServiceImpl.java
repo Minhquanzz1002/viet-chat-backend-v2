@@ -140,6 +140,15 @@ public class GroupServiceImpl implements GroupService {
                         return groupMember;
                     });
             if (updatedMember.isPresent()) {
+                if (groupRoleUpdateRequestDTO.getRole().equals(GroupMemberRole.GROUP_LEADER)) {
+                    group.getMembers().stream()
+                            .filter(groupMember -> groupMember.getRole().equals(GroupMemberRole.GROUP_LEADER))
+                            .findFirst()
+                            .map(groupMember -> {
+                                groupMember.setRole(GroupMemberRole.MEMBER);
+                                return groupMember;
+                            });
+                }
                 groupRepository.save(group);
                 return updatedMember.get();
             } else {
