@@ -20,6 +20,7 @@ import vn.edu.iuh.exceptions.MessageRecallTimeExpiredException;
 import vn.edu.iuh.models.*;
 import vn.edu.iuh.models.enums.MessageStatus;
 import vn.edu.iuh.models.enums.MessageType;
+import vn.edu.iuh.models.enums.UserChatStatus;
 import vn.edu.iuh.repositories.ChatRepository;
 import vn.edu.iuh.repositories.UserInfoRepository;
 import vn.edu.iuh.security.UserPrincipal;
@@ -145,6 +146,21 @@ public class ChatServiceImpl implements ChatService {
                 .content(message.getContent() == null ? "[FILE]" : message.getContent())
                 .build();
         chat.setLastMessage(lastMessage);
+
+        //
+        chat.getDeleteBy().forEach((userInfoIdDeleted) -> {
+            UserInfo userInfoDeleted = userInfoRepository.findById(userInfoIdDeleted).orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng"));
+            userInfoDeleted.getChats().stream()
+                    .filter(userChat -> userChat.getChat().getId().equals(chatId))
+                    .findFirst()
+                    .map(userChat -> {
+                        userChat.setStatus(UserChatStatus.NORMAL);
+                        return userChat;
+                    });
+            userInfoRepository.save(userInfoDeleted);
+        });
+        chat.setDeleteBy(new ArrayList<>());
+
         chatRepository.save(chat);
         simpMessagingTemplate.convertAndSend("/chatroom/" + chatId, message);
         return message;
@@ -341,6 +357,29 @@ public class ChatServiceImpl implements ChatService {
                 .createdAt(LocalDateTime.now())
                 .build();
         chatroom.getMessages().add(messageEvent);
+
+        chatroom.getDeleteBy().forEach((userInfoIdDeleted) -> {
+            UserInfo userInfoDeleted = userInfoRepository.findById(userInfoIdDeleted).orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng"));
+            userInfoDeleted.getChats().stream()
+                    .filter(userChat -> userChat.getChat().getId().equals(chatId))
+                    .findFirst()
+                    .map(userChat -> {
+                        userChat.setStatus(UserChatStatus.NORMAL);
+                        return userChat;
+                    });
+            userInfoRepository.save(userInfoDeleted);
+        });
+        chatroom.setDeleteBy(new ArrayList<>());
+
+
+        LastMessage lastMessage = LastMessage.builder()
+                .messageId(messageEvent.getMessageId())
+                .createdAt(messageEvent.getCreatedAt())
+                .sender(senderInfo)
+                .content(messageEvent.getContent())
+                .build();
+        chatroom.setLastMessage(lastMessage);
+
         chatRepository.save(chatroom);
 
         simpMessagingTemplate.convertAndSend("/chatroom/" + chatId, messageEvent);
@@ -372,6 +411,29 @@ public class ChatServiceImpl implements ChatService {
                 .createdAt(LocalDateTime.now())
                 .build();
         chatroom.getMessages().add(messageEvent);
+
+
+        chatroom.getDeleteBy().forEach((userInfoIdDeleted) -> {
+            UserInfo userInfoDeleted = userInfoRepository.findById(userInfoIdDeleted).orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng"));
+            userInfoDeleted.getChats().stream()
+                    .filter(userChat -> userChat.getChat().getId().equals(chatId))
+                    .findFirst()
+                    .map(userChat -> {
+                        userChat.setStatus(UserChatStatus.NORMAL);
+                        return userChat;
+                    });
+            userInfoRepository.save(userInfoDeleted);
+        });
+        chatroom.setDeleteBy(new ArrayList<>());
+
+        LastMessage lastMessage = LastMessage.builder()
+                .messageId(messageEvent.getMessageId())
+                .createdAt(messageEvent.getCreatedAt())
+                .sender(senderInfo)
+                .content(messageEvent.getContent())
+                .build();
+        chatroom.setLastMessage(lastMessage);
+
         chatRepository.save(chatroom);
 
         simpMessagingTemplate.convertAndSend("/chatroom/" + chatId, messageEvent);
