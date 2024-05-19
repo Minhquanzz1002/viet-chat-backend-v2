@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import vn.edu.iuh.models.LastMessage;
 import vn.edu.iuh.models.Message;
+import vn.edu.iuh.models.enums.UserChatStatus;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -21,7 +22,6 @@ public class ChatRoomDTO {
     @JsonProperty("isGroup")
     private boolean isGroup;
     private String groupId;
-    private boolean hidden;
-    private LocalDateTime pinnedAt;
+    private UserChatStatus status;
     private String lastSeenMessageId;
 }
