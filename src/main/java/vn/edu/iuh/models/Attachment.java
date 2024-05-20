@@ -1,7 +1,6 @@
 package vn.edu.iuh.models;
 
 import lombok.*;
-import org.springframework.data.mongodb.core.mapping.Document;
 import vn.edu.iuh.models.enums.AttachmentType;
 @Getter
 @Setter
