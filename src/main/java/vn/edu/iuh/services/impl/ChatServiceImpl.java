@@ -49,7 +49,7 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     public Page<Message> getAllMessages(String chatId, UserPrincipal userPrincipal, Pageable pageable, String content) {
-        UserInfo senderInfo = userInfoRepository.findByUser(new User(userPrincipal.getId())).orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng"));
+        UserInfo senderInfo = findUserInfoByUserPrincipal(userPrincipal);
         Chat chat = findById(chatId);
 
         UserChat userChat = senderInfo.getChats().stream()
@@ -113,7 +113,6 @@ public class ChatServiceImpl implements ChatService {
         chat.setLastMessage(lastMessage);
         chatRepository.save(chat);
         int index = sender.getChats().indexOf(UserChat.builder().chat(chat).build());
-        log.info("day la vi tri {}", index);
         UserChat userChat = sender.getChats().get(index);
         userChat.setLastSeenMessageId(message.getMessageId());
         userInfoRepository.save(sender);
@@ -122,9 +121,9 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     public Message saveMessage(MessageRequestDTO messageRequestDTO, String chatId, UserPrincipal userPrincipal) {
-        UserInfo sender = userInfoRepository.findByUser(new User(userPrincipal.getId())).orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng"));
+        UserInfo senderInfo = findUserInfoByUserPrincipal(userPrincipal);
         Chat chat = chatRepository.findById(chatId).orElseThrow(() -> new DataNotFoundException("Không tìm thấy phòng chat có ID " + chatId));
-        checkChatMembership(chat, sender);
+        checkChatMembership(chat, senderInfo);
         Message message = Message.builder()
                 .messageId(new ObjectId())
                 .replyMessageId(messageRequestDTO.getReplyMessageId() != null ? new ObjectId(messageRequestDTO.getReplyMessageId()) : null)
@@ -132,19 +131,14 @@ public class ChatServiceImpl implements ChatService {
                 .attachments(messageRequestDTO.getAttachments())
                 .status(MessageStatus.SENT)
                 .type(MessageType.MESSAGE)
-                .sender(sender)
+                .sender(senderInfo)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .build();
         List<Message> messages = new ArrayList<>(chat.getMessages());
         messages.add(message);
         chat.setMessages(messages);
-        LastMessage lastMessage = LastMessage.builder()
-                .messageId(message.getMessageId())
-                .createdAt(message.getCreatedAt())
-                .sender(sender)
-                .content(message.getContent() == null ? "[FILE]" : message.getContent())
-                .build();
+        LastMessage lastMessage = buildLastMessage(message, senderInfo);
         chat.setLastMessage(lastMessage);
 
         //
@@ -168,7 +162,7 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     public Message unsendMessage(String messageId, String chatId, UserPrincipal userPrincipal) {
-        UserInfo sender = userInfoRepository.findByUser(new User(userPrincipal.getId())).orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng"));
+        UserInfo sender = findUserInfoByUserPrincipal(userPrincipal);
         Chat chat = chatRepository.findById(chatId).orElseThrow(() -> new DataNotFoundException("Không tìm thấy phòng chat có ID " + chatId));
 
         checkChatMembership(chat, sender);
@@ -282,7 +276,6 @@ public class ChatServiceImpl implements ChatService {
             Reaction existingReaction = reactions.remove(index);
             existingReaction.setQuantity(existingReaction.getQuantity() + reaction.getQuantity());
             reactions.add(0, existingReaction);
-//            reactions.get(index).setQuantity(reactions.get(index).getQuantity() + reaction.getQuantity());
         } else {
             reactions.add(0, reaction);
         }
@@ -372,12 +365,7 @@ public class ChatServiceImpl implements ChatService {
         chatroom.setDeleteBy(new ArrayList<>());
 
 
-        LastMessage lastMessage = LastMessage.builder()
-                .messageId(messageEvent.getMessageId())
-                .createdAt(messageEvent.getCreatedAt())
-                .sender(senderInfo)
-                .content(messageEvent.getContent())
-                .build();
+        LastMessage lastMessage = buildLastMessage(messageEvent, senderInfo);
         chatroom.setLastMessage(lastMessage);
 
         chatRepository.save(chatroom);
@@ -426,18 +414,22 @@ public class ChatServiceImpl implements ChatService {
         });
         chatroom.setDeleteBy(new ArrayList<>());
 
-        LastMessage lastMessage = LastMessage.builder()
-                .messageId(messageEvent.getMessageId())
-                .createdAt(messageEvent.getCreatedAt())
-                .sender(senderInfo)
-                .content(messageEvent.getContent())
-                .build();
+        LastMessage lastMessage = buildLastMessage(messageEvent, senderInfo);
         chatroom.setLastMessage(lastMessage);
 
         chatRepository.save(chatroom);
 
         simpMessagingTemplate.convertAndSend("/chatroom/" + chatId, messageEvent);
         return messageEvent;
+    }
+
+    private LastMessage buildLastMessage(Message message, UserInfo senderInfo) {
+        return LastMessage.builder()
+                .messageId(message.getMessageId())
+                .createdAt(message.getCreatedAt())
+                .sender(senderInfo)
+                .content(message.getContent() == null ? "[FILE]" : message.getContent())
+                .build();
     }
 
     private UserInfo findUserInfoByUserPrincipal(UserPrincipal userPrincipal) {
