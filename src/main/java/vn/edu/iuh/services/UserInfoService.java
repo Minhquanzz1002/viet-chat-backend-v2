@@ -1,7 +1,6 @@
 package vn.edu.iuh.services;
 
 import vn.edu.iuh.dto.*;
-import vn.edu.iuh.models.Friend;
 import vn.edu.iuh.models.UserInfo;
 import vn.edu.iuh.security.UserPrincipal;
 
