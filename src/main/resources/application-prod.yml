@@ -22,8 +22,10 @@ server:
 springdoc:
   api-docs:
     path: /api-docs
+    enabled: false
   swagger-ui:
     path:
+    enabled: false
 
 app:
   auth:
@@ -31,3 +33,11 @@ app:
     refreshTokenExpirationMilliseconds: 1209600000
     accessTokenExpirationMilliseconds: 1800000
     resetTokenExpirationMilliseconds: 300000
+
+management:
+  endpoint:
+    health:
+      enabled: false
+  health:
+    defaults:
+      enabled: false
