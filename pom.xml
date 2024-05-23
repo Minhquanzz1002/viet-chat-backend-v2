@@ -10,7 +10,7 @@
     </parent>
     <groupId>vn.edu.iuh</groupId>
     <artifactId>viet-chat-api</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.1</version>
     <name>viet-chat-api</name>
     <description>viet-chat-api</description>
     <properties>
