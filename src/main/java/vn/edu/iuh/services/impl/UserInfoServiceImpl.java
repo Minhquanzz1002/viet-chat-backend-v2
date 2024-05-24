@@ -85,6 +85,18 @@ public class UserInfoServiceImpl implements UserInfoService {
     }
 
     @Override
+    public List<GroupDTO> findAllGroupToUserInfoByUserInfoId(String userInfoId) {
+        UserInfo userInfo = findById(userInfoId);
+        List<Group> groups = userInfo.getGroups();
+        List<GroupDTO> groupDTOList = new ArrayList<>();
+        groups.forEach(group -> {
+            GroupDTO groupDTO = modelMapper.map(group, GroupDTO.class);
+            groupDTOList.add(groupDTO);
+        });
+        return groupDTOList;
+    }
+
+    @Override
     public UserInfo updateUserInfo(String phone, UserInfoDTO userInfoDTO) {
         User user = userRepository.findByPhone(phone).orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng nào có số điện thoại là " + phone));
         UserInfo existingUserInfo = userInfoRepository.findByUser(user).orElseThrow(() -> new DataNotFoundException("Thông tin người dùng không tồn tại"));
