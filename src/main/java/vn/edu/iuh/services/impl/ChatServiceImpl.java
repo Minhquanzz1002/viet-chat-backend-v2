@@ -103,7 +103,9 @@ public class ChatServiceImpl implements ChatService {
         if (chat.getMessages() == null) {
             chat.setMessages(new ArrayList<>());
         }
-        chat.getMessages().add(message);
+        List<Message> messages = new ArrayList<>(chat.getMessages());
+        messages.add(message);
+        chat.setMessages(messages);
         LastMessage lastMessage = LastMessage.builder()
                 .messageId(message.getMessageId())
                 .createdAt(message.getCreatedAt())
