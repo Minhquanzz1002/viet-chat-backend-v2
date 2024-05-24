@@ -106,12 +106,8 @@ public class ChatServiceImpl implements ChatService {
         List<Message> messages = new ArrayList<>(chat.getMessages());
         messages.add(message);
         chat.setMessages(messages);
-        LastMessage lastMessage = LastMessage.builder()
-                .messageId(message.getMessageId())
-                .createdAt(message.getCreatedAt())
-                .sender(sender)
-                .content(message.getContent() == null ? "[FILE]" : message.getContent())
-                .build();
+        LastMessage lastMessage = buildLastMessage(message, sender);
+
         chat.setLastMessage(lastMessage);
         chatRepository.save(chat);
         int index = sender.getChats().indexOf(UserChat.builder().chat(chat).build());
