@@ -6,10 +6,12 @@ import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.RestController;
 import vn.edu.iuh.dto.MessageDTO;
 import vn.edu.iuh.dto.MessageEventDTO;
 import vn.edu.iuh.models.Message;
+import vn.edu.iuh.security.UserPrincipal;
 import vn.edu.iuh.services.ChatService;
 
 @RestController
