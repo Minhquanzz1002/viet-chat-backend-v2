@@ -252,6 +252,8 @@ public class UserInfoServiceImpl implements UserInfoService {
 //                        userInfoRepository.saveAll(Arrays.asList(currentUserInfo, friendUserInfo));
                         userInfoRepository.save(currentUserInfo);
                         userInfoRepository.save(friendUserInfo);
+                        Notification notification = new Notification(currentUserInfo.getLastName() + " vừa xóa kết bạn với bạn", NotificationType.DELETED_FRIEND, currentUserInfo.getId(), LocalDateTime.now());
+                        simpMessagingTemplate.convertAndSendToUser(friendUserInfo.getId(), "/private", notification);
                         return "Xóa kết bạn với " + friendUserInfo.getUser().getPhone() + " thành công.";
                     } else if (friend.getStatus().equals(FriendStatus.BLOCK)) {
                         throw new FriendshipRelationshipException("Bạn đã chặn người này. Hãy bỏ chặn trước");
