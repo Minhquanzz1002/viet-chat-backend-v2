@@ -13,6 +13,7 @@ public interface UserInfoService {
     UserInfo findUserInfoByUserId(String userId);
 
     List<GroupDTO> findAllGroupToUserInfoByUserId(String userId);
+    List<GroupDTO> findAllGroupToUserInfoByUserInfoId(String userInfoId);
 
     UserInfo updateUserInfo(String phone, UserInfoDTO userInfoDTO);
 
