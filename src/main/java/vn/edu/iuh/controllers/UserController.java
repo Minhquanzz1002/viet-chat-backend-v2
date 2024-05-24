@@ -33,6 +33,33 @@ public class UserController {
     private final ModelMapper modelMapper;
 
     @Operation(
+            summary = "Lấy tất cả nhóm bạn bè đã tham gia",
+            description = """
+                    
+                        
+                    <strong>Bad Request:</strong>
+                    - Người được tìm kiếm là người yêu cầu
+                                        
+                    <strong>Not Found: </strong>
+                    - Không tìm thấy
+                    """
+
+    )
+    @GetMapping("/profile/friends/{friend-id}/groups")
+    public List<GroupDTO> getAllGroups(@PathVariable("friend-id") String friendId, @AuthenticationPrincipal UserPrincipal userPrincipal, @RequestParam(defaultValue = "asc") String sort) {
+        if (!sort.equalsIgnoreCase("asc") && !sort.equalsIgnoreCase("desc")) {
+            throw new IllegalArgumentException("Giá trị của tham số 'sort' phải là 'asc' hoặc 'desc'.");
+        }
+        List<GroupDTO> groupDTOList =  userInfoService.findAllGroupToUserInfoByUserInfoId(friendId);
+        if (sort.equals("asc")) {
+            groupDTOList.sort(Comparator.comparing(GroupDTO::getName));
+        }else {
+            groupDTOList.sort(Comparator.comparing(GroupDTO::getName).reversed());
+        }
+        return groupDTOList;
+    }
+
+    @Operation(
             summary = "Tìm kiếm người dùng bằng số điện thoại",
             description = """
                     Tìm kiếm người dùng bằng số điện thoại. Dùng cho phần tìm kiếm để kết bạn
