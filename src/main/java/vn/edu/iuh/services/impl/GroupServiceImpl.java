@@ -101,6 +101,8 @@ public class GroupServiceImpl implements GroupService {
             userInfoMember.getGroups().add(insertedGroup);
             userInfoMember.getChats().add(UserChat.builder().chat(chat).joinTime(LocalDateTime.now()).build());
             userInfoRepository.save(userInfoMember);
+            Notification notification = new Notification(userInfo.getLastName() + " đã tạo nhóm mới", NotificationType.CREATED_GROUP, userInfo.getId(), LocalDateTime.now());
+            simpMessagingTemplate.convertAndSendToUser(memberId, "/private", notification);
         });
 
         insertedGroup.setChat(chat);
@@ -197,6 +199,8 @@ public class GroupServiceImpl implements GroupService {
                 member.getGroups().remove(group);
                 member.getChats().removeIf(userChat -> group.getChat().equals(userChat.getChat()));
                 userInfoRepository.save(member);
+                Notification notification = new Notification(sender.getLastName() + " đã giải tán nhóm", NotificationType.DELETED_GROUP, sender.getId(), LocalDateTime.now());
+                simpMessagingTemplate.convertAndSendToUser(member.getId(), "/private", notification);
             });
             group.setStatus(GroupStatus.DELETED);
             groupRepository.save(group);
