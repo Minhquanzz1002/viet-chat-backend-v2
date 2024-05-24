@@ -6,6 +6,7 @@ import org.bson.types.ObjectId;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,7 @@ import vn.edu.iuh.models.*;
 import vn.edu.iuh.models.enums.GroupMemberRole;
 import vn.edu.iuh.models.enums.GroupStatus;
 import vn.edu.iuh.models.enums.MessageType;
+import vn.edu.iuh.models.enums.NotificationType;
 import vn.edu.iuh.repositories.ChatRepository;
 import vn.edu.iuh.repositories.GroupRepository;
 import vn.edu.iuh.repositories.UserInfoRepository;
@@ -38,6 +40,7 @@ public class GroupServiceImpl implements GroupService {
     private final UserInfoRepository userInfoRepository;
     private final ChatRepository chatRepository;
     private final ModelMapper modelMapper;
+    private final SimpMessagingTemplate simpMessagingTemplate;
 
     @Override
     public List<GroupMember> getAllMembers(String groupId, UserPrincipal userPrincipal) {
@@ -226,6 +229,8 @@ public class GroupServiceImpl implements GroupService {
                     memberInfo.getGroups().add(group);
                     memberInfo.getChats().add(UserChat.builder().chat(group.getChat()).build());
                     userInfoRepository.save(memberInfo);
+                    Notification notification = new Notification(senderInfo.getLastName() + " vừa thêm bạn vào nhóm", NotificationType.ADD_TO_GROUP, senderInfo.getId(), LocalDateTime.now());
+                    simpMessagingTemplate.convertAndSendToUser(memberInfo.getId(), "/private", notification);
                 }
             });
             groupRepository.save(group);
@@ -249,6 +254,8 @@ public class GroupServiceImpl implements GroupService {
             memberInfo.getChats().remove(UserChat.builder().chat(group.getChat()).build());
             userInfoRepository.save(memberInfo);
             groupRepository.save(group);
+            Notification notification = new Notification(senderInfo.getLastName() + " vừa xóa bạn khỏi nhóm", NotificationType.REMOVED_FROM_GROUP, senderInfo.getId(), LocalDateTime.now());
+            simpMessagingTemplate.convertAndSendToUser(memberInfo.getId(), "/private", notification);
         } else {
             throw new AccessDeniedException("Bạn phải là thành viên và có vai trò nhóm trưởng hoặc nhóm phó");
         }
