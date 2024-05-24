@@ -197,6 +197,8 @@ public class UserInfoServiceImpl implements UserInfoService {
                                 .ifPresent(f -> f.setStatus(FriendStatus.BLOCKED));
                         userInfoRepository.save(currentUserInfo);
                         userInfoRepository.save(friendUserInfo);
+                        Notification notification = new Notification(currentUserInfo.getLastName() + " đã chặn bạn", NotificationType.BLOCKED_FRIEND, currentUserInfo.getId(), LocalDateTime.now());
+                        simpMessagingTemplate.convertAndSendToUser(friendUserInfo.getId(), "/private", notification);
                         return "Bạn đã chặn người dùng " + friendUserInfo.getUser().getPhone();
                     }
                 })
@@ -207,6 +209,8 @@ public class UserInfoServiceImpl implements UserInfoService {
                     friendUserInfo.getFriends().add(receiverFriend);
                     userInfoRepository.save(currentUserInfo);
                     userInfoRepository.save(friendUserInfo);
+                    Notification notification = new Notification(currentUserInfo.getLastName() + " đã chặn bạn", NotificationType.BLOCKED_FRIEND, currentUserInfo.getId(), LocalDateTime.now());
+                    simpMessagingTemplate.convertAndSendToUser(friendUserInfo.getId(), "/private", notification);
                     return "Bạn đã chặn người dùng " + friendUserInfo.getUser().getPhone() + " thành công";
                 });
     }
@@ -227,6 +231,8 @@ public class UserInfoServiceImpl implements UserInfoService {
                             .ifPresent(f -> f.setStatus(FriendStatus.STRANGER));
                     userInfoRepository.save(currentUserInfo);
                     userInfoRepository.save(friendUserInfo);
+                    Notification notification = new Notification(currentUserInfo.getLastName() + " đã bỏ chặn bạn", NotificationType.UNBLOCKED_FRIEND, currentUserInfo.getId(), LocalDateTime.now());
+                    simpMessagingTemplate.convertAndSendToUser(friendUserInfo.getId(), "/private", notification);
                     return "Bạn đã bỏ chặn người dùng " + friendUserInfo.getUser().getPhone() + " thành công";
                 })
                 .orElseThrow(() -> new DataNotFoundException("Bạn không chặn đối phương nên không thể bỏ chặn"));
@@ -252,6 +258,8 @@ public class UserInfoServiceImpl implements UserInfoService {
 //                        userInfoRepository.saveAll(Arrays.asList(currentUserInfo, friendUserInfo));
                         userInfoRepository.save(currentUserInfo);
                         userInfoRepository.save(friendUserInfo);
+                        Notification notification = new Notification(currentUserInfo.getLastName() + " vừa xóa kết bạn với bạn", NotificationType.DELETED_FRIEND, currentUserInfo.getId(), LocalDateTime.now());
+                        simpMessagingTemplate.convertAndSendToUser(friendUserInfo.getId(), "/private", notification);
                         return "Xóa kết bạn với " + friendUserInfo.getUser().getPhone() + " thành công.";
                     } else if (friend.getStatus().equals(FriendStatus.BLOCK)) {
                         throw new FriendshipRelationshipException("Bạn đã chặn người này. Hãy bỏ chặn trước");
@@ -345,7 +353,7 @@ public class UserInfoServiceImpl implements UserInfoService {
 
         userInfoRepository.save(currentUserInfo);
         userInfoRepository.save(friendUserInfo);
-        Notification notification = new Notification(currentUserInfo.getLastName() + " vừa chấp nhận lời mời kết bạn", NotificationType.NEW_MESSAGE, null, LocalDateTime.now());
+        Notification notification = new Notification(currentUserInfo.getLastName() + " vừa chấp nhận lời mời kết bạn", NotificationType.ACCEPT_FRIEND_REQUEST, null, LocalDateTime.now());
         simpMessagingTemplate.convertAndSendToUser(friendUserInfo.getId(), "/private", notification);
         return "Chấp nhận lời mời kết bạn từ " + friendUserInfo.getUser().getPhone() + " thành công.";
     }
@@ -369,6 +377,8 @@ public class UserInfoServiceImpl implements UserInfoService {
 
                         userInfoRepository.save(currentUserInfo);
                         userInfoRepository.save(friendUserInfo);
+                        Notification notification = new Notification(currentUserInfo.getLastName() + " đã từ chối lời mời kết bạn của bạn", NotificationType.DECLINE_FRIEND_REQUEST, currentUserInfo.getId(), LocalDateTime.now());
+                        simpMessagingTemplate.convertAndSendToUser(friendUserInfo.getId(), "/private", notification);
                         return "Từ chối lời mời kết bạn từ " + friendUserInfo.getUser().getPhone() + " thành công.";
                     } else if (friend.getStatus().equals(FriendStatus.BLOCK)) {
                         throw new FriendshipRelationshipException("Bạn đã chặn người này. Hãy bỏ chặn trước");
@@ -400,6 +410,8 @@ public class UserInfoServiceImpl implements UserInfoService {
 
                         userInfoRepository.save(currentUserInfo);
                         userInfoRepository.save(friendUserInfo);
+                        Notification notification = new Notification(currentUserInfo.getLastName() + " đã thu hồi lời mời kết bạn", NotificationType.CANCEL_FRIEND_REQUEST, currentUserInfo.getId(), LocalDateTime.now());
+                        simpMessagingTemplate.convertAndSendToUser(friendUserInfo.getId(), "/private", notification);
                         return "Thu hồi lời mời kết bạn với " + friendUserInfo.getUser().getPhone() + " thành công.";
                     } else if (friend.getStatus().equals(FriendStatus.BLOCK)) {
                         throw new FriendshipRelationshipException("Bạn đã chặn người này. Hãy bỏ chặn trước");

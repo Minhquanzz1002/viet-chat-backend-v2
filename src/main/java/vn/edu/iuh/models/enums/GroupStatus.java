@@ -6,6 +6,6 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 public enum GroupStatus {
-    ACTIVE("Bình thường"), DELETED("Xóa");
+    ACTIVE("Bình thường"), DELETED("Xóa"), BLOCK("Chặn");
     private final String description;
 }
