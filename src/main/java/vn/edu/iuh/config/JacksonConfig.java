@@ -14,9 +14,9 @@ import java.time.format.DateTimeFormatter;
  * Formatting json LocalDateTime and LocalDate
  */
 
-@Configuration
+//@Configuration
 public class JacksonConfig {
-    @Bean
+//    @Bean
     public Jackson2ObjectMapperBuilderCustomizer jackson2ObjectMapperBuilderCustomizer() {
         return builder -> {
             // formatter
