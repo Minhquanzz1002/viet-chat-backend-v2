@@ -43,67 +43,67 @@ View details API: `/api/swagger-ui/index.html`
 
 #### Get chat room information
 
-```http
+```text 
   GET /api/v1/chats/{chat-id}
 ```
 
 #### Mark a chat as read
 
-```http
+```text
   PUT /api/v1/chats/{chat-id}
 ```
 
 #### Get messages
 
-```http
+```text
   GET /api/v1/chats/{chat-id}/messages
 ```
 
 #### Send messages
 
-```http
+```text
   POST /api/v1/chats/{chat-id}/messages
 ```
 
 #### Delete all messages in a chat
 
-```http
+```text
   DELETE /api/v1/chats/{chat-id}/messages
 ```
 
 #### Undo sending a message
 
-```http
+```text
   PUT /api/v1/chats/{chat-id}/messages/{message-id}
 ```
 
 #### Delete a message
 
-```http
+```text
   DELETE /api/v1/chats/{chat-id}/messages/{message-id}
 ```
 
 #### Pin a message
 
-```http
+```text
   PUT /api/v1/chats/{chat-id}/messages/{message-id}/pin
 ```
 
 #### Unpin a message
 
-```http
+```text
   PUT /api/v1/chats/{chat-id}/messages/{message-id}/unpin
 ```
 
 #### Send reaction to a message
 
-```http
+```text
   PUT /api/v1/chats/{chat-id}/messages/{message-id}/reaction
 ```
 
 #### Delete all reactions
 
-```http
+```text
   DELETE /api/v1/chats/{chat-id}/messages/{message-id}/reaction
 ```
 
@@ -111,13 +111,13 @@ View details API: `/api/swagger-ui/index.html`
 
 #### Get user information
 
-```http
+```text
   GET /api/v1/users/profile
 ```
 
 #### Update user information
 
-```http
+```text
   PUT /api/v1/users/profile
 ```
 
@@ -136,19 +136,19 @@ Body
 
 #### Get user information by phone
 
-```http
+```text
   GET /api/v1/users/profile/{phone}
 ```
 
 #### Get all chat rooms
 
-```http
+```text
   GET /api/v1/users/profile/chats
 ```
 
 #### Update chat room
 
-```http
+```text
   PUT /api/v1/users/profile/chats/{chat-id}
 ```
 
@@ -161,61 +161,61 @@ Body
 
 #### Get all friends
 
-```http
+```text
   GET /api/v1/users/profile/friends?type=friend
 ```
 
 #### Send friend request
 
-```http
+```text
   PUT /api/v1/users/friends/{friend-id}
 ```
 
 #### Delete friend
 
-```http
+```text
   DELETE /api/v1/users/friends/{friend-id}
 ```
 
 #### Accept friend request
 
-```http
+```text
   PUT /api/v1/users/friends/{friend-id}/accept
 ```
 
 #### Block friend
 
-```http
+```text
   PUT /api/v1/users/friends/{friend-id}/block
 ```
 
 #### Cancel friend request
 
-```http
+```text
   PUT /api/v1/users/friends/{friend-id}/cancel
 ```
 
 #### Decline friend request
 
-```http
+```text
   PUT /api/v1/users/friends/{friend-id}/decline
 ```
 
 #### Get all groups
 
-```http
+```text
   GET /api/v1/users/profile/groups
 ```
 
 #### Leave group
 
-```http
+```text
   PUT /api/v1/users/profile/groups/{group-id}/leave
 ```
 
 #### Get all recent searches
 
-```http
+```text
   GET /api/v1/users/search/recent
 ```
 
@@ -224,7 +224,7 @@ Body
 
 #### Send OTP
 
-```http
+```text
   POST /api/v1/verification/otp/sms/send 
 ```
 
@@ -237,7 +237,7 @@ Body
 
 #### Validate OTP
 
-```http
+```text
   POST /api/v1/verification/otp/sms/validate
 ```
 
@@ -253,7 +253,7 @@ Body
 
 #### Login
 
-```http
+```text
   POST /api/v1/auth/login   
 ```
 
@@ -267,7 +267,7 @@ Body
 
 #### Logout
 
-```http
+```text
   POST /api/v1/auth/logout   
 ```
 
@@ -280,7 +280,7 @@ Body
 
 #### Logout all
 
-```http
+```text
   POST /api/v1/auth/logout/all   
 ```
 
@@ -293,7 +293,7 @@ Body
 
 #### Update password
 
-```http
+```text
   POST /api/v1/auth/password/change   
 ```
 
@@ -307,7 +307,7 @@ Body
 
 #### Forgot password
 
-```http
+```text
   POST /api/v1/auth/password/forgot   
 ```
 
@@ -320,7 +320,7 @@ Body
 
 #### Validate OTP for password reset
 
-```http
+```text
   POST /api/v1/auth/password/reset/validate  
 ```
 
@@ -334,7 +334,7 @@ Body
 
 #### Update password after validating OTP
 
-```http
+```text
   POST /api/v1/auth/password/reset 
 ```
 
@@ -348,7 +348,7 @@ Body
 
 #### Get new access token
 
-```http
+```text
   POST /api/v1/auth/refresh-token   
 ```
 
@@ -361,7 +361,7 @@ Body
 
 #### Register
 
-```http
+```text
   POST /api/v1/auth/register   
 ```
 
@@ -380,19 +380,19 @@ Body
 
 #### Create a group
 
-```http
+```text
   POST /api/v1/groups
 ```
 
 #### Get the group information
 
-```http
+```text
   GET /api/v1/groups/{group-id}
 ```
 
 #### Update the group information
 
-```http
+```text
   PUT /api/v1/groups/{group-id}
 ```
 
@@ -406,19 +406,19 @@ Body
 
 #### Disband the group
 
-```http
+```text
   DELETE /api/v1/groups/{group-id}
 ```
 
 #### Get all the group members
 
-```http
+```text
   GET /api/v1/groups/{group-id}/members
 ```
 
 #### Add the group members
 
-```http
+```text
   PUT /api/v1/groups/{group-id}/members
 ```
 
@@ -429,13 +429,13 @@ Body
 
 #### Delete a group member
 
-```http
+```text
   DELETE /api/v1/groups/{group-id}/members/{member-id}
 ```
 
 #### Change a group member role
 
-```http
+```text
   PUT /api/v1/groups/{group-id}/members/{member-id}
 ```
 
@@ -450,7 +450,7 @@ Body
 
 #### Get Pre-signed URL to upload file to S3
 
-```http
+```text
   POST /api/v1/files
 ```
 
@@ -463,7 +463,7 @@ To run this project, you will need to add the following environment variables to
 aws:
   access-key: key
   secret-key: key
-  endpoint-url: https://{bucket-name}.s3.ap-southeast-1.amazonaws.com/
+  endpoint-url: texts://{bucket-name}.s3.ap-southeast-1.amazonaws.com/
   bucket:
     name: {bucket-name}
 
@@ -479,7 +479,7 @@ twilio:
 Clone the project
 
 ```bash
-  git clone https://github.com/Minhquanzz1002/viet-chat-backend-v2
+  git clone texts://github.com/Minhquanzz1002/viet-chat-backend-v2
 ```
 
 Go to the project directory
@@ -503,5 +503,5 @@ Start the server
 
 ## Authors
 
-- [@Minhquanzz1002](https://github.com/Minhquanzz1002)
+- [@Minhquanzz1002](texts://github.com/Minhquanzz1002)
 
