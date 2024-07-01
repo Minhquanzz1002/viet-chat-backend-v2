@@ -26,7 +26,7 @@ public interface UserInfoService {
     Friend unblockFriend(String friendId, UserPrincipal userPrincipal);
     Friend deleteFriend(String friendId, UserPrincipal userPrincipal);
     Friend acceptFriendRequest(String friendId, UserPrincipal userPrincipal);
-    String declineFriendRequest(String friendId, UserPrincipal userPrincipal);
+    Friend declineFriendRequest(String friendId, UserPrincipal userPrincipal);
     Friend cancelFriendRequest(String friendId, UserPrincipal userPrincipal);
 
     List<ChatRoomDTO> getAllChats(UserPrincipal userPrincipal);

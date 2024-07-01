@@ -377,7 +377,7 @@ public class UserInfoServiceImpl implements UserInfoService {
     }
 
     @Override
-    public String declineFriendRequest(String friendId, UserPrincipal userPrincipal) {
+    public Friend declineFriendRequest(String friendId, UserPrincipal userPrincipal) {
         UserInfo currentUserInfo = findUserInfoByUserId(userPrincipal.getId());
         UserInfo friendUserInfo = findById(friendId);
 
@@ -397,7 +397,7 @@ public class UserInfoServiceImpl implements UserInfoService {
                         userInfoRepository.save(friendUserInfo);
                         Notification notification = new Notification(currentUserInfo.getLastName() + " đã từ chối lời mời kết bạn của bạn", NotificationType.DECLINE_FRIEND_REQUEST, currentUserInfo.getId(), LocalDateTime.now());
                         simpMessagingTemplate.convertAndSendToUser(friendUserInfo.getId(), "/private", notification);
-                        return "Từ chối lời mời kết bạn từ " + friendUserInfo.getUser().getPhone() + " thành công.";
+                        return friend;
                     } else if (friend.getStatus().equals(FriendStatus.BLOCK)) {
                         throw new FriendshipRelationshipException("Bạn đã chặn người này. Hãy bỏ chặn trước");
                     } else if (friend.getStatus().equals(FriendStatus.BLOCKED)) {

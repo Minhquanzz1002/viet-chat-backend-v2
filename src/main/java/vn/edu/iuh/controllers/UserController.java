@@ -167,7 +167,7 @@ public class UserController {
                     """
     )
     @PutMapping("/profile/friends/{friend-id}/decline")
-    public String declineFriendRequest(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable("friend-id") String friendId) {
+    public Friend declineFriendRequest(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable("friend-id") String friendId) {
         return userInfoService.declineFriendRequest(friendId, userPrincipal);
     }
 
@@ -198,9 +198,9 @@ public class UserController {
     }
 
     @Operation(
-            summary = "Gửi lời mời kết bạn theo User Info ID",
+            summary = "Gửi lời mời kết bạn",
             description = """
-                    Gửi lời mời kết bạn bằng ID của đối phương<br>
+                    Gửi lời mời kết bạn<br>
                     <strong>Lỗi nếu:</strong><br>
                     * Bạn đã chặn đối phương (status == BLOCK)
                     * Bạn đã bị chặn đối phương (status == BLOCKED)
