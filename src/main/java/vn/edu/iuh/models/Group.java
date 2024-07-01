@@ -22,7 +22,7 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 @EqualsAndHashCode(of = "id")
-@JsonIgnoreProperties(value = {"chat", "members"})
+@JsonIgnoreProperties(value = {"chat"})
 public class Group {
     @Id
     private String id;

@@ -18,14 +18,11 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.util.StringUtils;
 import org.springframework.web.socket.config.annotation.*;
 import vn.edu.iuh.utils.JwtUtil;
 import vn.edu.iuh.utils.enums.JwtType;
 import vn.edu.iuh.ws.SocketHandler;
-
-import static vn.edu.iuh.dto.FriendTypeRequest.request;
 
 @Configuration
 @Order(Ordered.HIGHEST_PRECEDENCE + 99)

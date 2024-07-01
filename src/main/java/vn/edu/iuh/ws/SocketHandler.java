@@ -19,7 +19,6 @@ public class SocketHandler extends TextWebSocketHandler {
     @Override
     public void afterConnectionEstablished(@NonNull WebSocketSession session) throws Exception {
         log.info("After connection established");
-        log.info(session.toString());
         sessions.add(session);
         super.afterConnectionEstablished(session);
     }
@@ -37,7 +36,6 @@ public class SocketHandler extends TextWebSocketHandler {
     @Override
     public void afterConnectionClosed(@NonNull WebSocketSession session, @NonNull CloseStatus status) throws Exception {
         log.info("Close connection event");
-        log.info(sessions.toString());
         sessions.remove(session);
         super.afterConnectionClosed(session, status);
     }

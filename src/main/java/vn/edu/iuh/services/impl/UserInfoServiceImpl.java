@@ -21,7 +21,10 @@ import vn.edu.iuh.security.UserPrincipal;
 import vn.edu.iuh.services.UserInfoService;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -36,23 +39,48 @@ public class UserInfoServiceImpl implements UserInfoService {
 
 
     @Override
-    public OtherUserInfoDTO findUserInfoByPhone(String phone, String senderId) {
-        UserInfo sender = userInfoRepository.findByUser(new User(senderId)).orElseThrow(() -> new DataNotFoundException("Thông tin người dùng không tồn tại"));
-
-        User user = userRepository.findByPhone(phone).orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng nào có số điện thoại là " + phone));
-        UserInfo userInfo = userInfoRepository.findByUser(user).orElseThrow(() -> new DataNotFoundException("Thông tin người dùng không tồn tại"));
-
-        if (sender.equals(userInfo)) {
+    public OtherUserInfoDTO findUserInfoByPhone(String phone, UserPrincipal userPrincipal) {
+        if (userPrincipal.getUsername().equals(phone)) {
             throw new InvalidRequestException("Bạn đang tự tìm kiếm chính mình");
         }
 
-        sender.getRecentSearches().remove(userInfo);
-        sender.getRecentSearches().add(userInfo);
-        userInfoRepository.save(sender);
+        UserInfo senderInfo = userInfoRepository.findByUser(new User(userPrincipal.getId())).orElseThrow(() -> new DataNotFoundException("Thông tin người dùng không tồn tại"));
+
+        User user = userRepository.findByPhone(phone).orElseThrow(() -> new DataNotFoundException("Số điện thoại chưa đăng ký tài khoản."));
+        UserInfo userInfo = userInfoRepository.findByUser(user).orElseThrow(() -> new DataNotFoundException("Thông tin người dùng không tồn tại"));
+
+        senderInfo.getRecentSearches().remove(userInfo);
+        senderInfo.getRecentSearches().add(0, userInfo);
+
+        userInfoRepository.save(senderInfo);
         OtherUserInfoDTO otherUserInfoDTO = modelMapper.map(userInfo, OtherUserInfoDTO.class);
-        log.info(otherUserInfoDTO.toString());
         otherUserInfoDTO.setPhone(userInfo.getUser().getPhone());
         return otherUserInfoDTO;
+    }
+
+    @Override
+    public List<OtherUserInfoDTO> findRecentSearches(int size, UserPrincipal userPrincipal) {
+        UserInfo senderInfo = findUserInfoByUserId(userPrincipal.getId());
+        List<Friend> friends = senderInfo.getFriends();
+
+        List<UserInfo> recentSearches = senderInfo.getRecentSearches();
+        List<UserInfo> limitedRecentSearches = recentSearches.subList(0, Math.min(size, recentSearches.size()));
+
+        return limitedRecentSearches.stream()
+                .map(recentUserInfo -> {
+                    OtherUserInfoDTO dto = modelMapper.map(recentUserInfo, OtherUserInfoDTO.class);
+                    dto.setPhone(recentUserInfo.getUser().getPhone());
+
+                    friends.forEach(friend -> {
+                        if (friend.getProfile().equals(recentUserInfo)) {
+                            dto.setStatus(friend.getStatus());
+                            dto.setDisplayName(friend.getDisplayName());
+                        }
+                    });
+
+                    return dto;
+                })
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -106,7 +134,7 @@ public class UserInfoServiceImpl implements UserInfoService {
 
 
     @Override
-    public String addFriendByUserId(String friendId, UserPrincipal userPrincipal) {
+    public Friend addFriendByUserId(String friendId, UserPrincipal userPrincipal) {
         UserInfo currentUserInfo = findUserInfoByUserId(userPrincipal.getId());
 
         if (friendId.equals(currentUserInfo.getId())) {
@@ -118,17 +146,7 @@ public class UserInfoServiceImpl implements UserInfoService {
         return addFriend(currentUserInfo, friendUserInfo);
     }
 
-    @Override
-    public String addFriendByPhone(PhoneNumberDTO phoneNumberDTO, UserPrincipal userPrincipal) {
-        UserInfo currentUserInfo = userInfoRepository.findByUser(new User(userPrincipal.getId()))
-                .orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng"));
-        User friendUser = userRepository.findByPhone(phoneNumberDTO.getPhone())
-                .orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng để kết bạn"));
-        UserInfo friendUserInfo = userInfoRepository.findByUser(friendUser).orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng để kết bạn"));
-        return addFriend(currentUserInfo, friendUserInfo);
-    }
-
-    private String addFriend(UserInfo senderUserInfo, UserInfo receiverUserInfo) {
+    private Friend addFriend(UserInfo senderUserInfo, UserInfo receiverUserInfo) {
         return senderUserInfo.getFriends().stream()
                 .filter(friend -> friend.getProfile().getId().equals(receiverUserInfo.getId()))
                 .findFirst()
@@ -144,7 +162,8 @@ public class UserInfoServiceImpl implements UserInfoService {
                         userInfoRepository.save(receiverUserInfo);
                         Notification notification = new Notification(senderUserInfo.getLastName() + " vừa gửi lời mời kết bạn", NotificationType.FRIEND_REQUEST, senderUserInfo.getId(), LocalDateTime.now());
                         simpMessagingTemplate.convertAndSendToUser(receiverUserInfo.getId(), "/private", notification);
-                        return "Gửi lời mời kết bạn đến " + receiverUserInfo.getUser().getPhone() + " thành công.";
+
+                        return friend;
                     } else if (friend.getStatus().equals(FriendStatus.BLOCK)) {
                         throw new FriendshipRelationshipException("Bạn đã chặn người này. Hãy bỏ chặn trước khi kết bạn");
                     } else if (friend.getStatus().equals(FriendStatus.BLOCKED)) {
@@ -166,12 +185,12 @@ public class UserInfoServiceImpl implements UserInfoService {
                     userInfoRepository.save(receiverUserInfo);
                     Notification notification = new Notification(senderUserInfo.getLastName() + " vừa gửi lời mời kết bạn", NotificationType.FRIEND_REQUEST, senderUserInfo.getId(), LocalDateTime.now());
                     simpMessagingTemplate.convertAndSendToUser(receiverUserInfo.getId(), "/private", notification);
-                    return "Gửi lời mời kết bạn đến " + receiverUserInfo.getUser().getPhone() + " thành công.";
+                    return senderFriend;
                 });
     }
 
     @Override
-    public String blockFriend(String friendId, UserPrincipal userPrincipal) {
+    public Friend blockFriend(String friendId, UserPrincipal userPrincipal) {
         UserInfo currentUserInfo = userInfoRepository.findByUser(new User(userPrincipal.getId()))
                 .orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng"));
         if (friendId.equals(currentUserInfo.getId())) {
@@ -199,7 +218,7 @@ public class UserInfoServiceImpl implements UserInfoService {
                         userInfoRepository.save(friendUserInfo);
                         Notification notification = new Notification(currentUserInfo.getLastName() + " đã chặn bạn", NotificationType.BLOCKED_FRIEND, currentUserInfo.getId(), LocalDateTime.now());
                         simpMessagingTemplate.convertAndSendToUser(friendUserInfo.getId(), "/private", notification);
-                        return "Bạn đã chặn người dùng " + friendUserInfo.getUser().getPhone();
+                        return friend;
                     }
                 })
                 .orElseGet(() -> {
@@ -211,12 +230,12 @@ public class UserInfoServiceImpl implements UserInfoService {
                     userInfoRepository.save(friendUserInfo);
                     Notification notification = new Notification(currentUserInfo.getLastName() + " đã chặn bạn", NotificationType.BLOCKED_FRIEND, currentUserInfo.getId(), LocalDateTime.now());
                     simpMessagingTemplate.convertAndSendToUser(friendUserInfo.getId(), "/private", notification);
-                    return "Bạn đã chặn người dùng " + friendUserInfo.getUser().getPhone() + " thành công";
+                    return senderFriend;
                 });
     }
 
     @Override
-    public String unblockFriend(String friendId, UserPrincipal userPrincipal) {
+    public Friend unblockFriend(String friendId, UserPrincipal userPrincipal) {
         UserInfo currentUserInfo = findUserInfoByUserId(userPrincipal.getId());
         UserInfo friendUserInfo = findById(friendId);
 
@@ -233,13 +252,13 @@ public class UserInfoServiceImpl implements UserInfoService {
                     userInfoRepository.save(friendUserInfo);
                     Notification notification = new Notification(currentUserInfo.getLastName() + " đã bỏ chặn bạn", NotificationType.UNBLOCKED_FRIEND, currentUserInfo.getId(), LocalDateTime.now());
                     simpMessagingTemplate.convertAndSendToUser(friendUserInfo.getId(), "/private", notification);
-                    return "Bạn đã bỏ chặn người dùng " + friendUserInfo.getUser().getPhone() + " thành công";
+                    return friend;
                 })
                 .orElseThrow(() -> new DataNotFoundException("Bạn không chặn đối phương nên không thể bỏ chặn"));
     }
 
     @Override
-    public String deleteFriend(String friendId, UserPrincipal userPrincipal) {
+    public Friend deleteFriend(String friendId, UserPrincipal userPrincipal) {
         UserInfo currentUserInfo = findUserInfoByUserId(userPrincipal.getId());
         UserInfo friendUserInfo = findById(friendId);
 
@@ -255,12 +274,11 @@ public class UserInfoServiceImpl implements UserInfoService {
                                 .findFirst()
                                 .ifPresent(f -> f.setStatus(FriendStatus.STRANGER));
 
-//                        userInfoRepository.saveAll(Arrays.asList(currentUserInfo, friendUserInfo));
                         userInfoRepository.save(currentUserInfo);
                         userInfoRepository.save(friendUserInfo);
                         Notification notification = new Notification(currentUserInfo.getLastName() + " vừa xóa kết bạn với bạn", NotificationType.DELETED_FRIEND, currentUserInfo.getId(), LocalDateTime.now());
                         simpMessagingTemplate.convertAndSendToUser(friendUserInfo.getId(), "/private", notification);
-                        return "Xóa kết bạn với " + friendUserInfo.getUser().getPhone() + " thành công.";
+                        return friend;
                     } else if (friend.getStatus().equals(FriendStatus.BLOCK)) {
                         throw new FriendshipRelationshipException("Bạn đã chặn người này. Hãy bỏ chặn trước");
                     } else if (friend.getStatus().equals(FriendStatus.BLOCKED)) {
@@ -273,7 +291,7 @@ public class UserInfoServiceImpl implements UserInfoService {
     }
 
     @Override
-    public String acceptFriendRequest(String friendId, UserPrincipal userPrincipal) {
+    public Friend acceptFriendRequest(String friendId, UserPrincipal userPrincipal) {
         UserInfo currentUserInfo = findUserInfoByUserId(userPrincipal.getId());
         UserInfo friendUserInfo = findById(friendId);
 
@@ -355,11 +373,11 @@ public class UserInfoServiceImpl implements UserInfoService {
         userInfoRepository.save(friendUserInfo);
         Notification notification = new Notification(currentUserInfo.getLastName() + " vừa chấp nhận lời mời kết bạn", NotificationType.ACCEPT_FRIEND_REQUEST, null, LocalDateTime.now());
         simpMessagingTemplate.convertAndSendToUser(friendUserInfo.getId(), "/private", notification);
-        return "Chấp nhận lời mời kết bạn từ " + friendUserInfo.getUser().getPhone() + " thành công.";
+        return pendingFriendRequest;
     }
 
     @Override
-    public String declineFriendRequest(String friendId, UserPrincipal userPrincipal) {
+    public Friend declineFriendRequest(String friendId, UserPrincipal userPrincipal) {
         UserInfo currentUserInfo = findUserInfoByUserId(userPrincipal.getId());
         UserInfo friendUserInfo = findById(friendId);
 
@@ -379,7 +397,7 @@ public class UserInfoServiceImpl implements UserInfoService {
                         userInfoRepository.save(friendUserInfo);
                         Notification notification = new Notification(currentUserInfo.getLastName() + " đã từ chối lời mời kết bạn của bạn", NotificationType.DECLINE_FRIEND_REQUEST, currentUserInfo.getId(), LocalDateTime.now());
                         simpMessagingTemplate.convertAndSendToUser(friendUserInfo.getId(), "/private", notification);
-                        return "Từ chối lời mời kết bạn từ " + friendUserInfo.getUser().getPhone() + " thành công.";
+                        return friend;
                     } else if (friend.getStatus().equals(FriendStatus.BLOCK)) {
                         throw new FriendshipRelationshipException("Bạn đã chặn người này. Hãy bỏ chặn trước");
                     } else if (friend.getStatus().equals(FriendStatus.BLOCKED)) {
@@ -392,7 +410,7 @@ public class UserInfoServiceImpl implements UserInfoService {
     }
 
     @Override
-    public String cancelFriendRequest(String friendId, UserPrincipal userPrincipal) {
+    public Friend cancelFriendRequest(String friendId, UserPrincipal userPrincipal) {
         UserInfo currentUserInfo = findUserInfoByUserId(userPrincipal.getId());
         UserInfo friendUserInfo = findById(friendId);
 
@@ -412,7 +430,7 @@ public class UserInfoServiceImpl implements UserInfoService {
                         userInfoRepository.save(friendUserInfo);
                         Notification notification = new Notification(currentUserInfo.getLastName() + " đã thu hồi lời mời kết bạn", NotificationType.CANCEL_FRIEND_REQUEST, currentUserInfo.getId(), LocalDateTime.now());
                         simpMessagingTemplate.convertAndSendToUser(friendUserInfo.getId(), "/private", notification);
-                        return "Thu hồi lời mời kết bạn với " + friendUserInfo.getUser().getPhone() + " thành công.";
+                        return friend;
                     } else if (friend.getStatus().equals(FriendStatus.BLOCK)) {
                         throw new FriendshipRelationshipException("Bạn đã chặn người này. Hãy bỏ chặn trước");
                     } else if (friend.getStatus().equals(FriendStatus.BLOCKED)) {
@@ -480,14 +498,13 @@ public class UserInfoServiceImpl implements UserInfoService {
                 .name(name)
                 .avatar(avatar)
                 .lastMessage(chatRoom.getLastMessage())
-                .isGroup(isGroup)
                 .groupId(isGroup ? chatRoom.getGroup().getId() : null)
                 .lastSeenMessageId(chat.getLastSeenMessageId())
                 .status(chat.getStatus())
                 .build();
     }
 
-    private String getMemberName(Chat chatRoom, UserInfo senderInfo) {
+    public static String getMemberName(Chat chatRoom, UserInfo senderInfo) {
         return chatRoom.getMembers().stream()
                 .filter(member -> !member.getId().equals(senderInfo.getId()))
                 .map(member -> member.getFirstName() + " " + member.getLastName())
@@ -495,7 +512,7 @@ public class UserInfoServiceImpl implements UserInfoService {
                 .orElse(null);
     }
 
-    private String getMemberAvatar(Chat chatRoom, UserInfo senderInfo) {
+    public static String getMemberAvatar(Chat chatRoom, UserInfo senderInfo) {
         return chatRoom.getMembers().stream()
                 .filter(member -> !member.getId().equals(senderInfo.getId()))
                 .map(UserInfo::getThumbnailAvatar)

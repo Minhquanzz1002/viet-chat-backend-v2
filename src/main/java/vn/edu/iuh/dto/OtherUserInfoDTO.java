@@ -1,8 +1,8 @@
 package vn.edu.iuh.dto;
 
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
+import vn.edu.iuh.models.enums.FriendStatus;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -13,10 +13,11 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode(of = {"id"})
-@JsonIgnoreProperties({"user"})
 public class OtherUserInfoDTO {
     private String id;
     private String phone;
+    private String displayName;
+    private FriendStatus status;
     private String firstName;
     private String lastName;
     private String bio;
