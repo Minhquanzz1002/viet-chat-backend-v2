@@ -76,17 +76,16 @@ public class UserController {
     )
     @GetMapping("/profile/{phone:^\\d+$}")
     public OtherUserInfoDTO getUserInfoByPhone(@PathVariable String phone, @AuthenticationPrincipal UserPrincipal userPrincipal) {
-        return userInfoService.findUserInfoByPhone(phone, userPrincipal.getId());
+        return userInfoService.findUserInfoByPhone(phone, userPrincipal);
     }
 
     @Operation(
             summary = "Danh sách người dùng đã tìm kiếm gần đây",
-            description = "Danh sách người dùng đã tìm kiếm gần đây. Nếu không truyền size mặc định sẽ là 4"
+            description = "Danh sách người dùng đã tìm kiếm gần đây. Nếu không truyền size mặc định sẽ là 6"
     )
     @GetMapping("/profile/search/recent")
-    public List<UserInfo> getUserInfoRecentSearches(@AuthenticationPrincipal UserPrincipal userPrincipal, @RequestParam(defaultValue = "4") int size) {
-        List<UserInfo> userInfos = userInfoService.findUserInfoByUserId(userPrincipal.getId()).getRecentSearches();
-        return userInfos.subList(0, Math.min(size, userInfos.size()));
+    public List<OtherUserInfoDTO> getUserInfoRecentSearches(@AuthenticationPrincipal UserPrincipal userPrincipal, @RequestParam(defaultValue = "6") int size) {
+        return userInfoService.findRecentSearches(size, userPrincipal);
     }
 
     @Operation(
@@ -140,7 +139,7 @@ public class UserController {
                     """
     )
     @PutMapping("/profile/friends/{friend-id}/accept")
-    public String acceptFriendRequest(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable("friend-id") String friendId) {
+    public Friend acceptFriendRequest(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable("friend-id") String friendId) {
         return userInfoService.acceptFriendRequest(friendId, userPrincipal);
     }
 
@@ -156,7 +155,7 @@ public class UserController {
                     """
     )
     @PutMapping("/profile/friends/{friend-id}/cancel")
-    public String cancelFriendRequest(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable("friend-id") String friendId) {
+    public Friend cancelFriendRequest(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable("friend-id") String friendId) {
         return userInfoService.cancelFriendRequest(friendId, userPrincipal);
     }
 
@@ -168,7 +167,7 @@ public class UserController {
                     """
     )
     @PutMapping("/profile/friends/{friend-id}/decline")
-    public String declineFriendRequest(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable("friend-id") String friendId) {
+    public Friend declineFriendRequest(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable("friend-id") String friendId) {
         return userInfoService.declineFriendRequest(friendId, userPrincipal);
     }
 
@@ -182,7 +181,7 @@ public class UserController {
                     """
     )
     @PutMapping("/profile/friends/{friend-id}/block")
-    public String blockFriend(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable("friend-id") String friendId) {
+    public Friend blockFriend(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable("friend-id") String friendId) {
         return userInfoService.blockFriend(friendId, userPrincipal);
     }
 
@@ -194,30 +193,14 @@ public class UserController {
                     """
     )
     @PutMapping("/profile/friends/{friend-id}/unblock")
-    public String unblockFriend(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable("friend-id") String friendId) {
+    public Friend unblockFriend(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable("friend-id") String friendId) {
         return userInfoService.unblockFriend(friendId, userPrincipal);
     }
 
     @Operation(
-            summary = "Gửi lời mời kết bạn theo số điện thoại",
+            summary = "Gửi lời mời kết bạn",
             description = """
-                    Gửi lời mời kết bạn bằng số điện thoại của đối phương<br>
-                    <strong>Lỗi nếu:</strong><br>
-                    * Bạn đã chặn đối phương (status == BLOCK)
-                    * Bạn đã bị đối phương chặn(status == BLOCKED)
-                    * Bạn đã gửi lời mời kết bạn cho đối phương trước đó (status == FRIEND_REQUEST)
-                    * Bạn có lời mời kết bạn từ đối phương (status == PENDING)
-                    """
-    )
-    @PostMapping("/profile/friends/by-phone")
-    public String addFriendByPhone(@AuthenticationPrincipal UserPrincipal userPrincipal, @RequestBody @Valid PhoneNumberDTO phoneNumberDTO) {
-        return userInfoService.addFriendByPhone(phoneNumberDTO, userPrincipal);
-    }
-
-    @Operation(
-            summary = "Gửi lời mời kết bạn theo User Info ID",
-            description = """
-                    Gửi lời mời kết bạn bằng ID của đối phương<br>
+                    Gửi lời mời kết bạn<br>
                     <strong>Lỗi nếu:</strong><br>
                     * Bạn đã chặn đối phương (status == BLOCK)
                     * Bạn đã bị chặn đối phương (status == BLOCKED)
@@ -226,7 +209,7 @@ public class UserController {
                     """
     )
     @PutMapping("/profile/friends/{friend-id}")
-    public String addFriend(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable("friend-id") String friendId) {
+    public Friend addFriend(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable("friend-id") String friendId) {
         return userInfoService.addFriendByUserId(friendId, userPrincipal);
     }
 
@@ -266,7 +249,7 @@ public class UserController {
                     """
     )
     @DeleteMapping("/profile/friends/{friend-id}")
-    public String deleteFriend(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable(name = "friend-id") String friendId) {
+    public Friend deleteFriend(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable(name = "friend-id") String friendId) {
         return userInfoService.deleteFriend(friendId, userPrincipal);
     }
 

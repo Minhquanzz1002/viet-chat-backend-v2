@@ -11,4 +11,5 @@ public class Attachment {
     private AttachmentType type;
     private String url;
     private String filename;
+    private int size;
 }

@@ -3,6 +3,7 @@ package vn.edu.iuh.services.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.types.ObjectId;
+import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -10,10 +11,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import vn.edu.iuh.dto.MessageDTO;
-import vn.edu.iuh.dto.MessageEventDTO;
-import vn.edu.iuh.dto.MessageRequestDTO;
-import vn.edu.iuh.dto.ReactionMessageDTO;
+import vn.edu.iuh.dto.*;
 import vn.edu.iuh.exceptions.DataNotFoundException;
 import vn.edu.iuh.exceptions.InvalidRequestException;
 import vn.edu.iuh.exceptions.MessageRecallTimeExpiredException;
@@ -36,6 +34,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Slf4j
 public class ChatServiceImpl implements ChatService {
+    private final ModelMapper modelMapper;
     private final ChatRepository chatRepository;
     private final UserInfoRepository userInfoRepository;
     private final SimpMessagingTemplate simpMessagingTemplate;
@@ -83,6 +82,21 @@ public class ChatServiceImpl implements ChatService {
     @Override
     public Chat findById(String id) {
         return chatRepository.findById(id).orElseThrow(() -> new DataNotFoundException("Không tìm thấy phòng chat có ID " + id));
+    }
+
+    @Override
+    public ChatDTO findChatById(String id, UserPrincipal userPrincipal) {
+        UserInfo senderInfo = findUserInfoByUserPrincipal(userPrincipal);
+        Chat chat = findById(id);
+        ChatDTO chatDTO = modelMapper.map(chat, ChatDTO.class);
+
+        Group group = chat.getGroup();
+        boolean isGroup = (group != null);
+        String name = isGroup ? chat.getGroup().getName() : UserInfoServiceImpl.getMemberName(chat, senderInfo);
+        String avatar = isGroup ? chat.getGroup().getThumbnailAvatar() : UserInfoServiceImpl.getMemberAvatar(chat, senderInfo);
+        chatDTO.setName(name);
+        chatDTO.setAvatar(avatar);
+        return chatDTO;
     }
 
     @Override
