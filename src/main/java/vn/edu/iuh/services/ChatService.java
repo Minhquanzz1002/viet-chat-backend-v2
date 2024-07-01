@@ -2,10 +2,7 @@ package vn.edu.iuh.services;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import vn.edu.iuh.dto.MessageDTO;
-import vn.edu.iuh.dto.MessageEventDTO;
-import vn.edu.iuh.dto.MessageRequestDTO;
-import vn.edu.iuh.dto.ReactionMessageDTO;
+import vn.edu.iuh.dto.*;
 import vn.edu.iuh.models.Chat;
 import vn.edu.iuh.models.Message;
 import vn.edu.iuh.security.UserPrincipal;
@@ -14,6 +11,8 @@ public interface ChatService {
     Page<Message> getAllMessages(String chatId, UserPrincipal userPrincipal, Pageable pageable, String content);
 
     Chat findById(String id);
+
+    ChatDTO findChatById(String id, UserPrincipal userPrincipal);
 
     Message saveMessage(MessageDTO messageDTO, String chatId);
 

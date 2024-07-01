@@ -11,9 +11,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import vn.edu.iuh.dto.ChatDTO;
 import vn.edu.iuh.dto.MessageRequestDTO;
 import vn.edu.iuh.dto.ReactionMessageDTO;
-import vn.edu.iuh.models.Chat;
 import vn.edu.iuh.models.Message;
 import vn.edu.iuh.security.UserPrincipal;
 import vn.edu.iuh.services.ChatService;
@@ -275,7 +275,7 @@ public class ChatController {
                     """
     )
     @GetMapping("/{chat-id}")
-    public Chat getChat(@PathVariable("chat-id") String id) {
-        return chatService.findById(id);
+    public ChatDTO getChat(@PathVariable("chat-id") String id, @AuthenticationPrincipal UserPrincipal userPrincipal) {
+        return chatService.findChatById(id, userPrincipal);
     }
 }
