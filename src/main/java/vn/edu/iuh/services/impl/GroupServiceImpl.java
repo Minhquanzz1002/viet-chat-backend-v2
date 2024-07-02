@@ -10,10 +10,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
-import vn.edu.iuh.dto.GroupDTO;
-import vn.edu.iuh.dto.GroupRequestCreateDTO;
-import vn.edu.iuh.dto.GroupRoleUpdateRequestDTO;
-import vn.edu.iuh.dto.GroupUpdateRequestDTO;
+import vn.edu.iuh.dto.*;
 import vn.edu.iuh.exceptions.DataNotFoundException;
 import vn.edu.iuh.exceptions.InvalidRequestException;
 import vn.edu.iuh.models.*;
@@ -31,6 +28,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -43,13 +41,23 @@ public class GroupServiceImpl implements GroupService {
     private final SimpMessagingTemplate simpMessagingTemplate;
 
     @Override
-    public List<GroupMember> getAllMembers(String groupId, UserPrincipal userPrincipal) {
+    public List<GroupMemberDTO> getAllMembers(String groupId, UserPrincipal userPrincipal) {
         Group group = findById(groupId);
-        UserInfo userInfo = userInfoRepository.findByUser(new User(userPrincipal.getId())).orElseThrow(() -> new DataNotFoundException("Không tìm thấy thông tin người dùng"));
-        if (!group.getMembers().contains(GroupMember.builder().profile(userInfo).build())) {
+        UserInfo senderInfo = userInfoRepository.findByUser(new User(userPrincipal.getId())).orElseThrow(() -> new DataNotFoundException("Không tìm thấy thông tin người dùng"));
+        if (!group.getMembers().contains(GroupMember.builder().profile(senderInfo).build())) {
             throw new AccessDeniedException("Bạn không phải là thành viên của nhóm này");
         }
-        return group.getMembers();
+        List<Friend> friends = senderInfo.getFriends();
+        return group.getMembers().stream().map((groupMember -> {
+            GroupMemberDTO groupMemberDTO = modelMapper.map(groupMember, GroupMemberDTO.class);
+            friends.forEach(friend -> {
+                if (friend.getProfile().equals(groupMemberDTO.getProfile())) {
+                    groupMemberDTO.setStatus(friend.getStatus());
+                    groupMemberDTO.setDisplayName(friend.getDisplayName());
+                }
+            });
+            return groupMemberDTO;
+        })).toList();
     }
 
 

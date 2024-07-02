@@ -11,10 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-import vn.edu.iuh.dto.GroupDTO;
-import vn.edu.iuh.dto.GroupRequestCreateDTO;
-import vn.edu.iuh.dto.GroupRoleUpdateRequestDTO;
-import vn.edu.iuh.dto.GroupUpdateRequestDTO;
+import vn.edu.iuh.dto.*;
 import vn.edu.iuh.models.Group;
 import vn.edu.iuh.models.GroupMember;
 import vn.edu.iuh.security.UserPrincipal;
@@ -62,7 +59,7 @@ public class GroupController {
                      - Không tìm thấy ID nhóm
                     """
     )
-    public List<GroupMember> getMembers(@PathVariable(name = "group_id") String groupId, @AuthenticationPrincipal UserPrincipal userPrincipal) {
+    public List<GroupMemberDTO> getMembers(@PathVariable(name = "group_id") String groupId, @AuthenticationPrincipal UserPrincipal userPrincipal) {
         return groupService.getAllMembers(groupId, userPrincipal);
     }
 
