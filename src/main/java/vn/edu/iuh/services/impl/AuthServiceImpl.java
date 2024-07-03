@@ -23,7 +23,6 @@ import vn.edu.iuh.utils.JwtUtil;
 import vn.edu.iuh.utils.enums.JwtType;
 
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @Service
@@ -38,14 +37,11 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public TokenResponseDTO login(LoginRequestDTO loginRequestDTO) {
-        User user = userRepository.findByPhone(loginRequestDTO.getPhone()).orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng nào có số điện thoại là " + loginRequestDTO.getPhone()));
-        if (user.getStatus() == UserStatus.UNVERIFIED) {
-            throw new UnauthorizedException(UserStatus.UNVERIFIED.getDescription());
-        }
-        if (user.getStatus() != UserStatus.ACTIVE) {
+        User user = userRepository.findByPhone(loginRequestDTO.getPhone()).orElseThrow(() -> new DataNotFoundException("Tên đăng nhập hoặc mật khẩu không khớp, vui lòng nhập lại"));
+        if (user.getStatus() == UserStatus.LOCKED) {
             throw new UnauthorizedException(UserStatus.LOCKED.getDescription());
         }
-        if (passwordEncoder.matches(loginRequestDTO.getPassword(), user.getPassword())) {
+        if (user.getStatus() == UserStatus.ACTIVE && passwordEncoder.matches(loginRequestDTO.getPassword(), user.getPassword())) {
             UserPrincipal userPrincipal = new UserPrincipal(user);
             RefreshToken refreshToken = RefreshToken
                     .builder()
@@ -60,7 +56,7 @@ public class AuthServiceImpl implements AuthService {
                     .accessToken(jwtUtil.generateAccessToken(userPrincipal))
                     .build();
         } else {
-            throw new UnauthorizedException("Tài khoản hoặc mật khẩu không chính xác.");
+            throw new UnauthorizedException("Tên đăng nhập hoặc mật khẩu không khớp, vui lòng nhập lại");
         }
     }
 
