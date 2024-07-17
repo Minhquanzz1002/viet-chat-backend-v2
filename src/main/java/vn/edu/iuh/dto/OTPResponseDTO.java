@@ -9,6 +9,5 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class OTPResponseDTO {
-    private String accessToken;
-    private String refreshToken;
+    private String token;
 }

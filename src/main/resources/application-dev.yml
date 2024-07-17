@@ -35,3 +35,4 @@ app:
     refreshTokenExpirationMilliseconds: 1209600000
     accessTokenExpirationMilliseconds: 86400000
     resetTokenExpirationMilliseconds: 300000
+    registerTokenExpirationMilliseconds: 300000

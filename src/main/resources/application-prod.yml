@@ -7,7 +7,7 @@ spring:
       database: viet-chat
       field-naming-strategy: org.springframework.data.mapping.model.SnakeCaseFieldNamingStrategy
       auto-index-creation: true
-      uri: mongodb+srv://root:root@cluster0.idirp.mongodb.net/
+      uri: mongodb://root:root@ec2-46-137-198-199.ap-southeast-1.compute.amazonaws.com:27017/
 
   servlet:
     multipart:
@@ -33,6 +33,7 @@ app:
     refreshTokenExpirationMilliseconds: 1209600000
     accessTokenExpirationMilliseconds: 1800000
     resetTokenExpirationMilliseconds: 300000
+    registerTokenExpirationMilliseconds: 300000
 
 management:
   endpoint:

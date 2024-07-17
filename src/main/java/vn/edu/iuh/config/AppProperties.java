@@ -18,5 +18,6 @@ public class AppProperties {
         private long refreshTokenExpirationMilliseconds;
         private long accessTokenExpirationMilliseconds;
         private long resetTokenExpirationMilliseconds;
+        private long registerTokenExpirationMilliseconds;
     }
 }
