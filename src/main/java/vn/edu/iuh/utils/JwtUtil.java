@@ -21,6 +21,9 @@ import java.util.function.Function;
 @Slf4j
 public class JwtUtil {
     private final AppProperties appProperties;
+    public String generateRegisterToken(UserDetails userDetails) {
+        return buildToken(userDetails, appProperties.getAuth().getRegisterTokenExpirationMilliseconds(), JwtType.REGISTER_TOKEN);
+    }
     public String generateAccessToken(UserDetails userDetails) {
         return buildToken(userDetails, appProperties.getAuth().getAccessTokenExpirationMilliseconds(), JwtType.ACCESS_TOKEN);
     }

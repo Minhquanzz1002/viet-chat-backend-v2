@@ -33,6 +33,7 @@ app:
     refreshTokenExpirationMilliseconds: 1209600000
     accessTokenExpirationMilliseconds: 1800000
     resetTokenExpirationMilliseconds: 300000
+    registerTokenExpirationMilliseconds: 300000
 
 management:
   endpoint:
