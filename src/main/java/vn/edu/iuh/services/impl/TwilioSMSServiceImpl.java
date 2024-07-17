@@ -19,7 +19,6 @@ import vn.edu.iuh.models.enums.RoleType;
 import vn.edu.iuh.models.enums.UserStatus;
 import vn.edu.iuh.repositories.OTPRepository;
 import vn.edu.iuh.repositories.RefreshTokenRepository;
-import vn.edu.iuh.repositories.TwilioSMSRepository;
 import vn.edu.iuh.repositories.UserRepository;
 import vn.edu.iuh.security.UserPrincipal;
 import vn.edu.iuh.services.TwilioSMSService;
@@ -31,7 +30,6 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Slf4j
 public class TwilioSMSServiceImpl implements TwilioSMSService {
-    private final TwilioSMSRepository twilioSMSRepository;
     private final RefreshTokenRepository refreshTokenRepository;
     private final UserRepository userRepository;
     private final OTPRepository otpRepository;
@@ -49,7 +47,6 @@ public class TwilioSMSServiceImpl implements TwilioSMSService {
             }
             throw new DataExistsException("Số điện thoại ***" + subPhone + " đã được đăng ký.");
         }
-//        boolean result = twilioSMSRepository.sendSMS(phone);
         String otp = otpRepository.generateOTP(phone);
         log.info("Mã OTP của số điện thoại {} là {}", phone, otp);
         return "Gửi OTP thành công";
@@ -58,23 +55,19 @@ public class TwilioSMSServiceImpl implements TwilioSMSService {
 
     @Override
     public OTPResponseDTO verifyOTP(OTPRequestDTO otpRequestDTO) {
-//        return twilioSMSRepository.validateOTP(validationOtpRequestDTO.getPhone(), validationOtpRequestDTO.getOtp());
-        ;
         boolean isValid = otpRepository.validateOTP(otpRequestDTO.getPhone(), otpRequestDTO.getOtp());
         if (isValid) {
             Optional<User> userOptional = userRepository.findByPhone(otpRequestDTO.getPhone());
             User user = userOptional.orElseGet(() -> userRepository.save(new User(otpRequestDTO.getPhone(), otpRequestDTO.getPhone(), UserStatus.UNVERIFIED, RoleType.USER)));
+            UserPrincipal userPrincipal = new UserPrincipal(user);
             RefreshToken refreshToken = RefreshToken
                     .builder()
-                    .token(jwtUtil.generateRefreshToken(new UserPrincipal(user)))
+                    .token(jwtUtil.generateRefreshToken(userPrincipal))
                     .status(RefreshTokenStatus.ACTIVE)
                     .user(user)
                     .build();
             refreshTokenRepository.save(refreshToken);
-            return OTPResponseDTO.builder()
-                    .accessToken(jwtUtil.generateAccessToken(new UserPrincipal(user)))
-                    .refreshToken(refreshToken.getToken())
-                    .build();
+            return new OTPResponseDTO(jwtUtil.generateRegisterToken(userPrincipal));
         }
         throw new OTPMismatchException("OTP không chính xác hoặc đã hết hạn");
     }
@@ -101,15 +94,4 @@ public class TwilioSMSServiceImpl implements TwilioSMSService {
         return "Gửi OTP thành công";
 
     }
-
-    private String formatPhoneNumber(PhoneNumberDTO phoneNumberDTO) {
-        String phone = phoneNumberDTO.getPhone();
-        if (phone.startsWith("0")) {
-            phone = "+84" + phone.substring(1);
-            System.out.println(phone);
-        }
-        return phone;
-    }
-
-
 }

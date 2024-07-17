@@ -7,5 +7,5 @@ import lombok.Setter;
 @AllArgsConstructor
 @Getter
 public enum JwtType {
-    ACCESS_TOKEN, REFRESH_TOKEN, RESET_TOKEN;
+    ACCESS_TOKEN, REFRESH_TOKEN, RESET_TOKEN, REGISTER_TOKEN;
 }
